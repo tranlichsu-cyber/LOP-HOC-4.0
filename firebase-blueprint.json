@@ -1,0 +1,72 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "teacher", "student"] },
+        "schoolId": { "type": "string" },
+        "classId": { "type": "string" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "School": {
+      "title": "School",
+      "description": "School information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "adminUid": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    },
+    "Class": {
+      "title": "Class",
+      "description": "Class information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "grade": { "type": "string" },
+        "teacherUid": { "type": "string" }
+      },
+      "required": ["id", "name", "grade"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Information about a student",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "user": { "type": "string" },
+        "passHash": { "type": "string" }
+      },
+      "required": ["id", "name", "user", "passHash"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and roles"
+    },
+    "/schools/{schoolId}": {
+      "schema": "School",
+      "description": "School details"
+    },
+    "/schools/{schoolId}/classes/{classId}": {
+      "schema": "Class",
+      "description": "Classes within a school"
+    },
+    "/schools/{schoolId}/classes/{classId}/students/{studentId}": {
+      "schema": "Student",
+      "description": "Students within a class"
+    }
+  }
+}

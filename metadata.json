@@ -1,0 +1,8 @@
+{
+  "name": "EduPro",
+  "description": "Hệ thống quản lý học tập tích hợp AI dành cho giáo viên và học sinh, bao gồm soạn giáo án AI, trò chơi tương tác và quản lý lớp học.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

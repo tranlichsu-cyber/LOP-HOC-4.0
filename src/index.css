@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-times: "Times New Roman", Times, serif;
+  
+  /* Teacher Theme - Professional Blue */
+  --color-teacher-primary: #2563eb;
+  --color-teacher-secondary: #3b82f6;
+  --color-teacher-accent: #eff6ff;
+  
+  /* Student Theme - Engaging Green/Orange */
+  --color-student-primary: #10b981;
+  --color-student-secondary: #f59e0b;
+  --color-student-accent: #ecfdf5;
+
+  /* Glassmorphism */
+  --bg-glass: rgba(255, 255, 255, 0.7);
+  --bg-glass-dark: rgba(15, 23, 42, 0.7);
+}
+
+@layer base {
+  body {
+    @apply font-sans antialiased text-slate-900 dark:text-slate-100;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
+  }
+
+  .role-teacher {
+    --primary: var(--color-teacher-primary);
+    --primary-foreground: #ffffff;
+  }
+  
+  .role-student {
+    --primary: var(--color-student-primary);
+    --primary-foreground: #ffffff;
+  }
+}
+
+/* =========================================
+   TÙY CHỈNH THANH CUỘN (SCROLLBAR)
+   ========================================= */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.dark ::-webkit-scrollbar-thumb { background: #475569; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* =========================================
+   HIỆU ỨNG HOẠT HÌNH (ANIMATIONS)
+   ========================================= */
+.animate-bounce-short { animation: bounce 1s ease-in-out infinite; }
+@keyframes bounce {
+    0%, 100% { transform: translateY(-5%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+    50% { transform: none; animation-timing-function: cubic-bezier(0,0,0.2,1); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(-50%) rotate(0deg); }
+    25% { transform: translateX(-50%) rotate(-5deg); }
+    75% { transform: translateX(-50%) rotate(5deg); }
+}
+.pulling { animation: shake 0.3s ease-in-out; }
+
+/* =========================================
+   QUẢN LÝ PHÂN QUYỀN HIỂN THỊ
+   ========================================= */
+body.role-teacher .student-only { display: none !important; }
+body.role-student .teacher-only { display: none !important; }
+
+/* =========================================
+   STYLE CHO GAME "AI LÀ TRIỆU PHÚ"
+   ========================================= */
+.mil-bg-gradient { background: radial-gradient(circle at 50% 100%, #1e3a8a 0%, #020617 100%); }
+
+.mil-polygon { 
+    clip-path: polygon(5% 0, 95% 0, 100% 50%, 95% 100%, 5% 100%, 0 50%); 
+}
+
+.mil-btn {
+    position: relative;
+    clip-path: polygon(5% 0, 95% 0, 100% 50%, 95% 100%, 5% 100%, 0 50%);
+    background: linear-gradient(180deg, #0f172a 0%, #1e3a8a 100%);
+    border: 2px solid #60a5fa;
+    transition: all 0.3s ease;
+}
+
+.mil-btn::before {
+    content: ''; 
+    position: absolute; 
+    inset: 2px;
+    clip-path: polygon(5% 0, 95% 0, 100% 50%, 95% 100%, 5% 100%, 0 50%);
+    border: 1px solid rgba(255,255,255,0.2); 
+    pointer-events: none;
+}
+
+.mil-btn:hover:not(:disabled) { 
+    background: linear-gradient(180deg, #1e40af 0%, #3b82f6 100%); 
+    border-color: #93c5fd; 
+}
+.mil-btn.selected { 
+    background: linear-gradient(180deg, #7c2d12 0%, #f97316 100%); 
+    border-color: #fdba74; 
+}
+.mil-btn.correct { 
+    background: linear-gradient(180deg, #166534 0%, #22c55e 100%); 
+    border-color: #86efac; 
+    animation: blink-correct 0.5s 3; 
+}
+.mil-btn.wrong { 
+    background: linear-gradient(180deg, #7f1d1d 0%, #ef4444 100%); 
+    border-color: #fca5a5; 
+}
+
+@keyframes blink-correct { 
+    0%, 100% { filter: brightness(1); } 
+    50% { filter: brightness(1.5); } 
+}
+
+/* HIỆU ỨNG GẠCH CHÉO ĐỎ CHO SỰ TRỢ GIÚP */
+.lifeline-used {
+    position: relative;
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    pointer-events: none; /* Khóa nút không cho bấm nữa */
+}
+.lifeline-used::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 5%;
+    width: 90%;
+    height: 4px;
+    background-color: #ef4444; /* Màu đỏ */
+    transform: translateY(-50%) rotate(45deg);
+    z-index: 10;
+    border-radius: 2px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.8);
+}
+
+/* =========================================
+   STYLE CHUNG
+   ========================================= */
+.q-block { transition: all 0.3s ease; }
+.q-block:hover { border-color: #3b82f6; }
+.font-kids { font-family: "Times New Roman", Times, serif; }
+.bg-kids-fun { background: linear-gradient(135deg, #a7f3d0 0%, #fef08a 100%); }
+.bg-kids-sky { background: linear-gradient(135deg, #bae6fd 0%, #e0e7ff 100%); }

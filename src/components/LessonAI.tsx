@@ -1,0 +1,631 @@
+import React, { useState, useRef } from 'react';
+import { Sparkles, Cpu, FileText, Loader2, Bot, Download, Upload, FileCheck, X, Eye, Save } from 'lucide-react';
+import { GoogleGenAI } from "@google/genai";
+import mammoth from 'mammoth';
+import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, BorderStyle } from 'docx';
+import { saveAs } from 'file-saver';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { db, auth } from '../firebase';
+import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
+import { Class } from '../types';
+
+export default function LessonAI() {
+  const [subject, setSubject] = useState('Tiếng Việt');
+  const [grade, setGrade] = useState('Lớp 3');
+  const [selectedClassId, setSelectedClassId] = useState('');
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [title, setTitle] = useState('');
+  const [duration, setDuration] = useState<number | string>(1);
+  const [extraPrompt, setExtraPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isProcessingFile, setIsProcessingFile] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [result, setResult] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [fileBase64, setFileBase64] = useState<string | null>(null);
+  const [fileText, setFileText] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [theme, setTheme] = useState('Classic Blue');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    const fetchClasses = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        // Find schoolId from user profile
+        const userDoc = await getDocs(collection(db, 'users'));
+        const profile = userDoc.docs.find(d => d.id === user.uid)?.data();
+        if (profile?.schoolId) {
+          const classesSnap = await getDocs(collection(db, 'schools', profile.schoolId, 'classes'));
+          const teacherClasses = classesSnap.docs
+            .map(d => d.data() as Class)
+            .filter(c => c.teacherUid === user.uid);
+          setClasses(teacherClasses);
+          if (teacherClasses.length > 0) {
+            setSelectedClassId(teacherClasses[0].id);
+            setGrade(teacherClasses[0].grade);
+          }
+        }
+      }
+    };
+    fetchClasses();
+  }, []);
+
+  const themes: Record<string, { primary: string, secondary: string }> = {
+    'Classic Blue': { primary: '#1e40af', secondary: '#3b82f6' },
+    'Modern Green': { primary: '#065f46', secondary: '#10b981' },
+    'Vibrant Orange': { primary: '#9a3412', secondary: '#f97316' }
+  };
+
+  const lessonSuggestions: Record<string, string[]> = {
+    "Toán": ["Ôn tập các số đến 100", "Phép cộng trong phạm vi 10", "Hình học cơ bản", "Giải toán có lời văn"],
+    "Tiếng Việt": ["Tập đọc: Chuyện của hoa", "Chính tả: Nghe viết", "Luyện từ và câu", "Tập làm văn: Kể chuyện"],
+    "Ngoại ngữ 1 (Tiếng Anh)": ["Unit 1: Hello", "Unit 2: My family", "Unit 3: Colors", "Unit 4: Numbers"],
+    "Tin học": ["Làm quen với máy tính", "Sử dụng chuột", "Gõ phím cơ bản", "An toàn trên mạng"],
+    "Tự nhiên và Xã hội": ["Gia đình em", "Trường học của em", "Cây cối quanh ta", "Động vật quanh ta"]
+  };
+
+  const validate = () => {
+    if (file) return true; // Skip validation if file is uploaded
+    
+    const newErrors: Record<string, string> = {};
+    if (grade === "Không chọn") newErrors.grade = "Vui lòng chọn lớp";
+    if (subject === "Không chọn") newErrors.subject = "Vui lòng chọn môn học";
+    if (!title.trim()) newErrors.title = "Vui lòng nhập tên bài dạy";
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setIsProcessingFile(true);
+      setFile(selectedFile);
+      
+      // Create preview for images
+      if (selectedFile.type.startsWith('image/')) {
+        const readerPreview = new FileReader();
+        readerPreview.onload = (event) => {
+          setFilePreview(event.target?.result as string);
+        };
+        readerPreview.readAsDataURL(selectedFile);
+      } else {
+        setFilePreview(null);
+      }
+      
+      const cleanup = () => setIsProcessingFile(false);
+
+      try {
+        if (selectedFile.name.endsWith('.docx')) {
+          const reader = new FileReader();
+          reader.onload = async (event) => {
+            try {
+              const arrayBuffer = event.target?.result as ArrayBuffer;
+              const result = await mammoth.extractRawText({ arrayBuffer });
+              setFileText(result.value);
+              setFileBase64(null);
+            } catch (err) {
+              console.error("Mammoth error:", err);
+              alert("Không thể đọc file Word này. Vui lòng thử lại hoặc chuyển sang PDF.");
+            } finally {
+              cleanup();
+            }
+          };
+          reader.onerror = () => {
+            alert("Lỗi đọc file.");
+            cleanup();
+          };
+          reader.readAsArrayBuffer(selectedFile);
+        } else if (selectedFile.type.startsWith('text/')) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            setFileText(event.target?.result as string);
+            setFileBase64(null);
+            cleanup();
+          };
+          reader.onerror = () => {
+            alert("Lỗi đọc file.");
+            cleanup();
+          };
+          reader.readAsText(selectedFile);
+        } else {
+          // PDF or Images
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const base64 = event.target?.result as string;
+            setFileBase64(base64.split(',')[1]);
+            setFileText(null);
+            cleanup();
+          };
+          reader.onerror = () => {
+            alert("Lỗi đọc file.");
+            cleanup();
+          };
+          reader.readAsDataURL(selectedFile);
+        }
+      } catch (err) {
+        console.error("File processing error:", err);
+        cleanup();
+      }
+    }
+  };
+
+  const removeFile = () => {
+    setFile(null);
+    setFilePreview(null);
+    setFileBase64(null);
+    setFileText(null);
+    setShowPreview(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const downloadDocx = async () => {
+    if (!result) return;
+    setIsDownloading(true);
+    const selectedTheme = themes[theme] || themes['Classic Blue'];
+    
+    try {
+      const docChildren: any[] = [];
+
+      // Add Title Page / Header
+      docChildren.push(new Paragraph({
+        children: [
+          new TextRun({
+            text: title.toUpperCase() || "KẾ HOẠCH BÀI DẠY",
+            bold: true,
+            size: 32,
+            color: selectedTheme.primary.replace('#', ''),
+            font: "Times New Roman"
+          }),
+        ],
+        alignment: "center",
+        spacing: { after: 400 },
+      }));
+
+      const lines = result.split('\n');
+      let currentTableRows: any[] = [];
+      let inTable = false;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        if (line.startsWith('|') && line.includes('|')) {
+          if (line.includes('---')) {
+            inTable = true;
+            continue;
+          }
+
+          const actualCells = line.startsWith('|') ? line.slice(1, -1).split('|') : line.split('|');
+
+          currentTableRows.push(
+            new TableRow({
+              children: actualCells.map((cellText, idx) => 
+                new TableCell({
+                  width: { size: 50, type: WidthType.PERCENTAGE },
+                  shading: i === 0 || (inTable && currentTableRows.length === 0) ? { fill: selectedTheme.secondary.replace('#', ''), color: "auto" } : undefined,
+                  children: [new Paragraph({ 
+                    children: [new TextRun({ 
+                      text: cellText.trim(), 
+                      size: 24,
+                      color: i === 0 || (inTable && currentTableRows.length === 0) ? "FFFFFF" : "000000",
+                      font: "Times New Roman"
+                    })] 
+                  })],
+                  borders: {
+                    top: { style: BorderStyle.SINGLE, size: 1, color: selectedTheme.primary.replace('#', '') },
+                    bottom: { style: BorderStyle.SINGLE, size: 1, color: selectedTheme.primary.replace('#', '') },
+                    left: { style: BorderStyle.SINGLE, size: 1, color: selectedTheme.primary.replace('#', '') },
+                    right: { style: BorderStyle.SINGLE, size: 1, color: selectedTheme.primary.replace('#', '') },
+                  }
+                })
+              ),
+            })
+          );
+          inTable = true;
+        } else {
+          if (inTable && currentTableRows.length > 0) {
+            docChildren.push(new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              rows: currentTableRows,
+            }));
+            currentTableRows = [];
+            inTable = false;
+          }
+          
+          if (line) {
+            const isHeader = /^(I|II|III|IV)\./.test(line);
+            docChildren.push(new Paragraph({
+              children: [
+                new TextRun({
+                  text: line,
+                  bold: isHeader,
+                  size: isHeader ? 28 : 24,
+                  color: isHeader ? selectedTheme.primary.replace('#', '') : "000000",
+                  font: "Times New Roman"
+                }),
+              ],
+              spacing: { before: isHeader ? 200 : 0, after: 200 },
+            }));
+          } else {
+            docChildren.push(new Paragraph({ spacing: { after: 200 } }));
+          }
+        }
+      }
+
+      // Final table if exists
+      if (currentTableRows.length > 0) {
+        docChildren.push(new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: currentTableRows,
+        }));
+      }
+
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: docChildren,
+        }],
+      });
+
+      const blob = await Packer.toBlob(doc);
+      const fileName = `Giao_an_${title.replace(/\s+/g, '_') || 'AI'}.docx`;
+      saveAs(blob, fileName);
+    } catch (error) {
+      console.error("Download error:", error);
+      alert("Có lỗi xảy ra khi tải file. Vui lòng thử lại.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const generateLesson = async () => {
+    if (!validate()) {
+      alert("Vui lòng điền đầy đủ thông tin: Lớp, Môn học và Tên bài học.");
+      return;
+    }
+    
+    setIsGenerating(true);
+    setResult('');
+    
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      
+      const promptTemplate = `Bạn là một chuyên gia sư phạm cấp tiểu học xuất sắc tại Việt Nam, am hiểu sâu sắc các văn bản quy phạm pháp luật sau:
+1. Công văn 2345/BGDĐT-GDTH: Hướng dẫn xây dựng kế hoạch giáo dục nhà trường và Kế hoạch bài dạy (giáo án).
+2. Thông tư 08/2024/TT-BGDĐT: Hướng dẫn lồng ghép nội dung giáo dục quốc phòng và an ninh.
+3. Thông tư 02/2025/TT-BGDĐT & Công văn 3456/BGDĐT-GDPT: Khung năng lực số (NLS) cho người học.
+4. Quyết định 3439/QĐ-BGDĐT: Khung nội dung thí điểm giáo dục Trí tuệ nhân tạo (AI).
+
+Nhiệm vụ: ${file ? 'Tôi có cung cấp nội dung giáo án/kế hoạch bài dạy cũ bên dưới.' : `Hãy soạn kế hoạch bài dạy cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. Số tiết: ${duration}.`}
+
+${file ? `YÊU CẦU ĐẶC BIỆT QUAN TRỌNG ĐỂ BẢO TỒN NGUYÊN TRẠNG (100%):
+1. GIỮ NGUYÊN 100% CÂU CHỮ: Tuyệt đối KHÔNG được thay đổi, sửa đổi, tóm tắt hoặc viết lại bất kỳ câu chữ nào từ giáo án cũ. Văn bản cũ phải được giữ nguyên vẹn từng từ, từng dấu câu.
+2. CHỈ ĐƯỢC THÊM, KHÔNG ĐƯỢC SỬA: Bạn chỉ được phép CHÈN THÊM các nội dung tích hợp (An ninh quốc phòng, Năng lực số, AI) vào các vị trí phù hợp. Tuyệt đối không được xóa bỏ hoặc thay thế nội dung hiện có.
+3. BẢO TỒN CẤU TRÚC BẢNG 2 CỘT: Nếu bản gốc có bảng chia cột (Giáo viên | Học sinh), hãy giữ nguyên định dạng bảng này.
+4. BẢO TỒN TRANH ẢNH VÀ LINK: Giữ nguyên các ghi chú về hình ảnh [Ảnh: ...] và các đường link URL.` : 'Hãy thiết kế một Kế hoạch bài dạy hoàn toàn mới, chính xác theo cấu trúc của Công văn 2345.'}
+
+Yêu cầu về nội dung lồng ghép (Tích hợp tự nhiên theo các văn bản mới nhất):
+- An ninh quốc phòng (TT 08/2024): Lồng ghép tinh thần yêu nước, tự hào dân tộc, ý thức kỷ luật, đoàn kết, giới thiệu về Quân đội/Công an (phù hợp lứa tuổi).
+- Năng lực số (TT 02/2025): Chú trọng các miền năng lực: Khai thác dữ liệu, Giao tiếp/Hợp tác số, Sáng tạo nội dung số, An toàn số, Giải quyết vấn đề.
+- Giáo dục AI (QĐ 3439): Đặt con người làm trung tâm. Học sinh trải nghiệm ứng dụng AI trực quan (nhận diện hình ảnh, giọng nói), hiểu AI do con người tạo ra, giáo dục đạo đức AI (không chia sẻ thông tin cá nhân, tôn trọng bản quyền).
+${extraPrompt ? `Yêu cầu bổ sung: ${extraPrompt}` : ''}
+
+Yêu cầu về cấu trúc đầu ra (Chuẩn CV 2345):
+I. YÊU CẦU CẦN ĐẠT
+- Năng lực đặc thù: Đúng chuẩn môn học.
+- Năng lực chung: Tự chủ/tự học, Giao tiếp/hợp tác, Giải quyết vấn đề/sáng tạo.
+- Phẩm chất: Yêu nước, Nhân ái, Chăm chỉ, Trung thực, Trách nhiệm.
+- Yêu cầu cần đạt về NLS và AI: (Nếu có lồng ghép, ghi rõ mã chỉ báo theo CV 3456 nếu có thể).
+
+II. ĐỒ DÙNG DẠY HỌC
+- Giáo viên: Thiết bị số, học liệu điện tử, phần mềm AI (Teachable Machine, Scratch AI...).
+- Học sinh: SGK, vở, vật liệu thực hành.
+
+III. CÁC HOẠT ĐỘNG DẠY HỌC CHỦ YẾU
+(Mỗi hoạt động gồm: Mục tiêu -> Nội dung -> Sản phẩm -> Tổ chức thực hiện. Trong phần Tổ chức thực hiện, BẮT BUỘC sử dụng bảng Markdown 2 cột: | Hoạt động của giáo viên | Hoạt động của học sinh |).
+- Hoạt động 1: Mở đầu / Khởi động.
+- Hoạt động 2: Hình thành kiến thức mới / Khám phá.
+- Hoạt động 3: Luyện tập / Thực hành.
+- Hoạt động 4: Vận dụng / Trải nghiệm.
+
+IV. ĐIỀU CHỈNH SAU BÀI DẠY (NẾU CÓ)
+
+LƯU Ý ĐỊNH DẠNG: 
+- NẾU CÓ GIÁO ÁN CŨ: BẮT ĐẦU NGAY BẰNG NỘI DUNG CỦA GIÁO ÁN CŨ (bao gồm cả tiêu đề trường, lớp nếu có), KHÔNG thêm bất kỳ lời dẫn nào.
+- NẾU SOẠN MỚI: Bắt đầu ngay vào Mục I.
+- KHÔNG dùng thẻ HTML, KHÔNG dùng ký hiệu lạ (.*). Sử dụng font Times New Roman khi trình bày.`;
+
+      const contents: any[] = [{ text: promptTemplate }];
+      
+      if (fileText) {
+        contents.push({ text: `NỘI DUNG GIÁO ÁN CŨ ĐỂ THAM KHẢO VÀ GIỮ NGUYÊN: \n\n ${fileText}` });
+      } else if (file && fileBase64) {
+        contents.push({
+          inlineData: {
+            mimeType: file.type,
+            data: fileBase64
+          }
+        });
+      }
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: { parts: contents },
+      });
+
+      let text = response.text || "AI không trả về kết quả. Vui lòng thử lại.";
+      
+      // Clean up unwanted characters like <br> and technical symbols like .*
+      text = text.replace(/<br\s*\/?>/gi, '\n');
+      text = text.replace(/\.\*/g, '');
+      
+      setResult(text);
+    } catch (error) {
+      console.error("Gemini Error:", error);
+      const errorMessage = (error as Error).message;
+      
+      if (errorMessage.includes('429') || errorMessage.includes('quota') || errorMessage.includes('RESOURCE_EXHAUSTED')) {
+        setResult("Hệ thống đang tạm thời quá tải hoặc bạn đã hết hạn mức sử dụng miễn phí trong hôm nay. \n\nVui lòng thử lại sau 1-2 phút hoặc quay lại vào ngày mai. Nếu bạn đang tải lên file giáo án quá lớn, hãy thử chia nhỏ nội dung để AI xử lý tốt hơn.");
+      } else {
+        setResult("LỖI KẾT NỐI GEMINI: " + errorMessage);
+      }
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col lg:flex-row gap-6 h-full">
+      <div className="w-full lg:w-1/3 space-y-6 flex flex-col h-full overflow-y-auto pr-2">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm shrink-0">
+          <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800 dark:text-white">
+            <FileText className="text-purple-600 w-5 h-5" /> Thông tin bài học
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Chọn Lớp học của bạn</label>
+              <select 
+                value={selectedClassId} 
+                onChange={(e) => {
+                  const cls = classes.find(c => c.id === e.target.value);
+                  setSelectedClassId(e.target.value);
+                  if (cls) setGrade(cls.grade);
+                }}
+                className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:border-purple-400 dark:text-white"
+              >
+                <option value="">-- Chọn lớp --</option>
+                {classes.map(c => (
+                  <option key={c.id} value={c.id}>{c.name} ({c.grade})</option>
+                ))}
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Lớp {file && <span className="text-[10px] text-slate-400 font-normal">(Tùy chọn)</span>}</label>
+                <select 
+                  value={grade} 
+                  onChange={(e) => {
+                    setGrade(e.target.value);
+                    if (errors.grade) setErrors({...errors, grade: ''});
+                  }}
+                  className={`w-full p-2.5 bg-slate-50 dark:bg-slate-900 border rounded-lg outline-none transition-colors dark:text-white ${errors.grade ? 'border-red-500 focus:border-red-500' : 'border-slate-200 dark:border-slate-600 focus:border-purple-400'}`}
+                >
+                  <option>Không chọn</option>
+                  <option>Lớp 1</option>
+                  <option>Lớp 2</option>
+                  <option>Lớp 3</option>
+                  <option>Lớp 4</option>
+                  <option>Lớp 5</option>
+                </select>
+                {errors.grade && <p className="text-red-500 text-[10px] mt-1">{errors.grade}</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Môn học {file && <span className="text-[10px] text-slate-400 font-normal">(Tùy chọn)</span>}</label>
+                <select 
+                  value={subject} 
+                  onChange={(e) => {
+                    setSubject(e.target.value);
+                    if (errors.subject) setErrors({...errors, subject: ''});
+                  }}
+                  className={`w-full p-2.5 bg-slate-50 dark:bg-slate-900 border rounded-lg outline-none transition-colors dark:text-white ${errors.subject ? 'border-red-500 focus:border-red-500' : 'border-slate-200 dark:border-slate-600 focus:border-purple-400'}`}
+                >
+                  <option>Không chọn</option>
+                  <option>Tiếng Việt</option>
+                  <option>Toán</option>
+                  <option>Ngoại ngữ 1 (Tiếng Anh)</option>
+                  <option>Đạo đức</option>
+                  <option>Tự nhiên và Xã hội</option>
+                  <option>Lịch sử và Địa lí</option>
+                  <option>Khoa học</option>
+                  <option>Tin học</option>
+                  <option>Công nghệ</option>
+                  <option>Giáo dục thể chất</option>
+                  <option>Hoạt động trải nghiệm</option>
+                </select>
+                {errors.subject && <p className="text-red-500 text-[10px] mt-1">{errors.subject}</p>}
+              </div>
+            </div>
+            <div className="relative">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tên bài dạy {file && <span className="text-[10px] text-slate-400 font-normal">(Tùy chọn)</span>}</label>
+              <input 
+                type="text" 
+                value={title} 
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (errors.title) setErrors({...errors, title: ''});
+                }}
+                className={`w-full p-2.5 bg-slate-50 dark:bg-slate-900 border rounded-lg outline-none transition-colors dark:text-white ${errors.title ? 'border-red-500 focus:border-red-500' : 'border-slate-200 dark:border-slate-600 focus:border-purple-400'}`}
+                placeholder="Nhập tên bài dạy (ví dụ: Ôn tập các số đến 10)..."
+              />
+              {errors.title && <p className="text-red-500 text-[10px] mt-1">{errors.title}</p>}
+              
+              {showSuggestions && lessonSuggestions[subject] && (
+                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden max-h-48 overflow-y-auto">
+                  {lessonSuggestions[subject]
+                    .filter(s => s.toLowerCase().includes(title.toLowerCase()))
+                    .map((suggestion, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          setTitle(suggestion);
+                          setShowSuggestions(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                </div>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tiết số</label>
+              <input 
+                type="number" 
+                min="1" 
+                value={duration} 
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setDuration(val === '' ? '' : parseInt(val));
+                }}
+                className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:border-purple-400 dark:text-white"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col flex-1 min-h-[300px]">
+          <div className="mb-4 relative">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+              <Upload className="w-4 h-4 text-blue-500" /> Tải lên giáo án cũ để lồng ghép (Tùy chọn)
+            </label>
+            {!file ? (
+              <label 
+                htmlFor="lesson-file-input"
+                className={`border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 transition block overflow-hidden ${isProcessingFile ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {isProcessingFile ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                    <p className="text-xs text-slate-500">Đang xử lý file...</p>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-xs text-slate-500">Hỗ trợ PDF, Word (.docx), Ảnh, Text...</p>
+                    <p className="text-[10px] text-slate-400 mt-1">(Kéo thả hoặc bấm để chọn)</p>
+                  </>
+                )}
+                <input 
+                  type="file" 
+                  id="lesson-file-input"
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  className="hidden" 
+                  accept=".pdf,.docx,.txt,image/*"
+                />
+              </label>
+            ) : (
+              <div className="space-y-2">
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl flex items-center justify-between border border-blue-100 dark:border-blue-800">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    {filePreview ? (
+                      <img src={filePreview} alt="Preview" className="w-8 h-8 rounded object-cover shadow-sm" />
+                    ) : (
+                      <FileCheck className="w-4 h-4 text-blue-600 shrink-0" />
+                    )}
+                    <span className="text-xs font-medium text-blue-800 dark:text-blue-300 truncate">{file.name}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {fileText && (
+                      <button 
+                        onClick={() => setShowPreview(!showPreview)} 
+                        className="p-1 hover:bg-blue-100 dark:hover:bg-blue-800 rounded-full text-blue-600"
+                        title="Xem trước nội dung"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    )}
+                    <button onClick={removeFile} className="p-1 hover:bg-blue-100 dark:hover:bg-blue-800 rounded-full text-red-500">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                {showPreview && fileText && (
+                  <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-[10px] max-h-32 overflow-y-auto font-mono text-slate-600 dark:text-slate-400">
+                    {fileText}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Yêu cầu thêm cho AI</label>
+          <textarea 
+            value={extraPrompt} 
+            onChange={(e) => setExtraPrompt(e.target.value)}
+            className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg outline-none h-20 resize-none text-sm mb-4 focus:border-purple-400 dark:text-white" 
+            placeholder="Ví dụ: Tập trung vào hoạt động trải nghiệm thực tế..."
+          />
+
+          <button 
+            onClick={generateLesson} 
+            disabled={isGenerating || isProcessingFile}
+            className="w-full mt-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-md disabled:opacity-50"
+          >
+            {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+            Tạo giáo án bằng AI
+          </button>
+        </div>
+      </div>
+
+      <div className="w-full lg:w-2/3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden h-full">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex justify-between items-center shrink-0">
+          <div className="flex items-center gap-4">
+            <h3 className="font-bold text-slate-700 dark:text-slate-300">Kết quả soạn thảo</h3>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={downloadDocx}
+              disabled={!result || isDownloading}
+              className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 font-medium transition disabled:opacity-50"
+            >
+              {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              Tải .docx
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 relative overflow-hidden">
+          <div className="w-full h-full p-8 font-times text-slate-800 dark:text-slate-200 text-lg leading-relaxed absolute inset-0 z-10 bg-transparent overflow-y-auto prose dark:prose-invert max-w-none prose-table:border prose-table:border-slate-300 dark:prose-table:border-slate-700 prose-th:border prose-th:border-slate-300 dark:prose-th:border-slate-700 prose-td:border prose-td:border-slate-300 dark:prose-td:border-slate-700 prose-td:p-2 prose-th:p-2 prose-th:bg-slate-100 dark:prose-th:bg-slate-800">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {result}
+            </ReactMarkdown>
+          </div>
+          
+          {!result && !isGenerating && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 z-0 bg-white dark:bg-slate-800 transition-colors">
+              <Bot className="w-16 h-16 mb-4 opacity-50 text-emerald-500" />
+              <p className="font-medium text-slate-500 dark:text-slate-400">Hệ thống đã kết nối Gemini AI</p>
+              <p className="text-sm mt-2 max-w-sm text-center">Chỉ cần bấm nút, AI sẽ thiết kế toàn bộ tiến trình học tập chuẩn mực nhất theo Công văn 2345.</p>
+            </div>
+          )}
+
+          {isGenerating && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-slate-800/80 z-20 backdrop-blur-sm">
+              <Loader2 className="w-12 h-12 text-purple-600 animate-spin mb-4" />
+              <p className="font-bold text-purple-700 dark:text-purple-400">Đang soạn giáo án...</p>
+              <p className="text-sm text-slate-500 mt-2">Vui lòng đợi trong giây lát</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
