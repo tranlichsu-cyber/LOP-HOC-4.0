@@ -37,7 +37,7 @@ export interface Question {
 export interface Game {
   id: string;
   title: string;
-  type: 'math' | 'millionaire' | 'race' | 'wise_one' | 'matching' | 'memory' | 'word_search';
+  type: 'math' | 'millionaire' | 'race' | 'wise_one' | 'matching' | 'memory' | 'word_search' | 'word_link' | 'crossword';
   questionsList: Question[];
   plays?: number;
   timeLimit?: number; // default for all questions

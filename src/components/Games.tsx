@@ -10,6 +10,8 @@ import WiseOneGame from './games/WiseOneGame';
 import MatchingGame from './games/MatchingGame';
 import MemoryGame from './games/MemoryGame';
 import WordSearchGame from './games/WordSearchGame';
+import WordLinkGame from './games/WordLinkGame';
+import CrosswordGame from './games/CrosswordGame';
 
 import { db, auth } from '../firebase';
 import { doc, deleteDoc, setDoc } from 'firebase/firestore';
@@ -125,6 +127,12 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
     }
     if (playingGame.type === 'word_search') {
       return <WordSearchGame game={playingGame} onClose={() => setPlayingGame(null)} />;
+    }
+    if (playingGame.type === 'word_link') {
+      return <WordLinkGame game={playingGame} onClose={() => setPlayingGame(null)} />;
+    }
+    if (playingGame.type === 'crossword') {
+      return <CrosswordGame game={playingGame} onClose={() => setPlayingGame(null)} />;
     }
     return <OfflineGame game={playingGame} onClose={() => setPlayingGame(null)} />;
   }
@@ -338,6 +346,59 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
                   onClick={async () => {
                     const teacherUid = auth.currentUser?.uid;
                     if (!teacherUid) return;
+                    const sampleWordLink: Game = {
+                      id: 'sample-wordlink-' + Date.now(),
+                      title: "Nối từ: Tiếng Việt vui",
+                      type: 'word_link',
+                      questionsList: [],
+                      timeLimit: 60
+                    };
+                    try {
+                      await setDoc(doc(db, 'teachers', teacherUid, 'games', sampleWordLink.id), sampleWordLink);
+                      setOfflineGames([...offlineGames, sampleWordLink]);
+                      alert("Đã thêm trò chơi 'Nối từ' mẫu!");
+                    } catch (e) {
+                      console.error(e);
+                      alert("Lỗi khi thêm trò chơi mẫu!");
+                    }
+                  }}
+                  className="px-4 py-2 bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-pink-200 transition border border-pink-200 dark:border-pink-800"
+                >
+                  <Plus className="w-4 h-4" /> Tạo trò chơi Nối từ
+                </button>
+                <button 
+                  onClick={async () => {
+                    const teacherUid = auth.currentUser?.uid;
+                    if (!teacherUid) return;
+                    const sampleCrossword: Game = {
+                      id: 'sample-crossword-' + Date.now(),
+                      title: "Giải đố ô chữ: Thế giới quanh ta",
+                      type: 'crossword',
+                      questionsList: [
+                        { id: '1', type: 'multiple_choice', text: "Hành tinh chúng ta đang sống?", options: ["TRAIDAT"] },
+                        { id: '2', type: 'multiple_choice', text: "Con vật có vòi dài?", options: ["CONVOI"] },
+                        { id: '3', type: 'multiple_choice', text: "Màu của bầu trời?", options: ["XANH"] },
+                        { id: '4', type: 'multiple_choice', text: "Quả gì có gai, mùi rất thơm?", options: ["SURIENG"] }
+                      ],
+                      timeLimit: 300
+                    };
+                    try {
+                      await setDoc(doc(db, 'teachers', teacherUid, 'games', sampleCrossword.id), sampleCrossword);
+                      setOfflineGames([...offlineGames, sampleCrossword]);
+                      alert("Đã thêm trò chơi 'Giải đố ô chữ' mẫu!");
+                    } catch (e) {
+                      console.error(e);
+                      alert("Lỗi khi thêm trò chơi mẫu!");
+                    }
+                  }}
+                  className="px-4 py-2 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-emerald-200 transition border border-emerald-200 dark:border-emerald-800"
+                >
+                  <Plus className="w-4 h-4" /> Tạo trò chơi Ô chữ
+                </button>
+                <button 
+                  onClick={async () => {
+                    const teacherUid = auth.currentUser?.uid;
+                    if (!teacherUid) return;
                     const sampleWise: Game = {
                       id: 'sample-wise-' + Date.now(),
                       title: "Ai Là Nhà Thông Thái: Khoa học vui",
@@ -452,6 +513,8 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
                       <option value="matching">Nối thẻ (Offline)</option>
                       <option value="memory">Lật hình (Offline)</option>
                       <option value="word_search">Tìm từ (Offline)</option>
+                      <option value="word_link">Nối từ (Offline)</option>
+                      <option value="crossword">Giải đố ô chữ (Offline)</option>
                       <option value="race">Đua top (Trực tiếp)</option>
                       <option value="wise_one">Ai là nhà thông thái (AI)</option>
                     </select>
