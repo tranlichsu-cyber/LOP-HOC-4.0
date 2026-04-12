@@ -289,7 +289,15 @@ export default function Worksheet() {
                 >
                   <option>Tiếng Việt</option>
                   <option>Toán</option>
-                  <option>Tiếng Anh</option>
+                  <option>Ngoại ngữ 1 (Tiếng Anh)</option>
+                  <option>Đạo đức</option>
+                  <option>Tự nhiên và Xã hội</option>
+                  <option>Lịch sử và Địa lí</option>
+                  <option>Khoa học</option>
+                  <option>Tin học</option>
+                  <option>Công nghệ</option>
+                  <option>Giáo dục thể chất</option>
+                  <option>Hoạt động trải nghiệm</option>
                 </select>
               </div>
               <div>
@@ -299,7 +307,11 @@ export default function Worksheet() {
                   onChange={e => setGrade(e.target.value)}
                   className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:border-pink-500 dark:text-white transition"
                 >
-                  <option>Lớp 1</option><option>Lớp 2</option><option>Lớp 3</option>
+                  <option>Lớp 1</option>
+                  <option>Lớp 2</option>
+                  <option>Lớp 3</option>
+                  <option>Lớp 4</option>
+                  <option>Lớp 5</option>
                 </select>
               </div>
             </div>
