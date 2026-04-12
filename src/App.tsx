@@ -45,7 +45,7 @@ export default function App() {
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [teacherUid, setTeacherUid] = useState<string | null>(null);
 
@@ -84,6 +84,12 @@ export default function App() {
       setActiveTab('school-admin');
     }
   }, [role]);
+
+  useEffect(() => {
+    if (window.innerWidth <= 768) {
+      setIsSidebarOpen(false);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -276,8 +282,24 @@ export default function App() {
 
   return (
     <div className={`h-screen flex overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-300 ${role === 'teacher' ? 'role-teacher' : 'role-student'}`}>
+      {/* Sidebar Overlay for Mobile */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 md:hidden"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
-      <aside className={`${isSidebarOpen ? 'w-72' : 'w-20'} hidden md:flex bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-r border-slate-200/50 dark:border-slate-700/50 flex-col shadow-xl transition-all duration-500 z-40`}>
+      <aside className={`
+        ${isSidebarOpen ? 'w-72 translate-x-0' : 'w-20 -translate-x-full md:translate-x-0'} 
+        fixed md:relative h-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-r border-slate-200/50 dark:border-slate-700/50 flex-col shadow-xl transition-all duration-500 z-50 flex
+      `}>
         <div className="p-8 flex items-center gap-3 border-b border-slate-100/50 dark:border-slate-700/50">
           <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${role === 'teacher' ? 'from-blue-600 to-indigo-600' : 'from-emerald-500 to-teal-600'} flex items-center justify-center shadow-lg shadow-blue-500/20 shrink-0`}>
             <Sparkles className="text-white w-6 h-6" />
@@ -433,14 +455,25 @@ export default function App() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        <header className="h-20 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between px-8 z-30 shrink-0 transition-all">
-          <div className="flex items-center gap-6">
+        <header className="h-20 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between px-4 sm:px-8 z-30 shrink-0 transition-all">
+          <div className="flex items-center gap-3 sm:gap-6">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-              className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition-all active:scale-95"
+              className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition-all active:scale-95 md:flex hidden"
             >
               <Menu className="w-6 h-6" />
             </button>
+            
+            {/* Mobile Menu Toggle */}
+            <div className="md:hidden">
+              <button 
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
+            </div>
+
             <div className="flex flex-col">
               <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight leading-none">
                 {activeTab === 'dashboard' ? 'Tổng quan' : 

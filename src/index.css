@@ -79,12 +79,12 @@ body.role-student .teacher-only { display: none !important; }
 .mil-bg-gradient { background: radial-gradient(circle at 50% 100%, #1e3a8a 0%, #020617 100%); }
 
 .mil-polygon { 
-    clip-path: polygon(5% 0, 95% 0, 100% 50%, 95% 100%, 5% 100%, 0 50%); 
+    clip-path: polygon(2% 0, 98% 0, 100% 50%, 98% 100%, 2% 100%, 0 50%); 
 }
 
 .mil-btn {
     position: relative;
-    clip-path: polygon(5% 0, 95% 0, 100% 50%, 95% 100%, 5% 100%, 0 50%);
+    clip-path: polygon(2% 0, 98% 0, 100% 50%, 98% 100%, 2% 100%, 0 50%);
     background: linear-gradient(180deg, #0f172a 0%, #1e3a8a 100%);
     border: 2px solid #60a5fa;
     transition: all 0.3s ease;
@@ -94,7 +94,7 @@ body.role-student .teacher-only { display: none !important; }
     content: ''; 
     position: absolute; 
     inset: 2px;
-    clip-path: polygon(5% 0, 95% 0, 100% 50%, 95% 100%, 5% 100%, 0 50%);
+    clip-path: polygon(2% 0, 98% 0, 100% 50%, 98% 100%, 2% 100%, 0 50%);
     border: 1px solid rgba(255,255,255,0.2); 
     pointer-events: none;
 }
