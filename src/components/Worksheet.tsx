@@ -102,6 +102,8 @@ export default function Worksheet() {
       const msg = e.message || "";
       if (msg.includes('leaked')) {
         alert("LỖI BẢO MẬT: API Key của bạn đã bị lộ. Vui lòng cập nhật API Key mới trong phần Settings của AI Studio.");
+      } else if (msg.includes('429') || msg.toLowerCase().includes('quota')) {
+        alert("Hệ thống đang tạm thời quá tải hoặc bạn đã hết hạn mức sử dụng miễn phí trong hôm nay. Vui lòng thử lại sau 1-2 phút hoặc quay lại vào ngày mai.");
       } else {
         alert("Lỗi khi tạo nội dung bằng AI! " + msg);
       }
@@ -150,6 +152,8 @@ export default function Worksheet() {
       const msg = e.message || "";
       if (msg.includes('leaked')) {
         alert("LỖI BẢO MẬT: API Key của bạn đã bị lộ. Vui lòng cập nhật API Key mới trong phần Settings của AI Studio.");
+      } else if (msg.includes('429') || msg.toLowerCase().includes('quota')) {
+        alert("Hệ thống đã hết hạn mức tạo ảnh miễn phí cho hôm nay (Quota Exceeded). Vui lòng thử lại vào ngày mai hoặc sử dụng API Key có trả phí.");
       } else {
         alert("Lỗi khi tạo ảnh bằng NaNo Banana 2. Vui lòng thử lại sau. " + msg);
       }
@@ -220,6 +224,8 @@ export default function Worksheet() {
           const msg = e.message || "";
           if (msg.includes('leaked')) {
             alert("LỖI BẢO MẬT: API Key của bạn đã bị lộ. Vui lòng cập nhật API Key mới trong phần Settings của AI Studio.");
+          } else if (msg.includes('429') || msg.toLowerCase().includes('quota')) {
+            alert("Hệ thống đang tạm thời quá tải hoặc bạn đã hết hạn mức sử dụng miễn phí. Vui lòng thử lại sau.");
           } else {
             alert("Lỗi khi trích xuất dữ liệu! " + msg);
           }
