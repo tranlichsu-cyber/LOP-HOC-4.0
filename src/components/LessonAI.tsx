@@ -365,12 +365,31 @@ LƯU Ý ĐỊNH DẠNG:
       text = text.replace(/\.\*/g, '');
       
       setResult(text);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Gemini Error:", error);
-      const errorMessage = (error as Error).message;
+      let errorMessage = error.message || String(error);
       
-      if (errorMessage.includes('429') || errorMessage.includes('quota') || errorMessage.includes('RESOURCE_EXHAUSTED')) {
+      // Try to parse if it's a JSON string from the API
+      try {
+        if (errorMessage.includes('{')) {
+          const jsonStart = errorMessage.indexOf('{');
+          const jsonStr = errorMessage.substring(jsonStart);
+          const parsed = JSON.parse(jsonStr);
+          if (parsed.error && parsed.error.message) {
+            errorMessage = parsed.error.message;
+          }
+        }
+      } catch (e) {
+        // Not a valid JSON or parsing failed, keep original message
+      }
+      
+      const isLeaked = errorMessage.toLowerCase().includes('leaked');
+      const isQuota = errorMessage.includes('429') || errorMessage.toLowerCase().includes('quota') || errorMessage.includes('RESOURCE_EXHAUSTED');
+      
+      if (isQuota) {
         setResult("Hệ thống đang tạm thời quá tải hoặc bạn đã hết hạn mức sử dụng miễn phí trong hôm nay. \n\nVui lòng thử lại sau 1-2 phút hoặc quay lại vào ngày mai. Nếu bạn đang tải lên file giáo án quá lớn, hãy thử chia nhỏ nội dung để AI xử lý tốt hơn.");
+      } else if (isLeaked || errorMessage.includes('403')) {
+        setResult(`LỖI BẢO MẬT/TRUY CẬP: ${errorMessage}\n\nCÁCH KHẮC PHỤC:\n1. Truy cập https://aistudio.google.com/app/apikey để tạo API Key mới.\n2. Mở menu 'Settings' (biểu tượng bánh răng) trong AI Studio.\n3. Cập nhật API Key mới vào mục 'GEMINI_API_KEY'.\n4. Tải lại trang và thử lại.`);
       } else {
         setResult("LỖI KẾT NỐI GEMINI: " + errorMessage);
       }

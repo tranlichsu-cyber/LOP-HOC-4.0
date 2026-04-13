@@ -55,9 +55,14 @@ export default function WiseOneGame({ game, onClose }: { game: Game, onClose: ()
       setScore(0);
       setIsGameOver(false);
       startBackgroundMusic();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating questions:", error);
-      alert("Lỗi khi tạo câu hỏi từ AI. Vui lòng thử lại!");
+      const msg = error.message || "";
+      if (msg.includes('leaked')) {
+        alert("LỖI BẢO MẬT: API Key của bạn đã bị lộ. Vui lòng cập nhật API Key mới trong phần Settings của AI Studio.");
+      } else {
+        alert("Lỗi khi tạo câu hỏi từ AI. Vui lòng thử lại! " + msg);
+      }
     } finally {
       setIsGenerating(false);
     }

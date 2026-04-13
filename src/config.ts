@@ -9,4 +9,5 @@ export const firebaseConfig = {
     measurementId:     "G-BNMCEYH7RL"
 };
 
-export const GEMINI_API_KEY_DEV_ONLY = "AIzaSyCPYyMfjLAI81ggRvZVXdUgmng8jSVPqys";
+// GEMINI_API_KEY should be configured in the AI Studio Secrets panel.
+// It is injected at runtime via process.env.GEMINI_API_KEY.

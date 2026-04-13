@@ -97,9 +97,14 @@ export default function Worksheet() {
         contents: { parts: [{ text: prompt }] }
       });
       setContent(response.text || "");
-    } catch (e) {
+    } catch (e: any) {
       console.error("AI Generate error:", e);
-      alert("Lỗi khi tạo nội dung bằng AI!");
+      const msg = e.message || "";
+      if (msg.includes('leaked')) {
+        alert("LỖI BẢO MẬT: API Key của bạn đã bị lộ. Vui lòng cập nhật API Key mới trong phần Settings của AI Studio.");
+      } else {
+        alert("Lỗi khi tạo nội dung bằng AI! " + msg);
+      }
     }
     setIsGeneratingContent(false);
   };
@@ -140,9 +145,14 @@ export default function Worksheet() {
           break;
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("AI Image Generate error:", e);
-      alert("Lỗi khi tạo ảnh bằng NaNo Banana 2. Vui lòng thử lại sau.");
+      const msg = e.message || "";
+      if (msg.includes('leaked')) {
+        alert("LỖI BẢO MẬT: API Key của bạn đã bị lộ. Vui lòng cập nhật API Key mới trong phần Settings của AI Studio.");
+      } else {
+        alert("Lỗi khi tạo ảnh bằng NaNo Banana 2. Vui lòng thử lại sau. " + msg);
+      }
     }
     setIsGeneratingAIImage(false);
   };
@@ -188,28 +198,44 @@ export default function Worksheet() {
 
       const reader = new FileReader();
       reader.onload = async (event) => {
-        const base64 = (event.target?.result as string).split(',')[1];
-        const response = await ai.models.generateContent({
-          model: "gemini-3-flash-preview",
-          contents: {
-            parts: [
-              { text: "Hãy trích xuất toàn bộ nội dung văn bản từ hình ảnh/tài liệu này và trình bày lại một cách sạch sẽ dưới dạng văn bản. Chỉ trả về nội dung văn bản, không thêm lời dẫn." },
-              {
-                inlineData: {
-                  mimeType: file.type,
-                  data: base64
+        try {
+          const base64 = (event.target?.result as string).split(',')[1];
+          const response = await ai.models.generateContent({
+            model: "gemini-3-flash-preview",
+            contents: {
+              parts: [
+                { text: "Hãy trích xuất toàn bộ nội dung văn bản từ hình ảnh/tài liệu này và trình bày lại một cách sạch sẽ dưới dạng văn bản. Chỉ trả về nội dung văn bản, không thêm lời dẫn." },
+                {
+                  inlineData: {
+                    mimeType: file.type,
+                    data: base64
+                  }
                 }
-              }
-            ]
+              ]
+            }
+          });
+          setContent(response.text || "");
+        } catch (e: any) {
+          console.error("AI Extract inner error:", e);
+          const msg = e.message || "";
+          if (msg.includes('leaked')) {
+            alert("LỖI BẢO MẬT: API Key của bạn đã bị lộ. Vui lòng cập nhật API Key mới trong phần Settings của AI Studio.");
+          } else {
+            alert("Lỗi khi trích xuất dữ liệu! " + msg);
           }
-        });
-        setContent(response.text || "");
-        setIsExtracting(false);
+        } finally {
+          setIsExtracting(false);
+        }
       };
       reader.readAsDataURL(file);
-    } catch (e) {
+    } catch (e: any) {
       console.error("AI Extract error:", e);
-      alert("Lỗi khi trích xuất dữ liệu!");
+      const msg = e.message || "";
+      if (msg.includes('leaked')) {
+        alert("LỖI BẢO MẬT: API Key của bạn đã bị lộ. Vui lòng cập nhật API Key mới trong phần Settings của AI Studio.");
+      } else {
+        alert("Lỗi khi trích xuất dữ liệu! " + msg);
+      }
       setIsExtracting(false);
     }
   };
