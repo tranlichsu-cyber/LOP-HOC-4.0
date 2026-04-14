@@ -61,16 +61,43 @@ export default function Worksheet() {
         useCORS: true,
         backgroundColor: '#ffffff'
       });
-      const image = canvas.toDataURL("image/png", 1.0);
-      const link = document.createElement('a');
-      link.download = `${worksheetTitle || 'phieu-bai-tap'}.png`;
-      link.href = image;
-      link.click();
+      
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          alert("Lỗi khi tạo ảnh phiếu bài tập!");
+          setIsGeneratingImage(false);
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = `${worksheetTitle || 'phieu-bai-tap'}.png`;
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+        setIsGeneratingImage(false);
+      }, 'image/png', 1.0);
     } catch (e) {
       console.error("Error generating image:", e);
       alert("Lỗi khi tạo ảnh phiếu bài tập!");
+      setIsGeneratingImage(false);
     }
-    setIsGeneratingImage(false);
+  };
+
+  const handleDownloadAIImage = async () => {
+    if (!aiImageUrl) return;
+    try {
+      const response = await fetch(aiImageUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = `${worksheetTitle || 'phieu-bai-tap-ai'}.png`;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("Error downloading AI image:", e);
+      alert("Lỗi khi tải ảnh AI về máy!");
+    }
   };
 
   const handleAIGenerate = async () => {
@@ -182,7 +209,7 @@ export default function Worksheet() {
               model: "gemini-3-flash-preview",
               contents: {
                 parts: [
-                  { text: "Dưới đây là nội dung trích xuất từ một file Word. Hãy trình bày lại nội dung này một cách sạch sẽ, rõ ràng dưới dạng một phiếu bài tập. Chỉ trả về nội dung phiếu bài tập, không thêm lời dẫn." },
+                  { text: "Dưới đây là nội dung trích xuất từ một tài liệu. Hãy phân tích, chắt lọc các kiến thức TRỌNG TÂM nhất và thiết kế lại thành một phiếu bài tập hoàn chỉnh. Cấu trúc gồm:\nI. Kiến thức trọng tâm (tóm tắt ngắn gọn, súc tích).\nII. Bài tập thực hành (bám sát nội dung trọng tâm vừa nêu).\nTrình bày sạch sẽ, rõ ràng. Chỉ trả về nội dung phiếu bài tập, không thêm lời dẫn." },
                   { text: extractedText }
                 ]
               }
@@ -207,7 +234,7 @@ export default function Worksheet() {
             model: "gemini-3-flash-preview",
             contents: {
               parts: [
-                { text: "Hãy trích xuất toàn bộ nội dung văn bản từ hình ảnh/tài liệu này và trình bày lại một cách sạch sẽ dưới dạng văn bản. Chỉ trả về nội dung văn bản, không thêm lời dẫn." },
+                { text: "Hãy phân tích hình ảnh/tài liệu này, chắt lọc các kiến thức TRỌNG TÂM nhất và thiết kế lại thành một phiếu bài tập hoàn chỉnh. Cấu trúc gồm:\nI. Kiến thức trọng tâm (tóm tắt ngắn gọn, súc tích).\nII. Bài tập thực hành (bám sát nội dung trọng tâm vừa nêu).\nTrình bày sạch sẽ, rõ ràng. Chỉ trả về nội dung phiếu bài tập, không thêm lời dẫn." },
                 {
                   inlineData: {
                     mimeType: file.type,
@@ -446,7 +473,6 @@ export default function Worksheet() {
             </div>
 
             <div 
-              ref={worksheetRef}
               className={`flex-1 flex flex-col rounded-xl overflow-y-auto p-8 transition-all relative ${
                 theme === 'banana' 
                   ? 'bg-white border-[12px] border-yellow-100' 
@@ -477,13 +503,12 @@ export default function Worksheet() {
                     >
                       Quay lại soạn thảo
                     </button>
-                    <a 
-                      href={aiImageUrl} 
-                      download={`${worksheetTitle || 'phieu-bai-tap'}.png`}
+                    <button 
+                      onClick={handleDownloadAIImage}
                       className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700 transition flex items-center gap-2"
                     >
                       <Download className="w-4 h-4" /> Tải ảnh về
-                    </a>
+                    </button>
                   </div>
                 </div>
               ) : content ? (

@@ -12,6 +12,7 @@ import MemoryGame from './games/MemoryGame';
 import WordSearchGame from './games/WordSearchGame';
 import WordLinkGame from './games/WordLinkGame';
 import CrosswordGame from './games/CrosswordGame';
+import DragDropGame from './games/DragDropGame';
 
 import { db, auth } from '../firebase';
 import { doc, deleteDoc, setDoc } from 'firebase/firestore';
@@ -133,6 +134,9 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
     }
     if (playingGame.type === 'crossword') {
       return <CrosswordGame game={playingGame} onClose={() => setPlayingGame(null)} />;
+    }
+    if (playingGame.type === 'drag_drop') {
+      return <DragDropGame game={playingGame} onClose={() => setPlayingGame(null)} />;
     }
     return <OfflineGame game={playingGame} onClose={() => setPlayingGame(null)} />;
   }
@@ -448,6 +452,35 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
                   <Star className="w-4 h-4" /> Tạo trò chơi mẫu
                 </button>
                 <button 
+                  onClick={async () => {
+                    const teacherUid = auth.currentUser?.uid;
+                    if (!teacherUid) return;
+                    const sampleDragDrop: Game = {
+                      id: 'sample-dragdrop-' + Date.now(),
+                      title: "Kéo thả: Toán học vui",
+                      type: 'drag_drop' as any,
+                      questionsList: [
+                        { id: '1', type: 'multiple_choice', text: "4", options: ["2 + 2"] },
+                        { id: '2', type: 'multiple_choice', text: "10", options: ["5 x 2"] },
+                        { id: '3', type: 'multiple_choice', text: "Con Mèo", options: ["Cat"] },
+                        { id: '4', type: 'multiple_choice', text: "Mặt Trời", options: ["Sun"] }
+                      ],
+                      timeLimit: 120
+                    };
+                    try {
+                      await setDoc(doc(db, 'teachers', teacherUid, 'games', sampleDragDrop.id), sampleDragDrop);
+                      setOfflineGames([...offlineGames, sampleDragDrop]);
+                      alert("Đã thêm trò chơi 'Kéo thả' mẫu!");
+                    } catch (e) {
+                      console.error(e);
+                      alert("Lỗi khi thêm trò chơi mẫu!");
+                    }
+                  }}
+                  className="px-4 py-2 bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-teal-200 transition border border-teal-200 dark:border-teal-800"
+                >
+                  <Plus className="w-4 h-4" /> Tạo trò chơi Kéo thả
+                </button>
+                <button 
                   onClick={() => {
                     setNewGame({ title: '', type: 'math', questionsList: [] });
                     setIsAddModalOpen(true);
@@ -515,6 +548,7 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
                       <option value="word_search">Tìm từ (Offline)</option>
                       <option value="word_link">Nối từ (Offline)</option>
                       <option value="crossword">Giải đố ô chữ (Offline)</option>
+                      <option value="drag_drop">Kéo thả (Offline)</option>
                       <option value="race">Đua top (Trực tiếp)</option>
                       <option value="wise_one">Ai là nhà thông thái (AI)</option>
                     </select>
