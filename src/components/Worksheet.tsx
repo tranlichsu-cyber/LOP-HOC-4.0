@@ -130,12 +130,11 @@ export default function Worksheet() {
       Overall vibe: Fun, engaging, and professional for kids. Like a high-end educational poster.`;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.1-flash-image-preview',
+        model: 'gemini-2.5-flash-image',
         contents: { parts: [{ text: prompt }] },
         config: {
           imageConfig: {
             aspectRatio: "3:4",
-            imageSize: "2K"
           }
         }
       });
