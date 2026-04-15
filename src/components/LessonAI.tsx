@@ -9,6 +9,7 @@ import remarkGfm from 'remark-gfm';
 import { db, auth } from '../firebase';
 import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { Class } from '../types';
+import { getVietnam34ProvincesContext } from '../data/vietnam34Provinces';
 
 export default function LessonAI() {
   const [subject, setSubject] = useState('Tiếng Việt');
@@ -295,13 +296,22 @@ export default function LessonAI() {
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       
+      const isGeographyOrProvinces = subject.toLowerCase().includes('địa lí') || 
+                                     subject.toLowerCase().includes('tự nhiên và xã hội') ||
+                                     title.toLowerCase().includes('tỉnh') || 
+                                     title.toLowerCase().includes('thành phố') ||
+                                     title.toLowerCase().includes('sáp nhập') ||
+                                     title.toLowerCase().includes('34');
+      
+      const provinceContext = isGeographyOrProvinces ? `\n\nKIẾN THỨC NỀN TẢNG QUAN TRỌNG (Cập nhật mới nhất):\n${getVietnam34ProvincesContext()}\nHãy sử dụng thông tin trên nếu bài học liên quan đến các tỉnh thành Việt Nam.` : '';
+
       const promptTemplate = `Bạn là một chuyên gia sư phạm cấp tiểu học xuất sắc tại Việt Nam, am hiểu sâu sắc các văn bản quy phạm pháp luật sau:
 1. Công văn 2345/BGDĐT-GDTH: Hướng dẫn xây dựng kế hoạch giáo dục nhà trường và Kế hoạch bài dạy (giáo án).
 2. Thông tư 08/2024/TT-BGDĐT: Hướng dẫn lồng ghép nội dung giáo dục quốc phòng và an ninh.
 3. Thông tư 02/2025/TT-BGDĐT & Công văn 3456/BGDĐT-GDPT: Khung năng lực số (NLS) cho người học.
 4. Quyết định 3439/QĐ-BGDĐT: Khung nội dung thí điểm giáo dục Trí tuệ nhân tạo (AI).
 
-Nhiệm vụ: ${file ? 'Tôi có cung cấp nội dung giáo án/kế hoạch bài dạy cũ bên dưới.' : `Hãy soạn kế hoạch bài dạy cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. Số tiết: ${duration}.`}
+Nhiệm vụ: ${file ? 'Tôi có cung cấp nội dung giáo án/kế hoạch bài dạy cũ bên dưới.' : `Hãy soạn kế hoạch bài dạy cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. Số tiết: ${duration}.`}${provinceContext}
 
 ${file ? `YÊU CẦU ĐẶC BIỆT QUAN TRỌNG ĐỂ BẢO TỒN NGUYÊN TRẠNG (100%):
 1. GIỮ NGUYÊN 100% CÂU CHỮ: Tuyệt đối KHÔNG được thay đổi, sửa đổi, tóm tắt hoặc viết lại bất kỳ câu chữ nào từ giáo án cũ. Văn bản cũ phải được giữ nguyên vẹn từng từ, từng dấu câu.

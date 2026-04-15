@@ -141,40 +141,66 @@ export default function Classroom({ userProfile, students, setStudents, homework
     e.preventDefault();
     if (!validateStudent()) return;
 
-    const student: Student = {
-      id: newStudent.id,
-      name: newStudent.name,
-      user: newStudent.user,
-      passHash: newStudent.pass // In real app, hash it
-    };
+    setIsUploading(true);
 
     try {
-      // 1. Create global lookup for student login
-      if (userProfile?.schoolId && userProfile?.classId) {
-        const path = `edupro_students/${student.user}`;
-        try {
-          await setDoc(doc(db, 'edupro_students', student.user), {
-            teacherUid: auth.currentUser?.uid,
-            schoolId: userProfile.schoolId,
-            classId: userProfile.classId,
-            passHash: student.passHash,
-            studentName: student.name
-          });
-          
-          // 2. Save student to class collection
-          await setDoc(doc(db, 'schools', userProfile.schoolId, 'classes', userProfile.classId, 'students', student.id), student);
-        } catch (error) {
-          handleFirestoreError(error, OperationType.WRITE, path);
-        }
+      // Check global uniqueness for ID
+      const idDoc = await getDoc(doc(db, 'edupro_student_ids', newStudent.id));
+      if (idDoc.exists()) {
+        setStudentErrors(prev => ({ ...prev, id: "Mã HS này đã được sử dụng ở lớp khác" }));
+        setIsUploading(false);
+        return;
       }
 
-      // 3. Update local state
+      // Check global uniqueness for User
+      const userDoc = await getDoc(doc(db, 'edupro_students', newStudent.user));
+      if (userDoc.exists()) {
+        setStudentErrors(prev => ({ ...prev, user: "Tài khoản này đã tồn tại" }));
+        setIsUploading(false);
+        return;
+      }
+
+      const student: Student = {
+        id: newStudent.id,
+        name: newStudent.name,
+        user: newStudent.user,
+        passHash: newStudent.pass // In real app, hash it
+      };
+
+      if (userProfile?.schoolId && userProfile?.classId) {
+        const batch = writeBatch(db);
+        
+        // 1. Create global lookup for student login
+        batch.set(doc(db, 'edupro_students', student.user), {
+          teacherUid: auth.currentUser?.uid,
+          schoolId: userProfile.schoolId,
+          classId: userProfile.classId,
+          passHash: student.passHash,
+          studentName: student.name
+        });
+
+        // 2. Create global lookup for student ID uniqueness
+        batch.set(doc(db, 'edupro_student_ids', student.id), {
+          user: student.user,
+          schoolId: userProfile.schoolId,
+          classId: userProfile.classId
+        });
+        
+        // 3. Save student to class collection
+        batch.set(doc(db, 'schools', userProfile.schoolId, 'classes', userProfile.classId, 'students', student.id), student);
+        
+        await batch.commit();
+      }
+
+      // Update local state
       setStudents([...students, student]);
       setIsStudentModalOpen(false);
       setNewStudent({ id: '', name: '', user: '', pass: '123456' });
     } catch (error) {
       console.error("Error adding student:", error);
       alert("Lỗi khi tạo tài khoản học sinh. Vui lòng thử lại!");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -323,6 +349,7 @@ export default function Classroom({ userProfile, students, setStudents, homework
 
         const importedStudents: Student[] = [];
         const batch = writeBatch(db);
+        let duplicateCount = 0;
 
         for (const row of data) {
           // Normalize keys
@@ -337,10 +364,22 @@ export default function Classroom({ userProfile, students, setStudents, homework
           const pass = normalizedRow["mật khẩu"] || normalizedRow["pass"] || normalizedRow["password"] || "123456";
 
           if (id && name && user) {
+            const studentId = String(id);
+            const studentUser = String(user);
+            
+            // Check uniqueness
+            const idDoc = await getDoc(doc(db, 'edupro_student_ids', studentId));
+            const userDoc = await getDoc(doc(db, 'edupro_students', studentUser));
+            
+            if (idDoc.exists() || userDoc.exists()) {
+              duplicateCount++;
+              continue; // Skip duplicates
+            }
+
             const student: Student = {
-              id: String(id),
+              id: studentId,
               name: String(name),
-              user: String(user),
+              user: studentUser,
               passHash: String(pass)
             };
             
@@ -353,15 +392,29 @@ export default function Classroom({ userProfile, students, setStudents, homework
               studentName: student.name
             });
 
+            // Global ID lookup
+            batch.set(doc(db, 'edupro_student_ids', student.id), {
+              user: student.user,
+              schoolId: userProfile.schoolId,
+              classId: userProfile.classId
+            });
+
             // Class collection
             batch.set(doc(db, 'schools', userProfile.schoolId, 'classes', userProfile.classId, 'students', student.id), student);
             importedStudents.push(student);
           }
         }
 
-        await batch.commit();
-        setStudents(prev => [...prev, ...importedStudents]);
-        alert(`Đã nhập thành công ${importedStudents.length} học sinh!`);
+        if (importedStudents.length > 0) {
+          await batch.commit();
+          setStudents(prev => [...prev, ...importedStudents]);
+        }
+        
+        if (duplicateCount > 0) {
+          alert(`Đã nhập thành công ${importedStudents.length} học sinh. Bỏ qua ${duplicateCount} học sinh do trùng mã HS hoặc tài khoản.`);
+        } else {
+          alert(`Đã nhập thành công ${importedStudents.length} học sinh!`);
+        }
       } catch (error) {
         console.error("Error importing students:", error);
         alert("Lỗi khi nhập dữ liệu từ Excel!");
@@ -374,18 +427,24 @@ export default function Classroom({ userProfile, students, setStudents, homework
 
   const deleteStudent = async (id: string) => {
     const studentToDelete = students.find(s => s.id === id);
-    const teacherUid = auth.currentUser?.uid;
-    if (studentToDelete && teacherUid) {
-      try {
-        // Delete global lookup
-        await deleteDoc(doc(db, 'edupro_students', studentToDelete.user));
-        // Delete from teacher's collection
-        await deleteDoc(doc(db, 'teachers', teacherUid, 'students', id));
-      } catch (e) {
-        handleFirestoreError(e, OperationType.DELETE, `edupro_students/${studentToDelete.user}`);
+    if (studentToDelete && userProfile?.schoolId && userProfile?.classId) {
+      if (window.confirm('Bạn có chắc chắn muốn xóa học sinh này?')) {
+        try {
+          const batch = writeBatch(db);
+          // Delete global lookup
+          batch.delete(doc(db, 'edupro_students', studentToDelete.user));
+          // Delete global ID lookup
+          batch.delete(doc(db, 'edupro_student_ids', studentToDelete.id));
+          // Delete from class collection
+          batch.delete(doc(db, 'schools', userProfile.schoolId, 'classes', userProfile.classId, 'students', id));
+          
+          await batch.commit();
+          setStudents(students.filter(s => s.id !== id));
+        } catch (e) {
+          handleFirestoreError(e, OperationType.DELETE, `edupro_students/${studentToDelete.user}`);
+        }
       }
     }
-    setStudents(students.filter(s => s.id !== id));
   };
 
   const deleteHomework = async (id: string) => {

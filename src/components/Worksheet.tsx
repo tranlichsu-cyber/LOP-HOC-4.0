@@ -5,6 +5,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { GoogleGenAI } from "@google/genai";
 import html2canvas from 'html2canvas';
 import mammoth from 'mammoth';
+import { getVietnam34ProvincesContext } from '../data/vietnam34Provinces';
 
 export default function Worksheet() {
   const worksheetRef = useRef<HTMLDivElement>(null);
@@ -108,8 +109,18 @@ export default function Worksheet() {
     setIsGeneratingContent(true);
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      
+      const isGeographyOrProvinces = subject.toLowerCase().includes('địa lí') || 
+                                     subject.toLowerCase().includes('tự nhiên và xã hội') ||
+                                     worksheetTitle.toLowerCase().includes('tỉnh') || 
+                                     worksheetTitle.toLowerCase().includes('thành phố') ||
+                                     worksheetTitle.toLowerCase().includes('sáp nhập') ||
+                                     worksheetTitle.toLowerCase().includes('34');
+      
+      const provinceContext = isGeographyOrProvinces ? `\n\nKIẾN THỨC NỀN TẢNG QUAN TRỌNG (Cập nhật mới nhất):\n${getVietnam34ProvincesContext()}\nHãy sử dụng thông tin trên nếu bài tập liên quan đến các tỉnh thành Việt Nam.` : '';
+
       const prompt = `Bạn là một chuyên gia thiết kế phiếu bài tập tiểu học. 
-      Hãy tạo nội dung cho phiếu bài tập: "${worksheetTitle}" cho môn ${subject}, ${grade}.
+      Hãy tạo nội dung cho phiếu bài tập: "${worksheetTitle}" cho môn ${subject}, ${grade}.${provinceContext}
       Yêu cầu:
       1. Cấu trúc gồm 2 phần chính: 
          - I. Kiến thức cần nhớ (Tóm tắt ngắn gọn, dễ hiểu).

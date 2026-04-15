@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Game, Question } from '../../types';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { playSound, startBackgroundMusic, stopBackgroundMusic } from '../../lib/sounds';
+import { getVietnam34ProvincesContext } from '../../data/vietnam34Provinces';
 
 export default function WiseOneGame({ game, onClose }: { game: Game, onClose: () => void }) {
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -26,7 +27,16 @@ export default function WiseOneGame({ game, onClose }: { game: Game, onClose: ()
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
       const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
       
-      const prompt = `Hãy tạo 10 câu hỏi trắc nghiệm về chủ đề "${topic}" cho học sinh "${grade}" tại Việt Nam. 
+      const isGeographyOrProvinces = topic.toLowerCase().includes('địa lí') || 
+                                     topic.toLowerCase().includes('tự nhiên và xã hội') ||
+                                     topic.toLowerCase().includes('tỉnh') || 
+                                     topic.toLowerCase().includes('thành phố') ||
+                                     topic.toLowerCase().includes('sáp nhập') ||
+                                     topic.toLowerCase().includes('34');
+      
+      const provinceContext = isGeographyOrProvinces ? `\n\nKIẾN THỨC NỀN TẢNG QUAN TRỌNG (Cập nhật mới nhất):\n${getVietnam34ProvincesContext()}\nHãy sử dụng thông tin trên nếu câu hỏi liên quan đến các tỉnh thành Việt Nam.` : '';
+
+      const prompt = `Hãy tạo 10 câu hỏi trắc nghiệm về chủ đề "${topic}" cho học sinh "${grade}" tại Việt Nam.${provinceContext}
       Yêu cầu:
       - Mỗi câu hỏi có 4 lựa chọn (A, B, C, D).
       - Chỉ có 1 đáp án đúng.
