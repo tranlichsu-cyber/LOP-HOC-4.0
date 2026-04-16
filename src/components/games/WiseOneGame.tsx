@@ -5,6 +5,7 @@ import { Game, Question } from '../../types';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { playSound, startBackgroundMusic, stopBackgroundMusic } from '../../lib/sounds';
 import { getVietnam34ProvincesContext } from '../../data/vietnam34Provinces';
+import { getTextbookContext } from '../../data/textbookTNXH2';
 
 export default function WiseOneGame({ game, onClose }: { game: Game, onClose: () => void }) {
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -34,9 +35,12 @@ export default function WiseOneGame({ game, onClose }: { game: Game, onClose: ()
                                      topic.toLowerCase().includes('sáp nhập') ||
                                      topic.toLowerCase().includes('34');
       
+      const isTNXH2 = topic.toLowerCase().includes('tự nhiên và xã hội') && grade.includes('2');
+      
       const provinceContext = isGeographyOrProvinces ? `\n\nKIẾN THỨC NỀN TẢNG QUAN TRỌNG (Cập nhật mới nhất):\n${getVietnam34ProvincesContext()}\nHãy sử dụng thông tin trên nếu câu hỏi liên quan đến các tỉnh thành Việt Nam.` : '';
+      const textbookContext = isTNXH2 ? `\n\nTHAM KHẢO NỘI DUNG SÁCH GIÁO KHOA (Kết nối tri thức):\n${getTextbookContext()}\nHãy bám sát khung chương trình này khi tạo câu hỏi.` : '';
 
-      const prompt = `Hãy tạo 10 câu hỏi trắc nghiệm về chủ đề "${topic}" cho học sinh "${grade}" tại Việt Nam.${provinceContext}
+      const prompt = `Hãy tạo 10 câu hỏi trắc nghiệm về chủ đề "${topic}" cho học sinh "${grade}" tại Việt Nam.${provinceContext}${textbookContext}
       Yêu cầu:
       - Mỗi câu hỏi có 4 lựa chọn (A, B, C, D).
       - Chỉ có 1 đáp án đúng.

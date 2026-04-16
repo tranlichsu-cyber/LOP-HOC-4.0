@@ -6,6 +6,7 @@ import { GoogleGenAI } from "@google/genai";
 import html2canvas from 'html2canvas';
 import mammoth from 'mammoth';
 import { getVietnam34ProvincesContext } from '../data/vietnam34Provinces';
+import { getTextbookContext } from '../data/textbookTNXH2';
 
 export default function Worksheet() {
   const worksheetRef = useRef<HTMLDivElement>(null);
@@ -117,10 +118,13 @@ export default function Worksheet() {
                                      worksheetTitle.toLowerCase().includes('sáp nhập') ||
                                      worksheetTitle.toLowerCase().includes('34');
       
+      const isTNXH2 = subject.toLowerCase().includes('tự nhiên và xã hội') && grade.includes('2');
+      
       const provinceContext = isGeographyOrProvinces ? `\n\nKIẾN THỨC NỀN TẢNG QUAN TRỌNG (Cập nhật mới nhất):\n${getVietnam34ProvincesContext()}\nHãy sử dụng thông tin trên nếu bài tập liên quan đến các tỉnh thành Việt Nam.` : '';
+      const textbookContext = isTNXH2 ? `\n\nTHAM KHẢO NỘI DUNG SÁCH GIÁO KHOA (Kết nối tri thức):\n${getTextbookContext()}\nHãy bám sát khung chương trình này khi tạo nội dung.` : '';
 
       const prompt = `Bạn là một chuyên gia thiết kế phiếu bài tập tiểu học. 
-      Hãy tạo nội dung cho phiếu bài tập: "${worksheetTitle}" cho môn ${subject}, ${grade}.${provinceContext}
+      Hãy tạo nội dung cho phiếu bài tập: "${worksheetTitle}" cho môn ${subject}, ${grade}.${provinceContext}${textbookContext}
       Yêu cầu:
       1. Cấu trúc gồm 2 phần chính: 
          - I. Kiến thức cần nhớ (Tóm tắt ngắn gọn, dễ hiểu).

@@ -10,6 +10,7 @@ import { db, auth } from '../firebase';
 import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { Class } from '../types';
 import { getVietnam34ProvincesContext } from '../data/vietnam34Provinces';
+import { getTextbookContext } from '../data/textbookTNXH2';
 
 export default function LessonAI() {
   const [subject, setSubject] = useState('Tiếng Việt');
@@ -303,7 +304,10 @@ export default function LessonAI() {
                                      title.toLowerCase().includes('sáp nhập') ||
                                      title.toLowerCase().includes('34');
       
+      const isTNXH2 = subject.toLowerCase().includes('tự nhiên và xã hội') && grade.includes('2');
+      
       const provinceContext = isGeographyOrProvinces ? `\n\nKIẾN THỨC NỀN TẢNG QUAN TRỌNG (Cập nhật mới nhất):\n${getVietnam34ProvincesContext()}\nHãy sử dụng thông tin trên nếu bài học liên quan đến các tỉnh thành Việt Nam.` : '';
+      const textbookContext = isTNXH2 ? `\n\nTHAM KHẢO NỘI DUNG SÁCH GIÁO KHOA (Kết nối tri thức):\n${getTextbookContext()}\nHãy bám sát khung chương trình này khi soạn bài.` : '';
 
       const promptTemplate = `Bạn là một chuyên gia sư phạm cấp tiểu học xuất sắc tại Việt Nam, am hiểu sâu sắc các văn bản quy phạm pháp luật sau:
 1. Công văn 2345/BGDĐT-GDTH: Hướng dẫn xây dựng kế hoạch giáo dục nhà trường và Kế hoạch bài dạy (giáo án).
@@ -311,7 +315,12 @@ export default function LessonAI() {
 3. Thông tư 02/2025/TT-BGDĐT & Công văn 3456/BGDĐT-GDPT: Khung năng lực số (NLS) cho người học.
 4. Quyết định 3439/QĐ-BGDĐT: Khung nội dung thí điểm giáo dục Trí tuệ nhân tạo (AI).
 
-Nhiệm vụ: ${file ? 'Tôi có cung cấp nội dung giáo án/kế hoạch bài dạy cũ bên dưới.' : `Hãy soạn kế hoạch bài dạy cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. Số tiết: ${duration}.`}${provinceContext}
+Nhiệm vụ: ${file ? 'Tôi có cung cấp nội dung giáo án/kế hoạch bài dạy cũ bên dưới.' : `Hãy soạn kế hoạch bài dạy cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. Số tiết: ${duration}.`}${provinceContext}${textbookContext}
+
+YÊU CẦU QUAN TRỌNG:
+- BÁM SÁT NỘI DUNG SÁCH GIÁO KHOA: Nội dung bài dạy phải phù hợp với chuẩn kiến thức, kỹ năng của chương trình hiện hành và dữ liệu SGK đã cung cấp.
+- TRÌNH BÀY KHOA HỌC: Các bước thực hiện trong từng hoạt động phải logic, rõ ràng.
+- TƯƠNG TÁC HÀI HÒA: Hoạt động của giáo viên và học sinh phải có sự kết nối chặt chẽ, "lời xướng - ý họa", đảm bảo học sinh là trung tâm.
 
 ${file ? `YÊU CẦU ĐẶC BIỆT QUAN TRỌNG ĐỂ BẢO TỒN NGUYÊN TRẠNG (100%):
 1. GIỮ NGUYÊN 100% CÂU CHỮ: Tuyệt đối KHÔNG được thay đổi, sửa đổi, tóm tắt hoặc viết lại bất kỳ câu chữ nào từ giáo án cũ. Văn bản cũ phải được giữ nguyên vẹn từng từ, từng dấu câu.
@@ -337,7 +346,15 @@ II. ĐỒ DÙNG DẠY HỌC
 - Học sinh: SGK, vở, vật liệu thực hành.
 
 III. CÁC HOẠT ĐỘNG DẠY HỌC CHỦ YẾU
-(Mỗi hoạt động gồm: Mục tiêu -> Nội dung -> Sản phẩm -> Tổ chức thực hiện. Trong phần Tổ chức thực hiện, BẮT BUỘC sử dụng bảng Markdown 2 cột: | Hoạt động của giáo viên | Hoạt động của học sinh |).
+(Mỗi hoạt động gồm: Mục tiêu -> Nội dung -> Sản phẩm -> Tổ chức thực hiện. 
+Trong phần Tổ chức thực hiện, BẮT BUỘC sử dụng bảng Markdown 2 cột: | Hoạt động của giáo viên | Hoạt động của học sinh |. 
+Trong bảng, giáo viên và học sinh phải tương tác hài hòa, bổ trợ lẫn nhau qua đủ 4 bước: 
+1. Chuyển giao nhiệm vụ; 
+2. Thực hiện nhiệm vụ; 
+3. Báo cáo, thảo luận; 
+4. Kết luận, nhận định.
+Tuyệt đối không được bỏ sót bất kỳ bước nào trong mỗi hoạt động).
+
 - Hoạt động 1: Mở đầu / Khởi động.
 - Hoạt động 2: Hình thành kiến thức mới / Khám phá.
 - Hoạt động 3: Luyện tập / Thực hành.
@@ -346,6 +363,7 @@ III. CÁC HOẠT ĐỘNG DẠY HỌC CHỦ YẾU
 IV. ĐIỀU CHỈNH SAU BÀI DẠY (NẾU CÓ)
 
 LƯU Ý ĐỊNH DẠNG: 
+- TUYỆT ĐỐI KHÔNG SỬ DỤNG KÝ HIỆU ** (dấu sao đôi) để in đậm hoặc trang trí. Hãy trình bày bằng văn bản thuần túy hoặc dấu gạch đầu dòng rõ ràng.
 - NẾU CÓ GIÁO ÁN CŨ: BẮT ĐẦU NGAY BẰNG NỘI DUNG CỦA GIÁO ÁN CŨ (bao gồm cả tiêu đề trường, lớp nếu có), KHÔNG thêm bất kỳ lời dẫn nào.
 - NẾU SOẠN MỚI: Bắt đầu ngay vào Mục I.
 - KHÔNG dùng thẻ HTML, KHÔNG dùng ký hiệu lạ (.*). Sử dụng font Times New Roman khi trình bày.`;
