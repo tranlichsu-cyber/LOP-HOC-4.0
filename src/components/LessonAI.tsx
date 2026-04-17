@@ -318,9 +318,9 @@ export default function LessonAI() {
 Nhiệm vụ: ${file ? 'Tôi có cung cấp nội dung giáo án/kế hoạch bài dạy cũ bên dưới.' : `Hãy soạn kế hoạch bài dạy cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. Số tiết: ${duration}.`}${provinceContext}${textbookContext}
 
 YÊU CẦU QUAN TRỌNG:
-- BÁM SÁT NỘI DUNG SÁCH GIÁO KHOA: Nội dung bài dạy phải phù hợp với chuẩn kiến thức, kỹ năng của chương trình hiện hành và dữ liệu SGK đã cung cấp.
-- TRÌNH BÀY KHOA HỌC: Các bước thực hiện trong từng hoạt động phải logic, rõ ràng.
-- TƯƠNG TÁC HÀI HÒA: Hoạt động của giáo viên và học sinh phải có sự kết nối chặt chẽ, "lời xướng - ý họa", đảm bảo học sinh là trung tâm.
+- BÁM SÁT VÀ KHAI THÁC SÂU SGK: Nội dung bài dạy phải đi sâu vào các chi tiết, tình huống và kiến thức trong SGK đã cung cấp. Tuyệt đối không viết chung chung. Khai thác tối đa các ví dụ, hình ảnh được mô tả trong dữ liệu SGK.
+- TRÌNH BÀY KHOA HỌC: Các bước thực hiện trong từng hoạt động phải logic, rõ ràng và mạch lạc.
+- TƯƠNG TÁC HÀI HÒA & CÓ CÂU DẪN: Hoạt động của giáo viên phải bao gồm các câu hỏi gợi mở, lời giảng chi tiết (câu dẫn cụ thể). Hoạt động của học sinh phải có câu trả lời dự kiến cụ thể ("Học sinh trả lời...", "Học sinh thực hiện..."). Đảm bảo học sinh là trung tâm.
 
 ${file ? `YÊU CẦU ĐẶC BIỆT QUAN TRỌNG ĐỂ BẢO TỒN NGUYÊN TRẠNG (100%):
 1. GIỮ NGUYÊN 100% CÂU CHỮ: Tuyệt đối KHÔNG được thay đổi, sửa đổi, tóm tắt hoặc viết lại bất kỳ câu chữ nào từ giáo án cũ. Văn bản cũ phải được giữ nguyên vẹn từng từ, từng dấu câu.
@@ -348,11 +348,11 @@ II. ĐỒ DÙNG DẠY HỌC
 III. CÁC HOẠT ĐỘNG DẠY HỌC CHỦ YẾU
 (Mỗi hoạt động gồm: Mục tiêu -> Nội dung -> Sản phẩm -> Tổ chức thực hiện. 
 Trong phần Tổ chức thực hiện, BẮT BUỘC sử dụng bảng Markdown 2 cột: | Hoạt động của giáo viên | Hoạt động của học sinh |. 
-Trong bảng, giáo viên và học sinh phải tương tác hài hòa, bổ trợ lẫn nhau qua đủ 4 bước: 
-1. Chuyển giao nhiệm vụ; 
-2. Thực hiện nhiệm vụ; 
-3. Báo cáo, thảo luận; 
-4. Kết luận, nhận định.
+Trong bảng, giáo viên và học sinh phải tương tác hài hòa, bổ trợ lẫn nhau qua ĐỦ 4 BƯỚC VÀ CÓ CÂU DẪN CHI TIẾT: 
+1. Chuyển giao nhiệm vụ (Giáo viên nêu câu hỏi, lệnh cụ thể, hướng dẫn rõ ràng); 
+2. Thực hiện nhiệm vụ (Học sinh thảo luận, làm việc cá nhân/nhóm); 
+3. Báo cáo, thảo luận (Học sinh trình bày kết quả, giáo viên điều phối nhận xét); 
+4. Kết luận, nhận định (Giáo viên chốt kiến thức bằng lời giảng chi tiết, nhận xét quá trình).
 Tuyệt đối không được bỏ sót bất kỳ bước nào trong mỗi hoạt động).
 
 - Hoạt động 1: Mở đầu / Khởi động.
@@ -362,8 +362,8 @@ Tuyệt đối không được bỏ sót bất kỳ bước nào trong mỗi ho�
 
 IV. ĐIỀU CHỈNH SAU BÀI DẠY (NẾU CÓ)
 
-LƯU Ý ĐỊNH DẠNG: 
-- TUYỆT ĐỐI KHÔNG SỬ DỤNG KÝ HIỆU ** (dấu sao đôi) để in đậm hoặc trang trí. Hãy trình bày bằng văn bản thuần túy hoặc dấu gạch đầu dòng rõ ràng.
+LƯU Ý ĐỊNH DẠNG HÀNG ĐẦU: 
+- CẤM TUYỆT ĐỐI SỬ DỤNG KÝ HIỆU ** (DẤU SAO ĐÔI) TRONG TOÀN BỘ VĂN BẢN. Không dùng nó để in đậm hay trang trí. Trình bày bằng văn bản thuần túy hoặc gạch đầu dòng rõ ràng.
 - NẾU CÓ GIÁO ÁN CŨ: BẮT ĐẦU NGAY BẰNG NỘI DUNG CỦA GIÁO ÁN CŨ (bao gồm cả tiêu đề trường, lớp nếu có), KHÔNG thêm bất kỳ lời dẫn nào.
 - NẾU SOẠN MỚI: Bắt đầu ngay vào Mục I.
 - KHÔNG dùng thẻ HTML, KHÔNG dùng ký hiệu lạ (.*). Sử dụng font Times New Roman khi trình bày.`;
