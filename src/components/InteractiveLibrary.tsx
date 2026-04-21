@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
-import { Play, Pause, RotateCcw, Lightbulb, Microscope, Atom, Globe, BookOpen, ChevronRight, Sparkles, Info } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Play, Pause, RotateCcw, Lightbulb, Microscope, Atom, Globe, BookOpen, ChevronRight, Sparkles, Info, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function InteractiveLibrary() {
   const [activeTab, setActiveTab] = useState<'simulations' | 'videos'>('simulations');
   const [selectedSim, setSelectedSim] = useState<string | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const simulations = [
     {
@@ -13,7 +17,8 @@ export default function InteractiveLibrary() {
       subject: 'Toán học',
       description: 'Khám phá khái niệm về trọng lượng và sự cân bằng thông qua việc đặt các vật thể lên bàn cân 3D sinh động.',
       icon: <Microscope className="w-6 h-6" />,
-      color: 'bg-gradient-to-br from-blue-400 to-blue-600'
+      color: 'bg-gradient-to-br from-blue-400 to-blue-600',
+      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
     },
     {
       id: 'solar',
@@ -21,7 +26,8 @@ export default function InteractiveLibrary() {
       subject: 'Khoa học',
       description: 'Mô phỏng 3D quỹ đạo của các hành tinh và tìm hiểu thông tin thú vị về hệ mặt trời.',
       icon: <Globe className="w-6 h-6" />,
-      color: 'bg-gradient-to-br from-purple-400 to-purple-600'
+      color: 'bg-gradient-to-br from-purple-400 to-purple-600',
+      videoUrl: 'https://www.w3schools.com/html/movie.mp4'
     },
     {
       id: 'fractions',
@@ -29,7 +35,8 @@ export default function InteractiveLibrary() {
       subject: 'Toán học',
       description: 'Học phân số cực vui bằng cách chia những chiếc bánh quy 3D thơm ngon.',
       icon: <Atom className="w-6 h-6" />,
-      color: 'bg-gradient-to-br from-orange-400 to-orange-600'
+      color: 'bg-gradient-to-br from-orange-400 to-orange-600',
+      videoUrl: 'https://vjs.zencdn.net/v/oceans.mp4'
     },
     {
       id: 'seeds',
@@ -37,9 +44,44 @@ export default function InteractiveLibrary() {
       subject: 'Khoa học',
       description: 'Quan sát quá trình hạt đậu nảy mầm thành cây con qua mô phỏng 3D sinh động.',
       icon: <Lightbulb className="w-6 h-6" />,
-      color: 'bg-gradient-to-br from-emerald-400 to-emerald-600'
+      color: 'bg-gradient-to-br from-emerald-400 to-emerald-600',
+      videoUrl: 'https://media.w3.org/2010/05/sintel/trailer.mp4'
     }
   ];
+
+  const handleTogglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      const current = videoRef.current.currentTime;
+      const duration = videoRef.current.duration;
+      setProgress((current / duration) * 100);
+    }
+  };
+
+  const formatTime = (time: number) => {
+    if (isNaN(time) || !isFinite(time)) return '0:00';
+    const mins = Math.floor(time / 60);
+    const secs = Math.floor(time % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (videoRef.current && isFinite(videoRef.current.duration)) {
+      const seekTime = (parseFloat(e.target.value) / 100) * videoRef.current.duration;
+      videoRef.current.currentTime = seekTime;
+      setProgress(parseFloat(e.target.value));
+    }
+  };
 
   return (
     <div className="h-full flex flex-col bg-slate-50 dark:bg-slate-900 font-sans">
@@ -94,12 +136,25 @@ export default function InteractiveLibrary() {
                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{sim.subject}</span>
                   <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">{sim.title}</h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 line-clamp-2">{sim.description}</p>
-                  <button 
-                    onClick={() => setSelectedSim(sim.id)}
-                    className="mt-auto w-full py-2.5 bg-slate-900 dark:bg-slate-700 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition flex items-center justify-center gap-2"
-                  >
-                    Khám phá ngay <ChevronRight className="w-4 h-4" />
-                  </button>
+                  <div className="mt-auto flex gap-2">
+                    <button 
+                      onClick={() => setSelectedSim(sim.id)}
+                      className="flex-1 py-2.5 bg-slate-900 dark:bg-slate-700 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition flex items-center justify-center gap-2"
+                    >
+                      Mô phỏng <ChevronRight className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setSelectedVideo(sim.id);
+                        setIsPlaying(false);
+                        setProgress(0);
+                      }}
+                      className="px-4 py-2.5 bg-purple-500 text-white rounded-xl font-bold text-sm hover:bg-purple-600 transition flex items-center justify-center"
+                      title="Xem video bài học"
+                    >
+                      <Play className="w-4 h-4 fill-current" />
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -174,6 +229,98 @@ export default function InteractiveLibrary() {
               </div>
             </motion.div>
           </div>
+        )}
+        {simulations.find(s => s.id === selectedSim)?.id === 'seeds' && (
+          <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
+             {/* Similar simulation logic for seeds could go here, for now using balance as baseline */}
+             <div className="bg-white dark:bg-slate-800 p-10 rounded-3xl">
+                <h2 className="text-2xl font-bold mb-4">Mô phỏng Sự nảy mầm đang phát triển...</h2>
+                <button onClick={() => setSelectedSim(null)} className="px-6 py-2 bg-slate-900 text-white rounded-lg">Đóng</button>
+             </div>
+          </div>
+        )}
+
+        {/* Video Player Modal */}
+        {selectedVideo && (
+           <div className="fixed inset-0 z-[110] bg-slate-900/95 backdrop-blur-lg flex items-center justify-center p-4">
+             <motion.div 
+               initial={{ scale: 0.9, opacity: 0 }}
+               animate={{ scale: 1, opacity: 1 }}
+               exit={{ scale: 0.9, opacity: 0 }}
+               className="bg-black rounded-3xl w-full max-w-5xl overflow-hidden shadow-2xl border border-white/10 flex flex-col"
+             >
+                <div className="p-4 flex justify-between items-center bg-zinc-900 text-white">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                      <Play className="w-4 h-4 fill-current" />
+                    </div>
+                    <h3 className="font-bold text-lg">
+                      {simulations.find(s => s.id === selectedVideo)?.title} - Video Bài Học
+                    </h3>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedVideo(null)} 
+                    className="w-10 h-10 hover:bg-white/10 rounded-full flex items-center justify-center transition"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="relative aspect-video bg-black group">
+                  <video 
+                    ref={videoRef}
+                    src={simulations.find(s => s.id === selectedVideo)?.videoUrl}
+                    className="w-full h-full object-contain"
+                    onTimeUpdate={handleTimeUpdate}
+                    onClick={handleTogglePlay}
+                  />
+                  
+                  {/* Custom Controls Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
+                    <div className="mb-4 flex items-center gap-4">
+                      <button 
+                        onClick={handleTogglePlay}
+                        className="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center hover:scale-110 transition active:scale-95 shadow-xl"
+                      >
+                        {isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current ml-1" />}
+                      </button>
+                      
+                      <div className="flex-1 flex flex-col gap-1">
+                        <input 
+                          type="range" 
+                          min="0" 
+                          max="100" 
+                          step="0.1"
+                          value={progress}
+                          onChange={handleSeek}
+                          className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                        />
+                        <div className="flex justify-between text-[10px] font-bold text-white/50 uppercase tracking-tighter">
+                          <span>{formatTime(videoRef.current?.currentTime || 0)}</span>
+                          <span>{formatTime(videoRef.current?.duration || 0)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Big Play Button when paused */}
+                  {!isPlaying && (
+                    <button 
+                      onClick={handleTogglePlay}
+                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-purple-500/50 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-purple-500 transition-all border-4 border-white/20"
+                    >
+                      <Play className="w-10 h-10 fill-current ml-2" />
+                    </button>
+                  )}
+                </div>
+                
+                <div className="p-6 bg-zinc-900 border-t border-white/5">
+                  <p className="text-zinc-400 text-sm italic">
+                    Gợi ý: Theo dõi video để nắm rõ kiến thức trước khi thực hiện thí nghiệm ảo.
+                  </p>
+                </div>
+             </motion.div>
+           </div>
         )}
       </AnimatePresence>
     </div>

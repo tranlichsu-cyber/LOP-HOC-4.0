@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ImagePlus, FileEdit, ScanText, Loader2, Download, Palette, Banana, Sparkles } from 'lucide-react';
+import { ImagePlus, FileEdit, ScanText, Loader2, Download, Palette, Banana, Sparkles, Bot } from 'lucide-react';
 import { db, auth } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { GoogleGenAI } from "@google/genai";
@@ -17,6 +17,7 @@ export default function Worksheet() {
   const [content, setContent] = useState('');
   const [isExtracting, setIsExtracting] = useState(false);
   const [isGeneratingContent, setIsGeneratingContent] = useState(false);
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
   const [isGeneratingAIImage, setIsGeneratingAIImage] = useState(false);
   const [aiImageUrl, setAiImageUrl] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
@@ -151,6 +152,50 @@ export default function Worksheet() {
       }
     }
     setIsGeneratingContent(false);
+  };
+
+  const handleAIGenerateQuestions = async () => {
+    if (!worksheetTitle.trim() && !content.trim()) {
+      alert("Vui lòng nhập tên phiếu bài tập hoặc cung cấp nội dung để AI tạo câu hỏi!");
+      return;
+    }
+    setIsGeneratingQuestions(true);
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      
+      const isTNXH2 = subject.toLowerCase().includes('tự nhiên và xã hội') && grade.includes('2');
+      const textbookContext = isTNXH2 ? `\n\nTHAM KHẢO NỘI DUNG SÁCH GIÁO KHOA (Kết nối tri thức):\n${getTextbookContext()}\nHãy bám sát khung chương trình này khi tạo câu hỏi.` : '';
+
+      const prompt = `Bạn là một chuyên gia thiết kế câu hỏi trắc nghiệm tiểu học tại Việt Nam.
+      Hãy tạo 5 câu hỏi trắc nghiệm (mỗi câu 4 phương án A, B, C, D) cho chủ đề: "${worksheetTitle || "Chủ đề tự do"}" môn ${subject}, ${grade}.${textbookContext}
+      ${content ? `Dựa trên nội dung sau: ${content.substring(0, 2000)}` : ""}
+      
+      Yêu cầu:
+      1. Câu hỏi rõ ràng, dễ hiểu, phù hợp lứa tuổi học sinh tiểu học.
+      2. Định dạng trình bày:
+         Câu 1: [Nội dung câu hỏi]
+         A. [Phương án A]
+         B. [Phương án B]
+         C. [Phương án C]
+         D. [Phương án D]
+      3. Chỉ trả về danh sách câu hỏi, không thêm văn bản thừa hay lời dẫn.
+      4. KHÔNG sử dụng ký hiệu ** để in đậm.`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: { parts: [{ text: prompt }] }
+      });
+      
+      const newQuestions = response.text || "";
+      setContent((prev) => {
+        const separator = prev ? "\n\n--- PHẦN TRẮC NGHIỆM ---\n" : "";
+        return `${prev}${separator}${newQuestions}`;
+      });
+    } catch (e: any) {
+      console.error("AI Generate Questions error:", e);
+      alert("Lỗi khi tạo câu hỏi trắc nghiệm! " + (e.message || ""));
+    }
+    setIsGeneratingQuestions(false);
   };
 
   const handleAIGenerateImage = async () => {
@@ -432,6 +477,14 @@ export default function Worksheet() {
                 >
                   {isGeneratingContent ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                   Tạo nội dung bằng AI
+                </button>
+                <button 
+                  onClick={handleAIGenerateQuestions}
+                  disabled={isGeneratingQuestions}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {isGeneratingQuestions ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bot className="w-4 h-4" />}
+                  Tạo câu hỏi trắc nghiệm AI
                 </button>
                 <button 
                   onClick={handleAIGenerateImage}
