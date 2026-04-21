@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Download, Trash2, BookOpen, Calendar, Clock, Plus, X, Image as ImageIcon, Video, Loader2, FileSpreadsheet } from 'lucide-react';
+import { UserPlus, Download, Trash2, BookOpen, Calendar, Clock, Plus, X, Image as ImageIcon, Video, Loader2, FileSpreadsheet, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Student, Homework, Game, UserProfile } from '../types';
 import { storage, db, auth } from '../firebase';
@@ -99,10 +99,13 @@ export default function Classroom({ userProfile, students, setStudents, homework
   const [studentErrors, setStudentErrors] = useState<Record<string, string>>({});
   const [newHomework, setNewHomework] = useState<{
     title: string;
+    subject: string;
     dueDate: string;
     gameId: string;
     questions: any[];
-  }>({ title: '', dueDate: '', gameId: '', questions: [] });
+  }>({ title: '', subject: 'Toán', dueDate: '', gameId: '', questions: [] });
+
+  const SUBJECTS = ['Toán', 'Tiếng Việt', 'Tiếng Anh', 'Tự nhiên và Xã hội', 'Khoa học', 'Lịch sử và Địa lý', 'Khác'];
   const [homeworkErrors, setHomeworkErrors] = useState<Record<string, string>>({});
   const [showTitleSuggestions, setShowTitleSuggestions] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState<any>({
@@ -175,7 +178,13 @@ export default function Classroom({ userProfile, students, setStudents, homework
         name: newStudent.name,
         user: newStudent.user,
         passHash: newStudent.pass, // In real app, hash it
-        avatar: newStudent.avatar
+        avatar: newStudent.avatar,
+        schoolId: userProfile?.schoolId,
+        classId: userProfile?.classId,
+        xp: 0,
+        level: 1,
+        badges: [],
+        streak: 0
       };
 
       if (userProfile?.schoolId && userProfile?.classId) {
@@ -302,7 +311,20 @@ export default function Classroom({ userProfile, students, setStudents, homework
 
     setHomework([...homework, hw]);
     setIsHomeworkModalOpen(false);
-    setNewHomework({ title: '', dueDate: '', gameId: '', questions: [] });
+    setNewHomework({ title: '', subject: 'Toán', dueDate: '', gameId: '', questions: [] });
+  };
+
+  const updateHomeworkFeedback = async (hwId: string, studentUid: string, fbk: string) => {
+    const hw = homework.find(h => h.id === hwId);
+    if (!hw || !userProfile?.schoolId || !userProfile?.classId) return;
+
+    const newFeedback = { ...(hw.feedback || {}), [studentUid]: fbk };
+    try {
+      await setDoc(doc(db, 'schools', userProfile.schoolId, 'classes', userProfile.classId, 'homework', hwId), { feedback: newFeedback }, { merge: true });
+      setHomework(homework.map(h => h.id === hwId ? { ...h, feedback: newFeedback } : h));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const exportToExcel = () => {
@@ -392,7 +414,13 @@ export default function Classroom({ userProfile, students, setStudents, homework
               name: String(name),
               user: studentUser,
               passHash: String(pass),
-              avatar: DEFAULT_AVATARS[Math.floor(Math.random() * DEFAULT_AVATARS.length)]
+              avatar: DEFAULT_AVATARS[Math.floor(Math.random() * DEFAULT_AVATARS.length)],
+              schoolId: userProfile.schoolId,
+              classId: userProfile.classId,
+              xp: 0,
+              level: 1,
+              badges: [],
+              streak: 0
             };
             
             // Global lookup
@@ -437,25 +465,26 @@ export default function Classroom({ userProfile, students, setStudents, homework
     reader.readAsBinaryString(file);
   };
 
+  const [studentToDeleteId, setStudentToDeleteId] = useState<string | null>(null);
+
   const deleteStudent = async (id: string) => {
     const studentToDelete = students.find(s => s.id === id);
-    if (studentToDelete && userProfile?.schoolId && userProfile?.classId) {
-      if (window.confirm('Bạn có chắc chắn muốn xóa học sinh này?')) {
-        try {
-          const batch = writeBatch(db);
-          // Delete global lookup
-          batch.delete(doc(db, 'edupro_students', studentToDelete.user));
-          // Delete global ID lookup
-          batch.delete(doc(db, 'edupro_student_ids', studentToDelete.id));
-          // Delete from class collection
-          batch.delete(doc(db, 'schools', userProfile.schoolId, 'classes', userProfile.classId, 'students', id));
-          
-          await batch.commit();
-          setStudents(students.filter(s => s.id !== id));
-        } catch (e) {
-          handleFirestoreError(e, OperationType.DELETE, `edupro_students/${studentToDelete.user}`);
-        }
-      }
+    if (!studentToDelete || !userProfile?.schoolId || !userProfile?.classId) return;
+
+    try {
+      const batch = writeBatch(db);
+      // Delete global lookup
+      batch.delete(doc(db, 'edupro_students', studentToDelete.user));
+      // Delete global ID lookup
+      batch.delete(doc(db, 'edupro_student_ids', studentToDelete.id));
+      // Delete from class collection
+      batch.delete(doc(db, 'schools', userProfile.schoolId, 'classes', userProfile.classId, 'students', id));
+      
+      await batch.commit();
+      setStudents(students.filter(s => s.id !== id));
+      setStudentToDeleteId(null);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, `edupro_students/${studentToDelete.user}`);
     }
   };
 
@@ -556,7 +585,7 @@ export default function Classroom({ userProfile, students, setStudents, homework
                   <td className="px-4 py-4 font-bold text-slate-700 dark:text-slate-200">{s.name}</td>
                   <td className="px-4 py-4">{s.user}</td>
                   <td className="px-4 py-4 text-right">
-                    <button onClick={() => deleteStudent(s.id)} className="text-red-500 bg-red-50 dark:bg-red-900/30 px-3 py-1 rounded-lg font-medium hover:bg-red-100 transition">
+                    <button onClick={() => setStudentToDeleteId(s.id)} className="text-red-500 bg-red-50 dark:bg-red-900/30 px-3 py-1 rounded-lg font-medium hover:bg-red-100 transition">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </td>
@@ -582,15 +611,28 @@ export default function Classroom({ userProfile, students, setStudents, homework
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-slate-800 dark:text-white truncate">{hw.title}</h4>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-slate-500 dark:text-slate-400">
-                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {hw.dueDate}</span>
-                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {hw.questions.length} câu hỏi</span>
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                       <span className="text-[10px] bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 px-2 py-0.5 rounded font-black uppercase">{hw.subject || 'Toán'}</span>
+                       <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 font-bold"><Calendar className="w-3 h-3" /> {hw.dueDate}</span>
                     </div>
                   </div>
                 </div>
                 <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded">Đang giao</span>
-                  <button className="text-xs font-bold text-blue-600 hover:underline">Xem chi tiết</button>
+                  <div className="flex gap-2">
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded">Đang giao</span>
+                    <button 
+                      onClick={() => {
+                        const fbk = prompt("Gửi lời nhận xét cho cả lớp:", hw.feedback?.[students[0]?.id] || '');
+                        if (fbk !== null && students.length > 0) {
+                          students.forEach(s => updateHomeworkFeedback(hw.id, s.id, fbk));
+                        }
+                      }}
+                      className="text-xs font-bold text-amber-600 hover:bg-amber-50 p-1 rounded"
+                    >
+                      Nhận xét
+                    </button>
+                  </div>
+                  <button className="text-xs font-bold text-blue-600 hover:underline">Chi tiết</button>
                 </div>
               </div>
             ))}
@@ -604,6 +646,38 @@ export default function Classroom({ userProfile, students, setStudents, homework
         )}
       </motion.div>
     </AnimatePresence>
+
+      {studentToDeleteId && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-2xl max-w-sm w-full text-center border border-slate-200 dark:border-slate-700"
+          >
+            <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="w-10 h-10 text-red-500" />
+            </div>
+            <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-2">Xác nhận xóa?</h3>
+            <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium leading-relaxed">
+              Dữ liệu của học sinh <span className="font-bold text-slate-800 dark:text-slate-200">{students.find(s => s.id === studentToDeleteId)?.name}</span> sẽ bị xóa vĩnh viễn và không thể khôi phục.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <button 
+                onClick={() => setStudentToDeleteId(null)}
+                className="py-3.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 font-bold rounded-2xl transition"
+              >
+                Hủy bỏ
+              </button>
+              <button 
+                onClick={() => deleteStudent(studentToDeleteId)}
+                className="py-3.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl shadow-lg shadow-red-500/20 transition"
+              >
+                Xác nhận xóa
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       {isStudentModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 p-4">

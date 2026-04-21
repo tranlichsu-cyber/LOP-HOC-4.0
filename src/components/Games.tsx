@@ -30,10 +30,17 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
   const [newGame, setNewGame] = useState<any>({
     title: '',
     type: 'math',
+    subject: 'Toán',
+    grade: 'Lớp 3',
     questionsList: [],
     timeLimit: 30,
     lessonContent: ''
   });
+
+  const [filterSubject, setFilterSubject] = useState<string>('Tất cả');
+
+  const SUBJECTS = ['Toán', 'Tiếng Việt', 'Tiếng Anh', 'Tự nhiên và Xã hội', 'Khoa học', 'Lịch sử và Địa lý', 'Khác'];
+  const GRADEs = ['Lớp 1', 'Lớp 2', 'Lớp 3', 'Lớp 4', 'Lớp 5'];
 
   const [newQuestion, setNewQuestion] = useState<any>({
     type: 'multiple_choice',
@@ -151,6 +158,8 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
       const game: Game = {
         id: editingGame?.id || Date.now().toString(),
         title: newGame.title,
+        subject: newGame.subject,
+        grade: newGame.grade,
         type: newGame.type as any,
         questionsList: newGame.questionsList || [],
         timeLimit: newGame.timeLimit
@@ -166,7 +175,7 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
         }
         setIsAddModalOpen(false);
         setEditingGame(null);
-        setNewGame({ title: '', type: 'math', questionsList: [], lessonContent: '' });
+        setNewGame({ title: '', type: 'math', subject: 'Toán', grade: 'Lớp 3', questionsList: [], lessonContent: '' });
       } catch (e) {
         console.error("Error saving game:", e);
         alert("Lỗi khi lưu trò chơi!");
@@ -600,6 +609,29 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
                       className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-orange-500 dark:text-white" 
                       required
                     />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">Môn học</label>
+                      <select 
+                        value={newGame.subject}
+                        onChange={e => setNewGame({...newGame, subject: e.target.value})}
+                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-orange-500 dark:text-white"
+                      >
+                        {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">Khối lớp</label>
+                      <select 
+                        value={newGame.grade}
+                        onChange={e => setNewGame({...newGame, grade: e.target.value})}
+                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-orange-500 dark:text-white"
+                      >
+                        {GRADEs.map(g => <option key={g} value={g}>{g}</option>)}
+                      </select>
+                    </div>
                   </div>
                   
                   <div>

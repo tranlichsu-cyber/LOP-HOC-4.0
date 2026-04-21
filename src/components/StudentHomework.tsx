@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { BookOpenCheck, PartyPopper, Calendar, Clock, Play } from 'lucide-react';
+import { BookOpenCheck, PartyPopper, Calendar, Clock, Play, MessageCircle } from 'lucide-react';
 import { Homework, Game } from '../types';
+import { auth } from '../firebase';
 import OfflineGame from './games/OfflineGame';
 import MillionaireGame from './games/MillionaireGame';
 
@@ -35,8 +36,13 @@ export default function StudentHomework({ homework }: { homework: Homework[] }) 
             {homework.map(hw => (
               <div key={hw.id} className="bg-white rounded-[2.5rem] p-6 shadow-xl border-4 border-white transform hover:-translate-y-1 transition group">
                 <div className="flex items-start gap-4">
-                  <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 shrink-0">
+                  <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 shrink-0 relative">
                     <BookOpenCheck className="w-8 h-8" />
+                    {hw.subject && (
+                      <span className="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-black px-2 py-1 rounded-full shadow-md border-2 border-white">
+                        {hw.subject}
+                      </span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="text-2xl font-black text-blue-900 truncate">{hw.title}</h4>
@@ -50,6 +56,17 @@ export default function StudentHomework({ homework }: { homework: Homework[] }) 
                     </div>
                   </div>
                 </div>
+
+                {hw.feedback && auth.currentUser?.uid && hw.feedback[auth.currentUser.uid] && (
+                  <div className="mt-4 bg-amber-50 border-2 border-amber-200 p-4 rounded-2xl flex gap-3 items-start animate-in fade-in slide-in-from-top-1 duration-500">
+                    <MessageCircle className="w-5 h-5 text-amber-500 shrink-0 mt-1" />
+                    <div>
+                      <p className="text-xs font-black text-amber-600 uppercase mb-1">Lời nhắn từ Thầy/Cô:</p>
+                      <p className="text-sm font-bold text-amber-800 italic">"{hw.feedback[auth.currentUser.uid]}"</p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="mt-6">
                   <button 
                     onClick={() => setPlayingHomework(hw)}

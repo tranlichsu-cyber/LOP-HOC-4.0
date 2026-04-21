@@ -22,6 +22,7 @@ import { auth, db, getDocFromServer } from './firebase';
 import { onAuthStateChanged, signOut, signInAnonymously } from 'firebase/auth';
 import { doc, getDoc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
 import { UserRole, UserProfile, School, Class, Game, Student, Homework, Lesson, Worksheet as WorksheetType } from './types';
+import { calculateLevel, checkAwards } from './lib/gamification';
 
 // Views
 import Dashboard from './components/Dashboard';
@@ -257,7 +258,13 @@ export default function App() {
               name: studentData.studentName,
               user: studentId,
               passHash: password,
-              avatar: studentData.avatar
+              avatar: studentData.avatar,
+              schoolId: studentData.schoolId,
+              classId: studentData.classId,
+              xp: studentData.xp || 0,
+              level: studentData.level || 1,
+              badges: studentData.badges || [],
+              streak: studentData.streak || 0
             });
             setStudents([]); 
             setHomework(loadedHomework);
@@ -277,6 +284,40 @@ export default function App() {
     }} />;
   }
 
+  const awardStudentXP = async (amount: number) => {
+    if (!studentProfile || !auth.currentUser) return;
+
+    const newXP = (studentProfile.xp || 0) + amount;
+    const newLevel = calculateLevel(newXP);
+    
+    // Check for badges
+    const newBadges = checkAwards(studentProfile, { type: 'complete_game' });
+    const updatedBadges = [...(studentProfile.badges || [])];
+    
+    newBadges.forEach(nb => {
+      if (!updatedBadges.find(ub => ub.id === nb.id)) {
+        updatedBadges.push(nb);
+      }
+    });
+
+    const updatedProfile = {
+      ...studentProfile,
+      xp: newXP,
+      level: newLevel,
+      badges: updatedBadges
+    };
+
+    setStudentProfile(updatedProfile);
+
+    // Persist to Firestore
+    try {
+      const studentClassRef = doc(db, 'schools', studentProfile.schoolId || '', 'classes', studentProfile.classId || '', 'students', studentProfile.id);
+      await setDoc(studentClassRef, { xp: newXP, level: newLevel, badges: updatedBadges }, { merge: true });
+    } catch (e) {
+      console.error("Error awarding XP:", e);
+    }
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard': return <Dashboard role={role} stats={{ students: students.length, games: offlineGames.length + liveGames.length }} />;
@@ -287,7 +328,7 @@ export default function App() {
       case 'classroom': return <Classroom userProfile={userProfile} students={students} setStudents={setStudents} homework={homework} setHomework={setHomework} offlineGames={offlineGames} />;
       case 'interactive-library': return <InteractiveLibrary />;
       case 'student-homework': return <StudentHomework homework={homework} />;
-      case 'student-games': return <StudentGames offlineGames={offlineGames} studentProfile={studentProfile} />;
+      case 'student-games': return <StudentGames offlineGames={offlineGames} studentProfile={studentProfile} onCompleteGame={() => awardStudentXP(100)} />;
       default: return <Dashboard role={role} stats={{ students: students.length, games: offlineGames.length + liveGames.length }} />;
     }
   };
