@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Brain, Trophy, Loader2, Sparkles, ChevronRight, HelpCircle, CheckCircle2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Game, Question } from '../../types';
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { playSound, startBackgroundMusic, stopBackgroundMusic } from '../../lib/sounds';
 import { getVietnam34ProvincesContext } from '../../data/vietnam34Provinces';
 import { getTextbookContext } from '../../data/textbookTNXH2';
@@ -17,6 +17,7 @@ export default function WiseOneGame({ game, onClose }: { game: Game, onClose: ()
   const [questions, setQuestions] = useState<Question[]>(game.questionsList || []);
   const [topic, setTopic] = useState('Khoa học');
   const [grade, setGrade] = useState('Lớp 3');
+  const [lessonContent, setLessonContent] = useState('');
 
   useEffect(() => {
     return () => stopBackgroundMusic();
@@ -25,8 +26,7 @@ export default function WiseOneGame({ game, onClose }: { game: Game, onClose: ()
   const generateQuestions = async () => {
     setIsGenerating(true);
     try {
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-      const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
       
       const isGeographyOrProvinces = topic.toLowerCase().includes('địa lí') || 
                                      topic.toLowerCase().includes('tự nhiên và xã hội') ||
@@ -40,21 +40,28 @@ export default function WiseOneGame({ game, onClose }: { game: Game, onClose: ()
       const provinceContext = isGeographyOrProvinces ? `\n\nKIẾN THỨC NỀN TẢNG QUAN TRỌNG (Cập nhật mới nhất):\n${getVietnam34ProvincesContext()}\nHãy sử dụng thông tin trên nếu câu hỏi liên quan đến các tỉnh thành Việt Nam.` : '';
       const textbookContext = isTNXH2 ? `\n\nTHAM KHẢO NỘI DUNG SÁCH GIÁO KHOA (Kết nối tri thức):\n${getTextbookContext()}\nHãy bám sát khung chương trình này khi tạo câu hỏi.` : '';
 
-      const prompt = `Hãy tạo 10 câu hỏi trắc nghiệm về chủ đề "${topic}" cho học sinh "${grade}" tại Việt Nam.${provinceContext}${textbookContext}
+      const lessonContextPrompt = lessonContent ? `\nDỰA TRÊN NỘI DUNG BÀI HỌC SAU ĐÂY:\n${lessonContent}\n` : '';
+
+      const prompt = `Bạn là một nhà thông thái am hiểu giáo dục tiểu học tại Việt Nam. Bạn tạo ra các câu hỏi trắc nghiệm hấp dẫn, chính xác và phù hợp với lứa tuổi.
+      Hãy tạo 10 câu hỏi trắc nghiệm về chủ đề "${topic}" cho học sinh "${grade}" tại Việt Nam.${lessonContextPrompt}${provinceContext}${textbookContext}
       Yêu cầu:
+      - Nếu có "DỰA TRÊN NỘI DUNG BÀI HỌC" ở trên, hãy bám sát nội dung đó để đặt câu hỏi.
       - Mỗi câu hỏi có 4 lựa chọn (A, B, C, D).
       - Chỉ có 1 đáp án đúng.
-      - Ngôn ngữ: Tiếng Việt.
+      - Ngôn ngữ: Tiếng Việt. Giao tiếp thân thiện, khuyến khích.
       - Định dạng trả về: JSON array các object có cấu trúc:
         {
           "text": "Nội dung câu hỏi",
           "options": ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
           "correct": 0 (index của đáp án đúng từ 0-3)
         }
-      - Trả về DUY NHẤT mảng JSON, không thêm lời dẫn.`;
+      - Trả về DUY NHẤT mảng JSON, không thêm văn bản giải thích.`;
 
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: { parts: [{ text: prompt }] }
+      });
+      const text = response.text || "";
       const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
       const parsedQuestions = JSON.parse(cleanedText);
       
@@ -126,19 +133,31 @@ export default function WiseOneGame({ game, onClose }: { game: Game, onClose: ()
 
           <div className="space-y-4 mb-8">
             <div>
-              <label className="block text-sm font-bold text-slate-500 uppercase mb-1">Chủ đề</label>
-              <select 
+              <label className="block text-sm font-bold text-slate-500 uppercase mb-2">Chủ đề phổ biến</label>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {[
+                  { name: 'Lịch sử Việt Nam', icon: '🇻🇳', color: 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100' },
+                  { name: 'Khoa học cơ bản', icon: '🔬', color: 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100' },
+                  { name: 'Địa lý Việt Nam', icon: '🗺️', color: 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100' },
+                  { name: 'Thế giới động vật', icon: '🐾', color: 'bg-orange-50 text-orange-600 border-orange-100 hover:bg-orange-100' }
+                ].map(t => (
+                  <button
+                    key={t.name}
+                    onClick={() => setTopic(t.name)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors flex items-center gap-1.5 ${topic === t.name ? 'bg-purple-600 text-white border-purple-600' : t.color}`}
+                  >
+                    <span>{t.icon}</span> {t.name}
+                  </button>
+                ))}
+              </div>
+              <label className="block text-sm font-bold text-slate-500 uppercase mb-1">Hoặc nhập chủ đề tùy chọn</label>
+              <input 
+                type="text"
+                placeholder="VD: Khám phá đại dương..."
                 value={topic}
                 onChange={e => setTopic(e.target.value)}
                 className="w-full p-3 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-purple-500 dark:text-white font-bold"
-              >
-                <option>Khoa học</option>
-                <option>Lịch sử Việt Nam</option>
-                <option>Địa lý</option>
-                <option>Thế giới động vật</option>
-                <option>Vũ trụ bao la</option>
-                <option>Văn hóa dân gian</option>
-              </select>
+              />
             </div>
             <div>
               <label className="block text-sm font-bold text-slate-500 uppercase mb-1">Khối lớp</label>
@@ -153,6 +172,15 @@ export default function WiseOneGame({ game, onClose }: { game: Game, onClose: ()
                 <option>Lớp 4</option>
                 <option>Lớp 5</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-500 uppercase mb-1">Nội dung bài học (Tùy chọn)</label>
+              <textarea 
+                placeholder="Dán nội dung bài học vào đây để AI tạo câu hỏi sát hơn..."
+                value={lessonContent}
+                onChange={e => setLessonContent(e.target.value)}
+                className="w-full p-3 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-purple-500 dark:text-white font-bold text-sm h-24 resize-none"
+              />
             </div>
           </div>
 

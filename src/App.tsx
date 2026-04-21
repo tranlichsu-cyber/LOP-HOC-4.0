@@ -48,6 +48,7 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [teacherUid, setTeacherUid] = useState<string | null>(null);
+  const [studentProfile, setStudentProfile] = useState<Student | null>(null);
 
   // Data State
   const [students, setStudents] = useState<Student[]>([]);
@@ -68,6 +69,10 @@ export default function App() {
             { id: 'm2', type: 'multiple_choice', text: 'Bản Tuyên ngôn Độc lập được Bác Hồ đọc tại đâu?', mediaUrl: 'https://www.youtube.com/watch?v=1r05dK_wRkE', options: ['Bến Nhà Rồng', 'Quảng trường Ba Đình', 'Dinh Độc Lập', 'Pác Bó'], correct: 1 },
             { id: 'm3', type: 'multiple_choice', text: 'Chiến thắng Bạch Đằng năm 938 do ai lãnh đạo?', options: ['Trần Hưng Đạo', 'Lê Lợi', 'Ngô Quyền', 'Quang Trung'], correct: 2 }
         ]
+    },
+    {
+        id: 'g4', title: 'Nhà Thông Thái AI', type: 'wise_one',
+        questionsList: [] // AI will generate these
     }
   ]);
   const [liveGames, setLiveGames] = useState<Game[]>([
@@ -247,6 +252,13 @@ export default function App() {
 
             setRole('student');
             setTeacherUid(studentData.teacherUid || null);
+            setStudentProfile({
+              id: studentId,
+              name: studentData.studentName,
+              user: studentId,
+              passHash: password,
+              avatar: studentData.avatar
+            });
             setStudents([]); 
             setHomework(loadedHomework);
             setOfflineGames(loadedGames.filter(g => g.type !== 'race'));
@@ -275,7 +287,7 @@ export default function App() {
       case 'classroom': return <Classroom userProfile={userProfile} students={students} setStudents={setStudents} homework={homework} setHomework={setHomework} offlineGames={offlineGames} />;
       case 'interactive-library': return <InteractiveLibrary />;
       case 'student-homework': return <StudentHomework homework={homework} />;
-      case 'student-games': return <StudentGames offlineGames={offlineGames} />;
+      case 'student-games': return <StudentGames offlineGames={offlineGames} studentProfile={studentProfile} />;
       default: return <Dashboard role={role} stats={{ students: students.length, games: offlineGames.length + liveGames.length }} />;
     }
   };

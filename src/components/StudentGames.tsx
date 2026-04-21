@@ -11,7 +11,7 @@ import { db, auth } from '../firebase';
 import { collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
 
-export default function StudentGames({ offlineGames }: { offlineGames: Game[] }) {
+export default function StudentGames({ offlineGames, studentProfile }: { offlineGames: Game[], studentProfile: any }) {
   const [playingGame, setPlayingGame] = useState<Game | null>(null);
   const [pin, setPin] = useState('');
   const [isJoining, setIsJoining] = useState(false);
@@ -55,8 +55,9 @@ export default function StudentGames({ offlineGames }: { offlineGames: Game[] })
       // Join the session
       const updatedScores = { ...session.scores };
       updatedScores[user.uid] = {
-        name: user.displayName || user.email?.split('@')[0] || 'Học sinh',
-        score: 0
+        name: studentProfile?.name || user.displayName || user.email?.split('@')[0] || 'Học sinh',
+        score: 0,
+        avatar: studentProfile?.avatar || ''
       };
 
       await updateDoc(doc(db, 'game_sessions', session.id), { scores: updatedScores });
@@ -89,6 +90,7 @@ export default function StudentGames({ offlineGames }: { offlineGames: Game[] })
                     <span className={`w-8 h-8 rounded-full flex items-center justify-center font-black ${i === 0 ? 'bg-yellow-500' : i === 1 ? 'bg-slate-300' : i === 2 ? 'bg-amber-600' : 'bg-indigo-700'}`}>
                       {i + 1}
                     </span>
+                    <img src={s.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'} alt="avatar" className="w-8 h-8 rounded-full bg-indigo-800" referrerPolicy="no-referrer" />
                     <span className="font-bold">{s.name}</span>
                   </div>
                   <span className="font-black text-xl text-yellow-400">{s.score}</span>

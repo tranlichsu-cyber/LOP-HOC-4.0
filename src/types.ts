@@ -48,6 +48,7 @@ export interface Student {
   name: string;
   user: string;
   passHash: string;
+  avatar?: string;
 }
 
 export interface Homework {
@@ -83,6 +84,6 @@ export interface GameSession {
   pin: string;
   status: 'waiting' | 'playing' | 'finished';
   currentQuestionIndex: number;
-  scores: { [studentUid: string]: { name: string, score: number } };
+  scores: { [studentUid: string]: { name: string, score: number, avatar?: string } };
   createdAt: string;
 }

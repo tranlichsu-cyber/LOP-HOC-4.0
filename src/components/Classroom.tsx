@@ -85,7 +85,17 @@ export default function Classroom({ userProfile, students, setStudents, homework
   const [isHomeworkModalOpen, setIsHomeworkModalOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isImportingStudents, setIsImportingStudents] = useState(false);
-  const [newStudent, setNewStudent] = useState({ id: '', name: '', user: '', pass: '123456' });
+  const DEFAULT_AVATARS = [
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Milo',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Willow',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Luna',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Jasper',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Oscar',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Cleo',
+  ];
+  const [newStudent, setNewStudent] = useState({ id: '', name: '', user: '', pass: '123456', avatar: DEFAULT_AVATARS[0] });
   const [studentErrors, setStudentErrors] = useState<Record<string, string>>({});
   const [newHomework, setNewHomework] = useState<{
     title: string;
@@ -164,7 +174,8 @@ export default function Classroom({ userProfile, students, setStudents, homework
         id: newStudent.id,
         name: newStudent.name,
         user: newStudent.user,
-        passHash: newStudent.pass // In real app, hash it
+        passHash: newStudent.pass, // In real app, hash it
+        avatar: newStudent.avatar
       };
 
       if (userProfile?.schoolId && userProfile?.classId) {
@@ -195,7 +206,7 @@ export default function Classroom({ userProfile, students, setStudents, homework
       // Update local state
       setStudents([...students, student]);
       setIsStudentModalOpen(false);
-      setNewStudent({ id: '', name: '', user: '', pass: '123456' });
+      setNewStudent({ id: '', name: '', user: '', pass: '123456', avatar: DEFAULT_AVATARS[0] });
     } catch (error) {
       console.error("Error adding student:", error);
       alert("Lỗi khi tạo tài khoản học sinh. Vui lòng thử lại!");
@@ -380,7 +391,8 @@ export default function Classroom({ userProfile, students, setStudents, homework
               id: studentId,
               name: String(name),
               user: studentUser,
-              passHash: String(pass)
+              passHash: String(pass),
+              avatar: DEFAULT_AVATARS[Math.floor(Math.random() * DEFAULT_AVATARS.length)]
             };
             
             // Global lookup
@@ -522,6 +534,7 @@ export default function Classroom({ userProfile, students, setStudents, homework
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 uppercase text-xs">
               <tr>
+                <th className="px-4 py-3">Ảnh</th>
                 <th className="px-4 py-3">ID</th>
                 <th className="px-4 py-3">Họ và Tên</th>
                 <th className="px-4 py-3">Tài khoản</th>
@@ -531,6 +544,14 @@ export default function Classroom({ userProfile, students, setStudents, homework
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
               {students.map(s => (
                 <tr key={s.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                  <td className="px-4 py-4">
+                    <img 
+                      src={s.avatar || DEFAULT_AVATARS[0]} 
+                      alt={s.name} 
+                      className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200" 
+                      referrerPolicy="no-referrer"
+                    />
+                  </td>
                   <td className="px-4 py-4">{s.id}</td>
                   <td className="px-4 py-4 font-bold text-slate-700 dark:text-slate-200">{s.name}</td>
                   <td className="px-4 py-4">{s.user}</td>
@@ -589,6 +610,21 @@ export default function Classroom({ userProfile, students, setStudents, homework
           <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-md">
             <h3 className="text-xl font-bold mb-4 border-b pb-3">Thêm học sinh mới</h3>
             <form onSubmit={handleAddStudent} className="space-y-4">
+              <div className="flex flex-col items-center gap-3 mb-4">
+                <label className="text-xs font-bold text-slate-500 uppercase">Chọn Avatar</label>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {DEFAULT_AVATARS.map((av, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setNewStudent({ ...newStudent, avatar: av })}
+                      className={`p-0.5 rounded-full border-2 transition ${newStudent.avatar === av ? 'border-emerald-500 bg-emerald-50' : 'border-transparent hover:border-slate-200'}`}
+                    >
+                      <img src={av} alt="avatar" className="w-10 h-10 rounded-full" referrerPolicy="no-referrer" />
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div>
                 <input 
                   type="text" 

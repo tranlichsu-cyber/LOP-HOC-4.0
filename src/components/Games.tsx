@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, Rocket, Swords, Play, X, Star, Brain } from 'lucide-react';
+import { Plus, Edit2, Trash2, Rocket, Swords, Play, X, Star, Brain, Sparkles, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Game } from '../types';
+import { GoogleGenAI } from '@google/genai';
+import { getVietnam34ProvincesContext } from '../data/vietnam34Provinces';
+import { getTextbookContext } from '../data/textbookTNXH2';
 import MillionaireGame from './games/MillionaireGame';
 import RaceGame from './games/RaceGame';
 import WheelGame from './games/WheelGame';
@@ -24,11 +27,12 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingGame, setEditingGame] = useState<Game | null>(null);
-  const [newGame, setNewGame] = useState<Partial<Game>>({
+  const [newGame, setNewGame] = useState<any>({
     title: '',
     type: 'math',
     questionsList: [],
-    timeLimit: 30
+    timeLimit: 30,
+    lessonContent: ''
   });
 
   const [newQuestion, setNewQuestion] = useState<any>({
@@ -39,6 +43,70 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
     mediaUrl: '',
     timeLimit: 30
   });
+
+  const [isAIGenerating, setIsAIGenerating] = useState(false);
+
+  const handleAIGenerateGame = async () => {
+    if (!newGame.title) {
+      alert("Vui lòng nhập tên trò chơi để AI biết chủ đề!");
+      return;
+    }
+
+    setIsAIGenerating(true);
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+      
+      const isGeographyOrProvinces = newGame.title.toLowerCase().includes('địa lí') || 
+                                     newGame.title.toLowerCase().includes('tự nhiên và xã hội') ||
+                                     newGame.title.toLowerCase().includes('tỉnh') || 
+                                     newGame.title.toLowerCase().includes('thành phố') ||
+                                     newGame.title.toLowerCase().includes('sáp nhập') ||
+                                     newGame.title.toLowerCase().includes('34');
+      
+      const isTNXH2 = newGame.title.toLowerCase().includes('tự nhiên và xã hội');
+      
+      const provinceContext = isGeographyOrProvinces ? `\n\nKIẾN THỨC NỀN TẢNG QUAN TRỌNG (Cập nhật mới nhất):\n${getVietnam34ProvincesContext()}\nHãy sử dụng thông tin trên nếu câu hỏi liên quan đến các tỉnh thành Việt Nam.` : '';
+      const textbookContext = isTNXH2 ? `\n\nTHAM KHẢO NỘI DUNG SÁCH GIÁO KHOA (Kết nối tri thức):\n${getTextbookContext()}\nHãy bám sát khung chương trình này khi tạo câu hỏi.` : '';
+
+      const lessonContextPrompt = newGame.lessonContent ? `\nDỰA TRÊN NỘI DUNG BÀI HỌC SAU ĐÂY:\n${newGame.lessonContent}\n` : '';
+
+      const prompt = `Bạn là một chuyên gia giáo dục tiểu học tại Việt Nam. 
+      Hãy tạo bộ nội dung cho trò chơi "${newGame.title}" loại "${newGame.type}".${lessonContextPrompt}${provinceContext}${textbookContext}
+      Yêu cầu:
+      - Tạo 10 câu hỏi/mục phù hợp với lứa tuổi tiểu học.
+      - Nếu có "DỰA TRÊN NỘI DUNG BÀI HỌC" ở trên, hãy bám sát nội dung đó để đặt câu hỏi.
+      - Nếu là trắc nghiệm (multiple_choice): mỗi câu có 4 đáp án, 1 đáp án đúng.
+      - Nếu là nối thẻ/kéo thả: tạo các cặp (text là từ khóa, options[0] là đáp án tương ứng).
+      - Định dạng trả về: JSON array các object có cấu trúc:
+        {
+          "text": "Nội dung câu hỏi/Từ khóa",
+          "options": ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
+          "correct": 0 (index của đáp án đúng)
+        }
+      - Trả về DUY NHẤT mảng JSON, không thêm văn bản giải thích.`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: { parts: [{ text: prompt }] }
+      });
+
+      const text = response.text || "";
+      const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      const parsedQuestions = JSON.parse(cleanedText);
+      const questionsWithIds = parsedQuestions.map((q: any) => ({
+        ...q,
+        id: Math.random().toString(36).substr(2, 9),
+        type: 'multiple_choice'
+      }));
+
+      setNewGame({ ...newGame, questionsList: [...(newGame.questionsList || []), ...questionsWithIds] });
+    } catch (e) {
+      console.error("AI Generate Game Error:", e);
+      alert("Lỗi khi tạo nội dung bằng AI!");
+    } finally {
+      setIsAIGenerating(false);
+    }
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,7 +166,7 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
         }
         setIsAddModalOpen(false);
         setEditingGame(null);
-        setNewGame({ title: '', type: 'math', questionsList: [] });
+        setNewGame({ title: '', type: 'math', questionsList: [], lessonContent: '' });
       } catch (e) {
         console.error("Error saving game:", e);
         alert("Lỗi khi lưu trò chơi!");
@@ -555,6 +623,16 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
                   </div>
 
                   <div>
+                    <label className="block text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">Nội dung bài học (Tùy chọn - Để AI tạo quiz sát hơn)</label>
+                    <textarea 
+                      placeholder="Dán nội dung bài học hoặc kiến thức trọng tâm vào đây..." 
+                      value={newGame.lessonContent}
+                      onChange={e => setNewGame({...newGame, lessonContent: e.target.value})}
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-orange-500 dark:text-white text-sm h-32 resize-none" 
+                    />
+                  </div>
+
+                  <div>
                     <label className="block text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">Thời gian mặc định (giây)</label>
                     <input 
                       type="number" 
@@ -566,7 +644,22 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
                   </div>
 
                   <div className="pt-4">
-                    <h4 className="font-bold text-slate-800 dark:text-white mb-2">Danh sách câu hỏi ({newGame.questionsList?.length || 0})</h4>
+                    <div className="flex justify-between items-center mb-2">
+                       <h4 className="font-bold text-slate-800 dark:text-white">Danh sách câu hỏi ({newGame.questionsList?.length || 0})</h4>
+                       <button
+                         type="button"
+                         onClick={handleAIGenerateGame}
+                         disabled={isAIGenerating}
+                         className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-xl text-xs font-bold hover:bg-purple-200 transition disabled:opacity-50"
+                       >
+                         {isAIGenerating ? (
+                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                         ) : (
+                           <Sparkles className="w-3.5 h-3.5" />
+                         )}
+                         Tạo bằng AI
+                       </button>
+                    </div>
                     <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
                       {newGame.questionsList?.map((q: any, idx: number) => (
                         <div key={q.id} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 flex justify-between items-center">

@@ -130,6 +130,7 @@ export default function RaceGame({ game, onClose }: { game: Game, onClose: () =>
           id: i,
           studentUid: uid,
           name: data.name,
+          avatar: data.avatar,
           score: 0,
           colorInfo: LIVE_TEAM_COLORS[i % LIVE_TEAM_COLORS.length]
         }));
@@ -275,18 +276,28 @@ export default function RaceGame({ game, onClose }: { game: Game, onClose: () =>
             
             <div className="w-full">
               <p className="text-indigo-200 font-bold mb-4 uppercase tracking-widest text-center">Học sinh đã tham gia ({joinedStudents.length})</p>
-              <div className="flex flex-wrap justify-center gap-3">
+              <div className="flex flex-wrap justify-center gap-6">
                 {joinedStudents.map((s, i) => (
                   <motion.div 
                     key={i}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="bg-white/20 px-4 py-2 rounded-full font-bold text-lg border border-white/30"
+                    initial={{ scale: 0, rotate: -20 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: "spring", delay: i * 0.05 }}
+                    className="flex flex-col items-center gap-2 group"
                   >
-                    {s.name}
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-white/20 rounded-full blur-md group-hover:bg-white/40 transition-all"></div>
+                      <img 
+                        src={s.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'} 
+                        alt={s.name} 
+                        className="w-20 h-20 rounded-full border-4 border-white/30 bg-indigo-800 shadow-xl relative z-10" 
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                    <span className="font-black text-lg bg-indigo-800/80 px-4 py-1 rounded-xl border border-white/20 shadow-sm">{s.name}</span>
                   </motion.div>
                 ))}
-                {joinedStudents.length === 0 && <p className="text-indigo-300 italic">Đang chờ học sinh tham gia...</p>}
+                {joinedStudents.length === 0 && <p className="text-indigo-300 italic animate-pulse">Đang chờ học sinh tham gia...</p>}
               </div>
             </div>
           </div>
@@ -330,16 +341,26 @@ export default function RaceGame({ game, onClose }: { game: Game, onClose: () =>
         </div>
         <div className="space-y-4 mt-8">
           {teams.map((t, i) => (
-            <div key={i} className="flex items-center gap-4 bg-white/10 p-3 rounded-[2rem] border border-white/20">
-              <div className="w-32 font-black text-lg text-white text-right truncate">{t.name}</div>
+            <div key={i} className="flex items-center gap-4 bg-white/10 p-2 rounded-full border border-white/10">
+              <div className="w-12 h-12 flex-shrink-0">
+                <img 
+                  src={t.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'} 
+                  alt={t.name} 
+                  className={`w-full h-full rounded-full border-2 ${t.colorInfo.border} bg-white/10`} 
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div className="w-32 font-black text-sm text-white text-right truncate">{t.name}</div>
               <div className="flex-1 bg-black/40 h-8 rounded-full relative overflow-hidden">
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.min(t.score * 2, 100)}%` }}
-                  className={`absolute top-0 left-0 h-full ${t.colorInfo.bg} transition-all duration-700 rounded-full min-w-[2rem]`}
-                />
+                  className={`absolute top-0 left-0 h-full ${t.colorInfo.bg} transition-all duration-700 rounded-full min-w-[2rem] flex items-center justify-end px-3`}
+                >
+                  <span className="text-[10px] font-black text-white/50">{t.score}</span>
+                </motion.div>
               </div>
-              <div className="w-20 font-black text-3xl text-white text-center">{t.score}</div>
+              <div className="w-16 font-black text-2xl text-white text-center">{t.score}</div>
             </div>
           ))}
         </div>
