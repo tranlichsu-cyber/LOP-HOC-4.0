@@ -127,8 +127,9 @@ export default function Classroom({ userProfile, students, setStudents, homework
 
   const validateStudent = () => {
     const errors: Record<string, string> = {};
-    if (!newStudent.id.trim()) errors.id = "Mã HS không được để trống";
-    if (students.some(s => s.id === newStudent.id)) errors.id = "Mã HS đã tồn tại";
+    const effectiveId = newStudent.id.trim() || newStudent.user.trim();
+    
+    if (effectiveId && students.some(s => s.id === effectiveId)) errors.id = "Mã HS hoặc tài khoản đã tồn tại";
     if (!newStudent.name.trim()) errors.name = "Họ và tên không được để trống";
     if (!newStudent.user.trim()) errors.user = "Tài khoản không được để trống";
     if (students.some(s => s.user === newStudent.user)) errors.user = "Tài khoản đã tồn tại";
@@ -155,10 +156,11 @@ export default function Classroom({ userProfile, students, setStudents, homework
     if (!validateStudent()) return;
 
     setIsUploading(true);
+    const effectiveId = newStudent.id.trim() || newStudent.user.trim();
 
     try {
       // Check global uniqueness for ID
-      const idDoc = await getDoc(doc(db, 'edupro_student_ids', newStudent.id));
+      const idDoc = await getDoc(doc(db, 'edupro_student_ids', effectiveId));
       if (idDoc.exists()) {
         setStudentErrors(prev => ({ ...prev, id: "Mã HS này đã được sử dụng ở lớp khác" }));
         setIsUploading(false);
@@ -174,7 +176,7 @@ export default function Classroom({ userProfile, students, setStudents, homework
       }
 
       const student: Student = {
-        id: newStudent.id,
+        id: effectiveId,
         name: newStudent.name,
         user: newStudent.user,
         passHash: newStudent.pass, // In real app, hash it
@@ -357,8 +359,8 @@ export default function Classroom({ userProfile, students, setStudents, homework
 
   const downloadStudentTemplate = () => {
     const template = [
-      { "Mã HS": "HS001", "Họ và tên": "Nguyễn Văn A", "Tài khoản": "hs001", "Mật khẩu": "123456" },
-      { "Mã HS": "HS002", "Họ và tên": "Trần Thị B", "Tài khoản": "hs002", "Mật khẩu": "123456" }
+      { "Họ và tên": "Nguyễn Văn A", "Tài khoản": "hs001", "Mật khẩu": "123456" },
+      { "Họ và tên": "Trần Thị B", "Tài khoản": "hs002", "Mật khẩu": "123456" }
     ];
     const ws = XLSX.utils.json_to_sheet(template);
     const wb = XLSX.utils.book_new();
@@ -391,12 +393,12 @@ export default function Classroom({ userProfile, students, setStudents, homework
             normalizedRow[key.trim().toLowerCase()] = row[key];
           });
 
-          const id = normalizedRow["mã hs"] || normalizedRow["id"] || normalizedRow["mã học sinh"];
           const name = normalizedRow["họ và tên"] || normalizedRow["tên"] || normalizedRow["name"] || normalizedRow["displayname"];
           const user = normalizedRow["tài khoản"] || normalizedRow["user"] || normalizedRow["username"];
+          const id = normalizedRow["mã hs"] || normalizedRow["id"] || normalizedRow["mã học sinh"] || user;
           const pass = normalizedRow["mật khẩu"] || normalizedRow["pass"] || normalizedRow["password"] || "123456";
 
-          if (id && name && user) {
+          if (name && user) {
             const studentId = String(id);
             const studentUser = String(user);
             
@@ -702,7 +704,7 @@ export default function Classroom({ userProfile, students, setStudents, homework
               <div>
                 <input 
                   type="text" 
-                  placeholder="Mã HS (VD: HS001)" 
+                  placeholder="Mã HS (Nếu có)" 
                   value={newStudent.id}
                   onChange={e => {
                     setNewStudent({...newStudent, id: e.target.value});
