@@ -8,16 +8,12 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { db, auth } from '../firebase';
 import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
-import { Class } from '../types';
 import { getVietnam34ProvincesContext } from '../data/vietnam34Provinces';
 import { getTextbookContext } from '../data/textbookTNXH2';
 
 export default function LessonAI() {
-  const [taskType, setTaskType] = useState<'lesson' | 'questions' | 'test' | 'rubric' | 'worksheet'>('lesson');
   const [subject, setSubject] = useState('Tiếng Việt');
   const [grade, setGrade] = useState('Lớp 3');
-  const [selectedClassId, setSelectedClassId] = useState('');
-  const [classes, setClasses] = useState<Class[]>([]);
   const [title, setTitle] = useState('');
   const [duration, setDuration] = useState<number | string>(1);
   const [extraPrompt, setExtraPrompt] = useState('');
@@ -35,28 +31,7 @@ export default function LessonAI() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
-    const fetchClasses = async () => {
-      const user = auth.currentUser;
-      if (user) {
-        // Find schoolId from user profile
-        const userDoc = await getDocs(collection(db, 'users'));
-        const profile = userDoc.docs.find(d => d.id === user.uid)?.data();
-        if (profile?.schoolId) {
-          const classesSnap = await getDocs(collection(db, 'schools', profile.schoolId, 'classes'));
-          const teacherClasses = classesSnap.docs
-            .map(d => d.data() as Class)
-            .filter(c => c.teacherUid === user.uid);
-          setClasses(teacherClasses);
-          if (teacherClasses.length > 0) {
-            setSelectedClassId(teacherClasses[0].id);
-            setGrade(teacherClasses[0].grade);
-          }
-        }
-      }
-    };
-    fetchClasses();
-  }, []);
+  // Removed fetchClasses as per request to simplify UI and remove class selection
 
   const themes: Record<string, { primary: string, secondary: string }> = {
     'Classic Blue': { primary: '#1e40af', secondary: '#3b82f6' },
@@ -324,23 +299,16 @@ export default function LessonAI() {
 3. Thông tư 02/2025/TT-BGDĐT & Công văn 3456/BGDĐT-GDPT: Khung năng lực số (NLS) cho người học.
 4. Quyết định 3439/QĐ-BGDĐT: Khung nội dung thí điểm giáo dục Trí tuệ nhân tạo (AI).
 
-Nhiệm vụ: ${
-  taskType === 'lesson' ? `Hãy soạn kế hoạch bài dạy (Giáo án) theo CTGDPT 2018` :
-  taskType === 'questions' ? `Hãy sinh bộ câu hỏi ôn tập (trắc nghiệm và tự luận)` :
-  taskType === 'test' ? `Hãy tạo một đề kiểm tra hoàn chỉnh (Ma trận + Đề bài + Đáp án)` :
-  taskType === 'rubric' ? `Hãy tạo bảng tiêu chí đánh giá (Rubrics) chi tiết` :
-  `Hãy thiết kế một Phiếu học tập (Worksheet) sinh động`
-} cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. ${duration ? `Số tiết: ${duration}.` : ''}${provinceContext}${textbookContext}
+Nhiệm vụ: Hãy soạn kế hoạch bài dạy (Giáo án) theo CTGDPT 2018 cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. ${duration ? `Số tiết: ${duration}.` : ''}${provinceContext}${textbookContext}
 
 YÊU CẦU QUAN TRỌNG:
 - BÁM SÁT CTGDPT 2018: Phải đảm bảo các yêu cầu cần đạt (YCCĐ) theo đúng khung chương trình mới.
 - BÁM SÁT VÀ KHAI THÁC SÂU SGK: Nội dung bài dạy phải đi sâu vào các chi tiết, tình huống và kiến thức trong SGK đã cung cấp.
 - TRÌNH BÀY KHOA HỌC: Các bước thực hiện rõ ràng, mạch lạc.
-${taskType === 'lesson' ? `
 - TƯƠNG TÁC HÀI HÒA & CÓ CÂU DẪN: Hoạt động của giáo viên phải bao gồm các câu hỏi gợi mở, lời giảng chi tiết (câu dẫn cụ thể). Hoạt động của học sinh phải có câu trả lời dự kiến cụ thể.
-- Đảm bảo đủ 4 bước Tổ chức thực hiện trong mỗi hoạt động: Chuyển giao nhiệm vụ -> Thực hiện nhiệm vụ -> Báo cáo, thảo luận -> Kết luận, nhận định.` : ''}
+- Đảm bảo đủ 4 bước Tổ chức thực hiện trong mỗi hoạt động: Chuyển giao nhiệm vụ -> Thực hiện nhiệm vụ -> Báo cáo, thảo luận -> Kết luận, nhận định.
 
-${taskType === 'lesson' ? `Yêu cầu về cấu trúc đầu ra (Chuẩn CV 2345):
+Yêu cầu về cấu trúc đầu ra (Chuẩn CV 2345):
 I. YÊU CẦU CẦN ĐẠT
 - Năng lực đặc thù: Đúng chuẩn môn học.
 - Năng lực chung: Tự chủ/tự học, Giao tiếp/hợp tác, Giải quyết vấn đề/sáng tạo.
@@ -352,23 +320,7 @@ II. ĐỒ DÙNG DẠY HỌC
 - Học sinh: SGK, vở, vật liệu thực hành.
 
 III. CÁC HOẠT ĐỘNG DẠY HỌC CHỦ YẾU
-(Sử dụng bảng Markdown 2 cột cho phần tổ chức thực hiện: | Hoạt động của giáo viên | Hoạt động của học sinh |)` : ''}
-
-${taskType === 'questions' ? `Yêu cầu cấu trúc:
-1. Phần Trắc nghiệm: Ít nhất 5-10 câu hỏi có 4 lựa chọn, chỉ rõ đáp án đúng.
-2. Phần Tự luận: 3-5 câu hỏi tư duy, gợi ý hướng trả lời.` : ''}
-
-${taskType === 'test' ? `Yêu cầu cấu trúc:
-1. Ma trận đề: Bảng phân bổ các mức độ kiến thức (Nhận biết, Thông hiểu, Vận dụng, Vận dụng cao).
-2. Đề bài: Chia thành phần Trắc nghiệm và Tự luận.
-3. Đáp án và Thang điểm: Chi tiết từng phần.` : ''}
-
-${taskType === 'rubric' ? `Yêu cầu cấu trúc:
-Bảng tiêu chí đánh giá gồm các cột: Tiêu chí, Mức 1 (Cần cố gắng), Mức 2 (Hoàn thành), Mức 3 (Hoàn thành tốt/Xuất sắc).` : ''}
-
-${taskType === 'worksheet' ? `Yêu cầu cấu trúc:
-- Header: Tên bài, Họ và tên học sinh, Lớp.
-- Các phần: Khám phá, Thử thách, Em có biết, Bài tập thực hành. Có không gian để học sinh viết/vẽ.` : ''}
+(Sử dụng bảng Markdown 2 cột cho phần tổ chức thực hiện: | Hoạt động của giáo viên | Hoạt động của học sinh |)
 
 Yêu cầu lồng ghép (Tích hợp tự nhiên):
 - An ninh quốc phòng (TT 08/2024).

@@ -15,7 +15,8 @@ import {
   X,
   ArrowLeft,
   ShieldCheck,
-  Globe
+  Globe,
+  GraduationCap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, db, getDocFromServer } from './firebase';
@@ -36,6 +37,7 @@ import SchoolAdmin from './components/SchoolAdmin';
 import StudentHomework from './components/StudentHomework';
 import StudentGames from './components/StudentGames';
 import ResourceLibrary from './components/ResourceLibrary';
+import TestGeneratorAI from './components/TestGeneratorAI';
 import Login from './components/Login';
 
 import ErrorBoundary from './components/ErrorBoundary';
@@ -330,6 +332,7 @@ export default function App() {
       case 'school-admin': return userProfile ? <SchoolAdmin userProfile={userProfile} /> : null;
       case 'lesson-ai': return <LessonAI />;
       case 'worksheet': return <Worksheet />;
+      case 'test-ai': return <TestGeneratorAI />;
       case 'games': return <Games offlineGames={offlineGames} liveGames={liveGames} setOfflineGames={setOfflineGames} setLiveGames={setLiveGames} students={students} />;
       case 'classroom': return <Classroom userProfile={userProfile} students={students} setStudents={setStudents} homework={homework} setHomework={setHomework} offlineGames={offlineGames} />;
       case 'resource-library': return userProfile ? <ResourceLibrary userProfile={userProfile} /> : null;
@@ -423,6 +426,15 @@ export default function App() {
                     onClick={() => setActiveTab('worksheet')}
                     color="text-pink-600 dark:text-pink-400"
                     bgColor="bg-pink-50 dark:bg-pink-900/30"
+                    collapsed={!isSidebarOpen}
+                  />
+                  <NavItem 
+                    icon={<GraduationCap />} 
+                    label="Tạo đề thi AI (TT27)" 
+                    active={activeTab === 'test-ai'} 
+                    onClick={() => setActiveTab('test-ai')}
+                    color="text-indigo-600 dark:text-indigo-400"
+                    bgColor="bg-indigo-50 dark:bg-indigo-900/30"
                     collapsed={!isSidebarOpen}
                   />
                   <NavItem 
@@ -544,6 +556,7 @@ export default function App() {
                 {activeTab === 'dashboard' ? 'Tổng quan' : 
                  activeTab === 'lesson-ai' ? 'Soạn giáo án AI' :
                  activeTab === 'worksheet' ? 'Phiếu học tập' :
+                 activeTab === 'test-ai' ? 'Tạo đề thi AI' :
                  activeTab === 'games' ? 'Trò chơi' :
                  activeTab === 'classroom' ? 'Lớp học' :
                  activeTab === 'student-homework' ? 'Bài tập' :

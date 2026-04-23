@@ -18,6 +18,7 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
 
   // Modals
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<UserProfile | null>(null);
   const [isClassModalOpen, setIsClassModalOpen] = useState(false);
   const [isDepartmentModalOpen, setIsDepartmentModalOpen] = useState(false);
 
@@ -99,6 +100,27 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
   const handleAddStaff = async () => {
     if (!newStaff.email || !userProfile.schoolId) return;
     
+    if (editingStaff) {
+      // Logic for updating existing staff
+      try {
+        const updatedProfile = {
+          ...editingStaff,
+          displayName: newStaff.displayName || editingStaff.displayName,
+          role: newStaff.role
+        };
+        await setDoc(doc(db, 'users', editingStaff.uid), updatedProfile, { merge: true });
+        setStaff(staff.map(s => s.uid === editingStaff.uid ? updatedProfile : s));
+        setIsStaffModalOpen(false);
+        setEditingStaff(null);
+        setNewStaff({ email: '', displayName: '', role: 'teacher' as any });
+        alert(`Đã cập nhật thông tin cho: ${updatedProfile.displayName}`);
+      } catch (error) {
+        console.error("Error updating staff:", error);
+        alert("Lỗi khi cập nhật nhân sự!");
+      }
+      return;
+    }
+
     const cleanEmail = newStaff.email.trim().toLowerCase();
     const uid = 'staff_' + btoa(cleanEmail).replace(/=/g, '').substring(0, 20);
     
@@ -409,7 +431,18 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 transition">
+                          <button 
+                            onClick={() => {
+                              setEditingStaff(member);
+                              setNewStaff({
+                                email: member.email,
+                                displayName: member.displayName || '',
+                                role: member.role
+                              });
+                              setIsStaffModalOpen(true);
+                            }}
+                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 transition"
+                          >
                             <Edit2 className="w-4 h-4" />
                           </button>
                         </td>
@@ -545,8 +578,19 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-2xl w-full max-w-md border border-slate-200 dark:border-slate-700">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-black text-slate-800 dark:text-white">Thêm Nhân sự mới</h3>
-              <button onClick={() => setIsStaffModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-full"><X className="w-6 h-6" /></button>
+              <h3 className="text-2xl font-black text-slate-800 dark:text-white">
+                {editingStaff ? 'Sửa thông tin Nhân sự' : 'Thêm Nhân sự mới'}
+              </h3>
+              <button 
+                onClick={() => {
+                  setIsStaffModalOpen(false);
+                  setEditingStaff(null);
+                  setNewStaff({ email: '', displayName: '', role: 'teacher' as any });
+                }} 
+                className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-full"
+              >
+                <X className="w-6 h-6" />
+              </button>
             </div>
             <div className="space-y-6">
               <div>
@@ -560,12 +604,13 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
                 />
               </div>
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Email (Tài khoản)</label>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Email (Không thể đổi)</label>
                 <input 
                   type="email" 
                   value={newStaff.email}
+                  disabled={!!editingStaff}
                   onChange={e => setNewStaff({...newStaff, email: e.target.value})}
-                  className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-white transition-all shadow-inner"
+                  className={`w-full p-4 border rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-inner ${editingStaff ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 border-slate-200 cursor-not-allowed' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 dark:text-white'}`}
                   placeholder="VD: gv_a@truong.edu.vn"
                 />
               </div>
@@ -586,8 +631,19 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
                 <p className="text-xs text-amber-600 dark:text-amber-500">Mật khẩu đăng nhập mặc định sẽ là "123456"</p>
               </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={() => setIsStaffModalOpen(false)} className="flex-1 py-4 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-white font-black rounded-2xl transition hover:bg-slate-200 active:scale-95">Hủy</button>
-                <button onClick={handleAddStaff} className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-2xl transition hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 active:scale-95">Xác nhận thêm</button>
+                <button 
+                  onClick={() => {
+                    setIsStaffModalOpen(false);
+                    setEditingStaff(null);
+                    setNewStaff({ email: '', displayName: '', role: 'teacher' as any });
+                  }} 
+                  className="flex-1 py-4 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-white font-black rounded-2xl transition hover:bg-slate-200 active:scale-95"
+                >
+                  Hủy
+                </button>
+                <button onClick={handleAddStaff} className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-2xl transition hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 active:scale-95">
+                  {editingStaff ? 'Lưu thay đổi' : 'Xác nhận thêm'}
+                </button>
               </div>
             </div>
           </div>
