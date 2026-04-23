@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'teacher' | 'student';
+export type UserRole = 'school_admin' | 'principal' | 'teacher' | 'homeroom_teacher' | 'student' | 'parent';
 
 export interface UserProfile {
   uid: string;
@@ -7,6 +7,14 @@ export interface UserProfile {
   role: UserRole;
   schoolId?: string;
   classId?: string;
+  studentIds?: string[]; // For parents to track multiple children
+}
+
+export interface Parent {
+  id: string; // matches UserProfile.uid
+  name: string;
+  phoneNumber: string;
+  childrenIds: string[]; // references Student.id or Student.user
 }
 
 export interface School {
@@ -94,6 +102,32 @@ export interface Worksheet {
   grade: string;
   content: string;
   createdAt: string;
+}
+
+export type ResourceType = 'lesson_plan' | 'exam' | 'question_bank' | 'powerpoint' | 'video' | 'stem' | 'review_material';
+
+export interface DigitalResource {
+  id: string;
+  title: string;
+  type: ResourceType;
+  subject: string;
+  grade: string;
+  authorId: string;
+  authorName: string;
+  schoolId: string;
+  departmentId?: string;
+  fileUrl?: string; // Link to the actual file
+  content?: string; // For text-based resources
+  createdAt: string;
+  isPublic: boolean;
+  downloads?: number;
+}
+
+export interface Department {
+  id: string;
+  name: string;
+  schoolId: string;
+  memberIds: string[];
 }
 
 export interface GameSession {

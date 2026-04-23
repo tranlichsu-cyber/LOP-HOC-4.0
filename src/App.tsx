@@ -15,7 +15,8 @@ import {
   X,
   ArrowLeft,
   ShieldCheck,
-  Library
+  Library,
+  Globe
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, db, getDocFromServer } from './firebase';
@@ -26,6 +27,8 @@ import { calculateLevel, checkAwards } from './lib/gamification';
 
 // Views
 import Dashboard from './components/Dashboard';
+import PrincipalDashboard from './components/PrincipalDashboard';
+import ParentDashboard from './components/ParentDashboard';
 import LessonAI from './components/LessonAI';
 import Worksheet from './components/Worksheet';
 import Games from './components/Games';
@@ -34,6 +37,7 @@ import SchoolAdmin from './components/SchoolAdmin';
 import StudentHomework from './components/StudentHomework';
 import StudentGames from './components/StudentGames';
 import InteractiveLibrary from './components/InteractiveLibrary';
+import ResourceLibrary from './components/ResourceLibrary';
 import Login from './components/Login';
 
 import ErrorBoundary from './components/ErrorBoundary';
@@ -86,7 +90,7 @@ export default function App() {
   ]);
 
   useEffect(() => {
-    if (role === 'admin') {
+    if (role === 'school_admin' as any) {
       setActiveTab('school-admin');
     }
   }, [role]);
@@ -110,19 +114,19 @@ export default function App() {
             
             console.log("Auth State Changed - Email:", userEmail, "Is Admin Email:", isAdminEmail);
 
-            let currentRole: UserRole = isAdminEmail ? 'admin' : 'teacher';
+            let currentRole: UserRole = isAdminEmail ? 'school_admin' : 'teacher';
             
             if (userDoc.exists()) {
               const profile = userDoc.data() as UserProfile;
               
-              // Auto-upgrade to admin if email matches
-              if (isAdminEmail && profile.role !== 'admin') {
-                profile.role = 'admin';
+              // Auto-upgrade to school_admin if email matches
+              if (isAdminEmail && profile.role !== 'school_admin') {
+                profile.role = 'school_admin';
                 await setDoc(doc(db, 'users', currentUser.uid), profile, { merge: true });
               }
               
               setUserProfile(profile);
-              currentRole = isAdminEmail ? 'admin' : profile.role;
+              currentRole = profile.role;
 
               if (profile.schoolId) {
                 const schoolDoc = await getDoc(doc(db, 'schools', profile.schoolId));
@@ -131,22 +135,22 @@ export default function App() {
                 }
               }
             } else {
-              // Create default profile for new teacher
+              // Create default profile for new user
               const newProfile: UserProfile = {
                 uid: currentUser.uid,
                 email: currentUser.email || '',
                 displayName: currentUser.displayName || '',
-                role: isAdminEmail ? 'admin' : 'teacher'
+                role: isAdminEmail ? 'school_admin' : 'teacher'
               };
               await setDoc(doc(db, 'users', currentUser.uid), newProfile);
               setUserProfile(newProfile);
-              currentRole = isAdminEmail ? 'admin' : 'teacher';
+              currentRole = newProfile.role;
             }
             
             setRole(currentRole);
             console.log("Role set to:", currentRole, "for email:", userEmail);
             
-            document.body.classList.remove('role-teacher', 'role-student', 'role-admin');
+            document.body.classList.remove('role-teacher', 'role-student', 'role-school_admin', 'role-admin');
             document.body.classList.add(`role-${currentRole}`);
           } catch (error) {
             console.error("Error fetching user profile:", error);
@@ -320,13 +324,18 @@ export default function App() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard': return <Dashboard role={role} stats={{ students: students.length, games: offlineGames.length + liveGames.length }} studentsList={students} homeworkList={homework} studentProfile={studentProfile} />;
+      case 'dashboard': 
+        if (role === 'principal') return <PrincipalDashboard schoolStats={{ totalStudents: 500, totalTeachers: 45, totalClasses: 20, avgCompletionRate: 82, activeSessions: 12 }} />;
+        if (role === 'parent') return <ParentDashboard childrenList={students.filter(s => userProfile?.studentIds?.includes(s.id))} homeworkList={homework} />;
+        return <Dashboard role={role} stats={{ students: students.length, games: offlineGames.length + liveGames.length }} studentsList={students} homeworkList={homework} studentProfile={studentProfile} />;
+      
       case 'school-admin': return userProfile ? <SchoolAdmin userProfile={userProfile} /> : null;
       case 'lesson-ai': return <LessonAI />;
       case 'worksheet': return <Worksheet />;
       case 'games': return <Games offlineGames={offlineGames} liveGames={liveGames} setOfflineGames={setOfflineGames} setLiveGames={setLiveGames} students={students} />;
       case 'classroom': return <Classroom userProfile={userProfile} students={students} setStudents={setStudents} homework={homework} setHomework={setHomework} offlineGames={offlineGames} />;
       case 'interactive-library': return <InteractiveLibrary />;
+      case 'resource-library': return userProfile ? <ResourceLibrary userProfile={userProfile} /> : null;
       case 'student-homework': return <StudentHomework homework={homework} />;
       case 'student-games': return <StudentGames offlineGames={offlineGames} studentProfile={studentProfile} onCompleteGame={() => awardStudentXP(100)} />;
       default: return <Dashboard role={role} stats={{ students: students.length, games: offlineGames.length + liveGames.length }} studentsList={students} homeworkList={homework} studentProfile={studentProfile} />;
@@ -377,7 +386,7 @@ export default function App() {
             collapsed={!isSidebarOpen}
           />
 
-          {(role === 'admin' || user?.email?.toLowerCase() === 'tranlichsu@gmail.com' || user?.email?.toLowerCase() === 'tienganhltt@thainguyen.edu.vn') && (
+          {(role === 'school_admin' || user?.email?.toLowerCase() === 'tranlichsu@gmail.com' || user?.email?.toLowerCase() === 'tienganhltt@thainguyen.edu.vn') && (
             <>
               <div className="pt-4 pb-2">
                 {isSidebarOpen && <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-3">Hệ thống</p>}
@@ -394,41 +403,45 @@ export default function App() {
             </>
           )}
 
-          {(role === 'teacher' || role === 'admin') && (
+          {(role === 'teacher' || role === 'homeroom_teacher' || role === 'principal') && (
             <>
               <div className="pt-4 pb-2">
-                {isSidebarOpen && <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-3">Công cụ Giáo viên</p>}
+                {isSidebarOpen && <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-3">Công cụ Giáo dục</p>}
               </div>
-              <NavItem 
-                icon={<Sparkles />} 
-                label="Soạn giáo án AI" 
-                active={activeTab === 'lesson-ai'} 
-                onClick={() => setActiveTab('lesson-ai')}
-                color="text-purple-600 dark:text-purple-400"
-                bgColor="bg-purple-50 dark:bg-purple-900/30"
-                collapsed={!isSidebarOpen}
-              />
-              <NavItem 
-                icon={<FilePlus2 />} 
-                label="Tạo phiếu học tập" 
-                active={activeTab === 'worksheet'} 
-                onClick={() => setActiveTab('worksheet')}
-                color="text-pink-600 dark:text-pink-400"
-                bgColor="bg-pink-50 dark:bg-pink-900/30"
-                collapsed={!isSidebarOpen}
-              />
-              <NavItem 
-                icon={<Gamepad2 />} 
-                label="Trò chơi Tương tác" 
-                active={activeTab === 'games'} 
-                onClick={() => setActiveTab('games')}
-                color="text-orange-500 dark:text-orange-400"
-                bgColor="bg-orange-50 dark:bg-orange-900/30"
-                collapsed={!isSidebarOpen}
-              />
+              {(role === 'teacher' || role === 'homeroom_teacher') && (
+                <>
+                  <NavItem 
+                    icon={<Sparkles />} 
+                    label="Soạn giáo án AI" 
+                    active={activeTab === 'lesson-ai'} 
+                    onClick={() => setActiveTab('lesson-ai')}
+                    color="text-purple-600 dark:text-purple-400"
+                    bgColor="bg-purple-50 dark:bg-purple-900/30"
+                    collapsed={!isSidebarOpen}
+                  />
+                  <NavItem 
+                    icon={<FilePlus2 />} 
+                    label="Tạo phiếu học tập" 
+                    active={activeTab === 'worksheet'} 
+                    onClick={() => setActiveTab('worksheet')}
+                    color="text-pink-600 dark:text-pink-400"
+                    bgColor="bg-pink-50 dark:bg-pink-900/30"
+                    collapsed={!isSidebarOpen}
+                  />
+                  <NavItem 
+                    icon={<Gamepad2 />} 
+                    label="Trò chơi Tương tác" 
+                    active={activeTab === 'games'} 
+                    onClick={() => setActiveTab('games')}
+                    color="text-orange-500 dark:text-orange-400"
+                    bgColor="bg-orange-50 dark:bg-orange-900/30"
+                    collapsed={!isSidebarOpen}
+                  />
+                </>
+              )}
               <NavItem 
                 icon={<Users />} 
-                label="Lớp học & Học sinh" 
+                label={role === 'principal' ? "Thống kê Trường" : "Lớp học & Học sinh"} 
                 active={activeTab === 'classroom'} 
                 onClick={() => setActiveTab('classroom')}
                 color="text-emerald-600 dark:text-emerald-400"
@@ -450,30 +463,41 @@ export default function App() {
             bgColor="bg-blue-50 dark:bg-blue-900/30"
             collapsed={!isSidebarOpen}
           />
+          <NavItem 
+            icon={<Globe />} 
+            label="Kho học liệu số" 
+            active={activeTab === 'resource-library'} 
+            onClick={() => setActiveTab('resource-library')}
+            color="text-indigo-600 dark:text-indigo-400"
+            bgColor="bg-indigo-50 dark:bg-indigo-900/30"
+            collapsed={!isSidebarOpen}
+          />
 
-          {role === 'student' && (
+          {(role === 'student' || role === 'parent') && (
             <>
               <div className="pt-4 pb-2">
-                {isSidebarOpen && <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-3">Góc Học Tập</p>}
+                {isSidebarOpen && <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-3">Góc Gia Đình</p>}
               </div>
               <NavItem 
                 icon={<BookOpenCheck />} 
-                label="Bài tập của tôi" 
+                label={role === 'parent' ? "Kết quả của con" : "Bài tập của tôi"} 
                 active={activeTab === 'student-homework'} 
                 onClick={() => setActiveTab('student-homework')}
                 color="text-blue-600 dark:text-blue-400"
                 bgColor="bg-blue-50 dark:bg-blue-900/30"
                 collapsed={!isSidebarOpen}
               />
-              <NavItem 
-                icon={<Joystick />} 
-                label="Trò chơi Tương tác" 
-                active={activeTab === 'student-games'} 
-                onClick={() => setActiveTab('student-games')}
-                color="text-orange-500 dark:text-orange-400"
-                bgColor="bg-orange-50 dark:bg-orange-900/30"
-                collapsed={!isSidebarOpen}
-              />
+              {role === 'student' && (
+                <NavItem 
+                  icon={<Joystick />} 
+                  label="Trò chơi Tương tác" 
+                  active={activeTab === 'student-games'} 
+                  onClick={() => setActiveTab('student-games')}
+                  color="text-orange-500 dark:text-orange-400"
+                  bgColor="bg-orange-50 dark:bg-orange-900/30"
+                  collapsed={!isSidebarOpen}
+                />
+              )}
             </>
           )}
         </nav>
@@ -602,10 +626,10 @@ export default function App() {
         {/* Mobile Bottom Navigation */}
         <div className="md:hidden h-16 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-around px-2 z-50">
           <MobileNavItem icon={<LayoutDashboard />} active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
-          {(role === 'admin' || user?.email?.toLowerCase() === 'tranlichsu@gmail.com') && (
+          {(role === 'school_admin' || user?.email?.toLowerCase() === 'tranlichsu@gmail.com') && (
             <MobileNavItem icon={<ShieldCheck className="text-indigo-500" />} active={activeTab === 'school-admin'} onClick={() => setActiveTab('school-admin')} />
           )}
-          {role === 'teacher' || role === 'admin' ? (
+          {role === 'teacher' || role === 'homeroom_teacher' || role === 'principal' || role === 'school_admin' ? (
             <>
               <MobileNavItem icon={<Sparkles />} active={activeTab === 'lesson-ai'} onClick={() => setActiveTab('lesson-ai')} />
               <MobileNavItem icon={<Gamepad2 />} active={activeTab === 'games'} onClick={() => setActiveTab('games')} />

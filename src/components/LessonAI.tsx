@@ -13,6 +13,7 @@ import { getVietnam34ProvincesContext } from '../data/vietnam34Provinces';
 import { getTextbookContext } from '../data/textbookTNXH2';
 
 export default function LessonAI() {
+  const [taskType, setTaskType] = useState<'lesson' | 'questions' | 'test' | 'rubric' | 'worksheet'>('lesson');
   const [subject, setSubject] = useState('Tiếng Việt');
   const [grade, setGrade] = useState('Lớp 3');
   const [selectedClassId, setSelectedClassId] = useState('');
@@ -317,64 +318,67 @@ export default function LessonAI() {
       const provinceContext = isGeographyOrProvinces ? `\n\nKIẾN THỨC NỀN TẢNG QUAN TRỌNG (Cập nhật mới nhất):\n${getVietnam34ProvincesContext()}\nHãy sử dụng thông tin trên nếu bài học liên quan đến các tỉnh thành Việt Nam.` : '';
       const textbookContext = isTNXH2 ? `\n\nTHAM KHẢO NỘI DUNG SÁCH GIÁO KHOA (Kết nối tri thức):\n${getTextbookContext()}\nHãy bám sát khung chương trình này khi soạn bài.` : '';
 
-      const promptTemplate = `Bạn là một chuyên gia sư phạm cấp tiểu học xuất sắc tại Việt Nam, am hiểu sâu sắc các văn bản quy phạm pháp luật sau:
+      const promptTemplate = `Bạn là một chuyên gia sư phạm cấp tiểu học xuất sắc tại Việt Nam, am hiểu sâu sắc Chương trình Giáo dục Phổ thông 2018 (CTGDPT 2018) và các văn bản quy phạm pháp luật sau:
 1. Công văn 2345/BGDĐT-GDTH: Hướng dẫn xây dựng kế hoạch giáo dục nhà trường và Kế hoạch bài dạy (giáo án).
 2. Thông tư 08/2024/TT-BGDĐT: Hướng dẫn lồng ghép nội dung giáo dục quốc phòng và an ninh.
 3. Thông tư 02/2025/TT-BGDĐT & Công văn 3456/BGDĐT-GDPT: Khung năng lực số (NLS) cho người học.
 4. Quyết định 3439/QĐ-BGDĐT: Khung nội dung thí điểm giáo dục Trí tuệ nhân tạo (AI).
 
-Nhiệm vụ: ${file ? 'Tôi có cung cấp nội dung giáo án/kế hoạch bài dạy cũ bên dưới.' : `Hãy soạn kế hoạch bài dạy cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. Số tiết: ${duration}.`}${provinceContext}${textbookContext}
+Nhiệm vụ: ${
+  taskType === 'lesson' ? `Hãy soạn kế hoạch bài dạy (Giáo án) theo CTGDPT 2018` :
+  taskType === 'questions' ? `Hãy sinh bộ câu hỏi ôn tập (trắc nghiệm và tự luận)` :
+  taskType === 'test' ? `Hãy tạo một đề kiểm tra hoàn chỉnh (Ma trận + Đề bài + Đáp án)` :
+  taskType === 'rubric' ? `Hãy tạo bảng tiêu chí đánh giá (Rubrics) chi tiết` :
+  `Hãy thiết kế một Phiếu học tập (Worksheet) sinh động`
+} cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. ${duration ? `Số tiết: ${duration}.` : ''}${provinceContext}${textbookContext}
 
 YÊU CẦU QUAN TRỌNG:
-- BÁM SÁT VÀ KHAI THÁC SÂU SGK: Nội dung bài dạy phải đi sâu vào các chi tiết, tình huống và kiến thức trong SGK đã cung cấp. Tuyệt đối không viết chung chung. Khai thác tối đa các ví dụ, hình ảnh được mô tả trong dữ liệu SGK.
-- TRÌNH BÀY KHOA HỌC: Các bước thực hiện trong từng hoạt động phải logic, rõ ràng và mạch lạc.
-- TƯƠNG TÁC HÀI HÒA & CÓ CÂU DẪN: Hoạt động của giáo viên phải bao gồm các câu hỏi gợi mở, lời giảng chi tiết (câu dẫn cụ thể). Hoạt động của học sinh phải có câu trả lời dự kiến cụ thể ("Học sinh trả lời...", "Học sinh thực hiện..."). Đảm bảo học sinh là trung tâm.
+- BÁM SÁT CTGDPT 2018: Phải đảm bảo các yêu cầu cần đạt (YCCĐ) theo đúng khung chương trình mới.
+- BÁM SÁT VÀ KHAI THÁC SÂU SGK: Nội dung bài dạy phải đi sâu vào các chi tiết, tình huống và kiến thức trong SGK đã cung cấp.
+- TRÌNH BÀY KHOA HỌC: Các bước thực hiện rõ ràng, mạch lạc.
+${taskType === 'lesson' ? `
+- TƯƠNG TÁC HÀI HÒA & CÓ CÂU DẪN: Hoạt động của giáo viên phải bao gồm các câu hỏi gợi mở, lời giảng chi tiết (câu dẫn cụ thể). Hoạt động của học sinh phải có câu trả lời dự kiến cụ thể.
+- Đảm bảo đủ 4 bước Tổ chức thực hiện trong mỗi hoạt động: Chuyển giao nhiệm vụ -> Thực hiện nhiệm vụ -> Báo cáo, thảo luận -> Kết luận, nhận định.` : ''}
 
-${file ? `YÊU CẦU ĐẶC BIỆT QUAN TRỌNG ĐỂ BẢO TỒN NGUYÊN TRẠNG (100%):
-1. GIỮ NGUYÊN 100% CÂU CHỮ: Tuyệt đối KHÔNG được thay đổi, sửa đổi, tóm tắt hoặc viết lại bất kỳ câu chữ nào từ giáo án cũ. Văn bản cũ phải được giữ nguyên vẹn từng từ, từng dấu câu.
-2. CHỈ ĐƯỢC THÊM, KHÔNG ĐƯỢC SỬA: Bạn chỉ được phép CHÈN THÊM các nội dung tích hợp (An ninh quốc phòng, Năng lực số, AI) vào các vị trí phù hợp. Tuyệt đối không được xóa bỏ hoặc thay thế nội dung hiện có.
-3. BẢO TỒN CẤU TRÚC BẢNG 2 CỘT: Nếu bản gốc có bảng chia cột (Giáo viên | Học sinh), hãy giữ nguyên định dạng bảng này.
-4. BẢO TỒN TRANH ẢNH VÀ LINK: Giữ nguyên các ghi chú về hình ảnh [Ảnh: ...] và các đường link URL.` : 'Hãy thiết kế một Kế hoạch bài dạy hoàn toàn mới, chính xác theo cấu trúc của Công văn 2345.'}
-
-Yêu cầu về nội dung lồng ghép (Tích hợp tự nhiên theo các văn bản mới nhất):
-- An ninh quốc phòng (TT 08/2024): Lồng ghép tinh thần yêu nước, tự hào dân tộc, ý thức kỷ luật, đoàn kết, giới thiệu về Quân đội/Công an (phù hợp lứa tuổi).
-- Năng lực số (TT 02/2025): Chú trọng các miền năng lực: Khai thác dữ liệu, Giao tiếp/Hợp tác số, Sáng tạo nội dung số, An toàn số, Giải quyết vấn đề.
-- Giáo dục AI (QĐ 3439): Đặt con người làm trung tâm. Học sinh trải nghiệm ứng dụng AI trực quan (nhận diện hình ảnh, giọng nói), hiểu AI do con người tạo ra, giáo dục đạo đức AI (không chia sẻ thông tin cá nhân, tôn trọng bản quyền).
-${extraPrompt ? `Yêu cầu bổ sung: ${extraPrompt}` : ''}
-
-Yêu cầu về cấu trúc đầu ra (Chuẩn CV 2345):
+${taskType === 'lesson' ? `Yêu cầu về cấu trúc đầu ra (Chuẩn CV 2345):
 I. YÊU CẦU CẦN ĐẠT
 - Năng lực đặc thù: Đúng chuẩn môn học.
 - Năng lực chung: Tự chủ/tự học, Giao tiếp/hợp tác, Giải quyết vấn đề/sáng tạo.
 - Phẩm chất: Yêu nước, Nhân ái, Chăm chỉ, Trung thực, Trách nhiệm.
-- Yêu cầu cần đạt về NLS và AI: (Nếu có lồng ghép, ghi rõ mã chỉ báo theo CV 3456 nếu có thể).
+- Yêu cầu cần đạt về NLS và AI: (Nếu có lồng ghép).
 
 II. ĐỒ DÙNG DẠY HỌC
-- Giáo viên: Thiết bị số, học liệu điện tử, phần mềm AI (Teachable Machine, Scratch AI...).
+- Giáo viên: Thiết bị số, học liệu điện tử, phần mềm AI...
 - Học sinh: SGK, vở, vật liệu thực hành.
 
 III. CÁC HOẠT ĐỘNG DẠY HỌC CHỦ YẾU
-(Mỗi hoạt động gồm: Mục tiêu -> Nội dung -> Sản phẩm -> Tổ chức thực hiện. 
-Trong phần Tổ chức thực hiện, BẮT BUỘC sử dụng bảng Markdown 2 cột: | Hoạt động của giáo viên | Hoạt động của học sinh |. 
-Trong bảng, giáo viên và học sinh phải tương tác hài hòa, bổ trợ lẫn nhau qua ĐỦ 4 BƯỚC VÀ CÓ CÂU DẪN CHI TIẾT: 
-1. Chuyển giao nhiệm vụ (Giáo viên nêu câu hỏi, lệnh cụ thể, hướng dẫn rõ ràng); 
-2. Thực hiện nhiệm vụ (Học sinh thảo luận, làm việc cá nhân/nhóm); 
-3. Báo cáo, thảo luận (Học sinh trình bày kết quả, giáo viên điều phối nhận xét); 
-4. Kết luận, nhận định (Giáo viên chốt kiến thức bằng lời giảng chi tiết, nhận xét quá trình).
-Tuyệt đối không được bỏ sót bất kỳ bước nào trong mỗi hoạt động).
+(Sử dụng bảng Markdown 2 cột cho phần tổ chức thực hiện: | Hoạt động của giáo viên | Hoạt động của học sinh |)` : ''}
 
-- Hoạt động 1: Mở đầu / Khởi động.
-- Hoạt động 2: Hình thành kiến thức mới / Khám phá.
-- Hoạt động 3: Luyện tập / Thực hành.
-- Hoạt động 4: Vận dụng / Trải nghiệm.
+${taskType === 'questions' ? `Yêu cầu cấu trúc:
+1. Phần Trắc nghiệm: Ít nhất 5-10 câu hỏi có 4 lựa chọn, chỉ rõ đáp án đúng.
+2. Phần Tự luận: 3-5 câu hỏi tư duy, gợi ý hướng trả lời.` : ''}
 
-IV. ĐIỀU CHỈNH SAU BÀI DẠY (NẾU CÓ)
+${taskType === 'test' ? `Yêu cầu cấu trúc:
+1. Ma trận đề: Bảng phân bổ các mức độ kiến thức (Nhận biết, Thông hiểu, Vận dụng, Vận dụng cao).
+2. Đề bài: Chia thành phần Trắc nghiệm và Tự luận.
+3. Đáp án và Thang điểm: Chi tiết từng phần.` : ''}
 
-LƯU Ý ĐỊNH DẠNG HÀNG ĐẦU: 
-- CẤM TUYỆT ĐỐI SỬ DỤNG KÝ HIỆU ** (DẤU SAO ĐÔI) TRONG TOÀN BỘ VĂN BẢN. Không dùng nó để in đậm hay trang trí. Trình bày bằng văn bản thuần túy hoặc gạch đầu dòng rõ ràng.
-- NẾU CÓ GIÁO ÁN CŨ: BẮT ĐẦU NGAY BẰNG NỘI DUNG CỦA GIÁO ÁN CŨ (bao gồm cả tiêu đề trường, lớp nếu có), KHÔNG thêm bất kỳ lời dẫn nào.
-- NẾU SOẠN MỚI: Bắt đầu ngay vào Mục I.
-- KHÔNG dùng thẻ HTML, KHÔNG dùng ký hiệu lạ (.*). Sử dụng font Times New Roman khi trình bày.`;
+${taskType === 'rubric' ? `Yêu cầu cấu trúc:
+Bảng tiêu chí đánh giá gồm các cột: Tiêu chí, Mức 1 (Cần cố gắng), Mức 2 (Hoàn thành), Mức 3 (Hoàn thành tốt/Xuất sắc).` : ''}
+
+${taskType === 'worksheet' ? `Yêu cầu cấu trúc:
+- Header: Tên bài, Họ và tên học sinh, Lớp.
+- Các phần: Khám phá, Thử thách, Em có biết, Bài tập thực hành. Có không gian để học sinh viết/vẽ.` : ''}
+
+Yêu cầu lồng ghép (Tích hợp tự nhiên):
+- An ninh quốc phòng (TT 08/2024).
+- Năng lực số (TT 02/2025).
+- Giáo dục AI (QĐ 3439).
+
+LƯU Ý ĐỊNH DẠNG: 
+- CẤM TUYỆT ĐỐI SỬ DỤNG KÝ HIỆU ** (DẤU SAO ĐÔI).
+- KHÔNG dùng thẻ HTML.
+- Sử dụng bảng Markdown khi cần chia cột.`;
 
       const contents: any[] = [{ text: promptTemplate }];
       
@@ -438,27 +442,11 @@ LƯU Ý ĐỊNH DẠNG HÀNG ĐẦU:
     <div className="flex flex-col lg:flex-row gap-6 h-full">
       <div className="w-full lg:w-1/3 space-y-6 flex flex-col h-full overflow-y-auto pr-2">
         <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm shrink-0">
-          <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800 dark:text-white">
-            <FileText className="text-purple-600 w-5 h-5" /> Thông tin bài học
+          <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-slate-800 dark:text-white">
+            <Cpu className="text-indigo-600 w-5 h-5" /> Trợ lý Soạn giáo án AI
           </h3>
+
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Chọn Lớp học của bạn</label>
-              <select 
-                value={selectedClassId} 
-                onChange={(e) => {
-                  const cls = classes.find(c => c.id === e.target.value);
-                  setSelectedClassId(e.target.value);
-                  if (cls) setGrade(cls.grade);
-                }}
-                className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:border-purple-400 dark:text-white"
-              >
-                <option value="">-- Chọn lớp --</option>
-                {classes.map(c => (
-                  <option key={c.id} value={c.id}>{c.name} ({c.grade})</option>
-                ))}
-              </select>
-            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Lớp {file && <span className="text-[10px] text-slate-400 font-normal">(Tùy chọn)</span>}</label>
