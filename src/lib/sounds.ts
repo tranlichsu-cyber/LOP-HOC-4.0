@@ -47,3 +47,20 @@ export const stopBackgroundMusic = () => {
     bgAudio = null;
   }
 };
+
+/**
+ * Text-to-Speech using Web Speech API
+ */
+export const speakText = (text: string, language: string = 'vi-VN') => {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  
+  // Stop any current speech
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = language;
+  utterance.rate = 1.0;
+  utterance.pitch = 1.1; // Slightly higher pitch for kids
+  
+  window.speechSynthesis.speak(utterance);
+};

@@ -1,14 +1,44 @@
 import React, { useState, useRef } from 'react';
-import { Play, Pause, RotateCcw, Lightbulb, Microscope, Atom, Globe, BookOpen, ChevronRight, Sparkles, Info, X } from 'lucide-react';
+import { Play, Pause, RotateCcw, Lightbulb, Microscope, Atom, Globe, BookOpen, ChevronRight, Sparkles, Info, X, Users, Download, Star as StarIcon, Filter } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function InteractiveLibrary() {
-  const [activeTab, setActiveTab] = useState<'simulations' | 'videos'>('simulations');
+  const [activeTab, setActiveTab] = useState<'simulations' | 'videos' | 'discover'>('simulations');
   const [selectedSim, setSelectedSim] = useState<string | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  const communityResources = [
+    {
+      id: 'math-race',
+      title: 'Đường đua toán học',
+      author: 'Cô Lan - Tiểu học Kim Đồng',
+      downloads: 1240,
+      rating: 4.8,
+      tags: ['Toán', 'Lớp 3'],
+      image: 'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?q=80&w=400&h=250&auto=format&fit=crop'
+    },
+    {
+      id: 'science-adventure',
+      title: 'Phiêu lưu cùng tế bào',
+      author: 'Thầy Hùng - THCS Hòa Bình',
+      downloads: 850,
+      rating: 4.5,
+      tags: ['Khoa học', 'Lớp 6'],
+      image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=400&h=250&auto=format&fit=crop'
+    },
+    {
+      id: 'english-quest',
+      title: 'Chinh phục từ vựng',
+      author: 'Ms. Emily - Cầu Giấy',
+      downloads: 3200,
+      rating: 4.9,
+      tags: ['English', 'Primary'],
+      image: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=400&h=250&auto=format&fit=crop'
+    }
+  ];
 
   const simulations = [
     {
@@ -108,6 +138,12 @@ export default function InteractiveLibrary() {
             >
               Video tương tác
             </button>
+            <button 
+              onClick={() => setActiveTab('discover')}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition ${activeTab === 'discover' ? 'bg-white dark:bg-slate-700 shadow-sm text-emerald-600 dark:text-emerald-400' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              Khám phá cộng đồng
+            </button>
           </div>
         </div>
       </div>
@@ -158,6 +194,72 @@ export default function InteractiveLibrary() {
                 </div>
               </motion.div>
             ))}
+          </div>
+        ) : activeTab === 'discover' ? (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+               <h3 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2">
+                 <Users className="w-5 h-5 text-emerald-500" /> Tài liệu từ cộng đồng giáo viên
+               </h3>
+               <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300">
+                  <Filter className="w-4 h-4" /> Lọc nội dung
+               </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {communityResources.map(res => (
+                <motion.div 
+                  key={res.id}
+                  whileHover={{ y: -8 }}
+                  className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden group"
+                >
+                  <div className="h-48 relative">
+                    <img src={res.image} alt={res.title} className="w-full h-full object-cover transition duration-500 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center text-white">
+                      <div className="flex gap-2">
+                        {res.tags.map(tag => (
+                          <span key={tag} className="px-2 py-0.5 bg-white/20 backdrop-blur-md rounded-md text-[10px] font-black uppercase">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-1 bg-yellow-500 text-xs font-black px-2 py-1 rounded-lg">
+                        <StarIcon className="w-3 h-3 fill-current" /> {res.rating}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-black text-slate-800 dark:text-white mb-1">{res.title}</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-2 font-medium">
+                      <Users className="w-4 h-4" /> {res.author}
+                    </p>
+                    <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-700 pt-4">
+                      <div className="text-emerald-500 font-black text-sm flex items-center gap-1">
+                         <Download className="w-4 h-4" /> {res.downloads}
+                      </div>
+                      <button className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-sm transition shadow-lg shadow-emerald-200 dark:shadow-none">
+                         Tải về ngay
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-[2.5rem] p-10 text-white relative overflow-hidden">
+               <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+               <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                  <div className="max-w-xl text-center md:text-left">
+                    <h2 className="text-3xl font-black mb-3 italic">"Chia sẻ là hạnh phúc!"</h2>
+                    <p className="font-medium text-blue-100">
+                      Hãy chia sẻ những trò chơi và học liệu số tuyệt vời của bạn để cùng xây dựng cộng đồng giáo dục Việt Nam ngày càng phát triển.
+                    </p>
+                  </div>
+                  <button className="px-10 py-5 bg-white text-blue-600 rounded-2xl font-black text-lg hover:scale-105 transition shadow-2xl uppercase tracking-wider">
+                     Đóng góp tài liệu
+                  </button>
+               </div>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center">

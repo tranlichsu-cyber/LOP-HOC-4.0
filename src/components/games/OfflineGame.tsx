@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Star, Send } from 'lucide-react';
+import { X, Star, Send, Volume2 } from 'lucide-react';
 import { Game, Question } from '../../types';
-import { playSound, startBackgroundMusic, stopBackgroundMusic } from '../../lib/sounds';
+import { playSound, startBackgroundMusic, stopBackgroundMusic, speakText } from '../../lib/sounds';
+import confetti from 'canvas-confetti';
 
 export default function OfflineGame({ game, onClose }: { game: Game, onClose: () => void }) {
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -36,6 +37,12 @@ export default function OfflineGame({ game, onClose }: { game: Game, onClose: ()
       } else {
         setIsGameOver(true);
         playSound('winner');
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#3b82f6', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6']
+        });
         stopBackgroundMusic();
       }
     }, 1500);
@@ -53,6 +60,12 @@ export default function OfflineGame({ game, onClose }: { game: Game, onClose: ()
       } else {
         setIsGameOver(true);
         playSound('winner');
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#3b82f6', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6']
+        });
         stopBackgroundMusic();
       }
     }, 1500);
@@ -107,9 +120,17 @@ export default function OfflineGame({ game, onClose }: { game: Game, onClose: ()
         </div>
 
         <div className="w-full max-w-5xl flex flex-col items-center z-10 bg-white/60 p-8 sm:p-12 rounded-[3rem] shadow-xl border-4 border-white backdrop-blur-sm">
-          <div className="w-full text-center mb-10">
+          <div className="w-full text-center mb-10 relative">
             {renderMedia(currentQuestion.mediaUrl)}
-            <h2 className="text-3xl sm:text-5xl font-black text-indigo-900 mt-10 leading-tight drop-shadow-sm">{currentQuestion.text}</h2>
+            <div className="flex items-center justify-center gap-4 mt-10">
+              <h2 className="text-3xl sm:text-5xl font-black text-indigo-900 leading-tight drop-shadow-sm">{currentQuestion.text}</h2>
+              <button 
+                onClick={() => speakText(currentQuestion.text)}
+                className="p-3 bg-white hover:bg-slate-50 text-indigo-500 rounded-2xl shadow-md border-2 border-indigo-100 flex-shrink-0 transition active:scale-95"
+              >
+                <Volume2 className="w-8 h-8" />
+              </button>
+            </div>
           </div>
           
           <div className="w-full">

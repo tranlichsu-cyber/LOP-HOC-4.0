@@ -1,29 +1,63 @@
 import React from 'react';
-import { Users, BookOpen, Gamepad2, ShieldCheck, Sparkles } from 'lucide-react';
-import { motion, Variants } from 'motion/react';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from 'chart.js';
-import { Bar, Pie } from 'react-chartjs-2';
+import { Users, BookOpen, Gamepad2, ShieldCheck, Sparkles, LayoutPanelLeft, Loader2, BrainCircuit } from 'lucide-react';
+import { motion, Variants, AnimatePresence } from 'motion/react';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip as RechartsTooltip, 
+  Legend as RechartsLegend, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line
+} from 'recharts';
+import { Student, Homework } from '../types';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
+import { GoogleGenAI } from "@google/genai";
 
-export default function Dashboard({ role, stats }: { role: string, stats: { students: number, games: number } }) {
+export default function Dashboard({ role, stats, studentsList = [], homeworkList = [], studentProfile }: { 
+  role: string, 
+  stats: { students: number, games: number },
+  studentsList?: Student[],
+  homeworkList?: Homework[],
+  studentProfile?: Student | null
+}) {
+  const [aiAdvice, setAiAdvice] = React.useState<string>('');
+  const [isGeneratingAdvice, setIsGeneratingAdvice] = React.useState(false);
+
+  const generateAIAdvice = async () => {
+    setIsGeneratingAdvice(true);
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      
+      const classContext = `
+        Báo cáo tình hình lớp học:
+        - Số lượng học sinh: ${studentsList.length}
+        - Số lượng bài tập đã giao: ${homeworkList.length}
+        - Tỷ lệ hoàn thành trung bình: ${subjectData.reduce((acc, curr) => acc + curr.rate, 0) / (subjectData.length || 1)}%
+        - Môn có tỷ lệ thấp nhất: ${[...subjectData].sort((a,b) => a.rate - b.rate)[0]?.name || 'N/A'}
+      `;
+
+      const prompt = `Bạn là một chuyên gia tư vấn giáo dục. Hãy phân tích dữ liệu lớp học sau và đưa ra 3 lời khuyên ngắn gọn, thiết thực cho giáo viên để cải thiện kết quả học tập. Phản hồi bằng tiếng Việt, giọng điệu chuyên nghiệp nhưng gần gũi. 
+      Dữ liệu: ${classContext}`;
+
+      const result = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt
+      });
+      setAiAdvice(result.text || "Hệ thống không đưa ra được lời khuyên lúc này.");
+    } catch (error) {
+      console.error("AI Advice error:", error);
+      setAiAdvice("Hệ thống AI đang bận, vui lòng thử lại sau!");
+    } finally {
+      setIsGeneratingAdvice(false);
+    }
+  };
   const container: Variants = {
     hidden: { opacity: 0 },
     show: {
@@ -47,35 +81,55 @@ export default function Dashboard({ role, stats }: { role: string, stats: { stud
     }
   };
 
-  const barData = {
-    labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'],
-    datasets: [
-      {
-        label: 'Tỷ lệ hoàn thành',
-        data: [65, 78, 82, 95],
-        backgroundColor: 'rgba(59, 130, 246, 0.8)',
-        borderRadius: 12,
-        hoverBackgroundColor: 'rgba(59, 130, 246, 1)',
-      },
-    ],
+  // Process data for charts
+  const getSubjectData = () => {
+    if (homeworkList.length === 0) {
+      return [
+        { name: 'Toán', rate: 85 },
+        { name: 'Tiếng Việt', rate: 72 },
+        { name: 'Tiếng Anh', rate: 90 },
+        { name: 'Tự nhiên & XH', rate: 65 },
+      ];
+    }
+
+    const subjectsMap: Record<string, { total: number, submitted: number }> = {};
+    const studentCount = studentsList.length || 1;
+
+    homeworkList.forEach(hw => {
+      const subj = hw.subject || 'Khác';
+      if (!subjectsMap[subj]) subjectsMap[subj] = { total: 0, submitted: 0 };
+      
+      subjectsMap[subj].total += studentCount;
+      // We assume feedback presence means submission for this simple dashboard
+      subjectsMap[subj].submitted += Object.keys(hw.feedback || {}).length;
+    });
+
+    return Object.entries(subjectsMap).map(([name, data]) => ({
+      name,
+      rate: Math.round((data.submitted / data.total) * 100) || 0
+    }));
   };
 
-  const pieData = {
-    labels: ['Giỏi', 'Khá', 'Trung bình', 'Yếu'],
-    datasets: [
-      {
-        data: [35, 45, 15, 5],
-        backgroundColor: [
-          'rgba(16, 185, 129, 0.8)',
-          'rgba(59, 130, 246, 0.8)',
-          'rgba(245, 158, 11, 0.8)',
-          'rgba(239, 68, 68, 0.8)',
-        ],
-        borderWidth: 0,
-        hoverOffset: 10
-      },
-    ],
+  const getWeeklyData = () => {
+    // Mocking weekly data as we don't have historical progression yet
+    return [
+      { week: 'Tuần 1', progress: 65 },
+      { week: 'Tuần 2', progress: 78 },
+      { week: 'Tuần 3', progress: 82 },
+      { week: 'Tuần 4', progress: 95 },
+    ];
   };
+
+  const subjectData = getSubjectData();
+  const weeklyData = getWeeklyData();
+
+  const PIE_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
+  const pieData = [
+    { name: 'Giỏi', value: 35 },
+    { name: 'Khá', value: 45 },
+    { name: 'Trung bình', value: 15 },
+    { name: 'Yếu', value: 5 },
+  ];
 
   return (
     <motion.div 
@@ -93,7 +147,7 @@ export default function Dashboard({ role, stats }: { role: string, stats: { stud
           </>
         ) : (
           <>
-            <motion.div variants={item}><StatCard icon={<BookOpen />} label="Bài tập cần làm" value={3} color="bg-rose-500" /></motion.div>
+            <motion.div variants={item}><StatCard icon={<BookOpen />} label="Bài tập cần làm" value={homeworkList.filter(h => !h.feedback?.[studentProfile?.id || '']).length || 3} color="bg-rose-500" /></motion.div>
             <motion.div variants={item}><StatCard icon={<Users />} label="Điểm trung bình" value={9.5} color="bg-emerald-500" /></motion.div>
             <motion.div variants={item}><StatCard icon={<Gamepad2 />} label="Cúp thưởng" value={15} color="bg-amber-500" /></motion.div>
           </>
@@ -101,34 +155,152 @@ export default function Dashboard({ role, stats }: { role: string, stats: { stud
       </div>
 
       {(role === 'teacher' || role === 'admin') && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <motion.div variants={item} className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl shadow-slate-200/20 dark:shadow-none">
+              <h3 className="font-black text-xl text-slate-800 dark:text-white mb-6 flex items-center gap-3">
+                <div className="w-2 h-6 bg-blue-500 rounded-full" />
+                Tiến độ theo môn học (%)
+              </h3>
+              <div className="h-72 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={subjectData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                    <XAxis 
+                      dataKey="name" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#64748b', fontWeight: 600, fontSize: 12 }}
+                      dy={10}
+                    />
+                    <YAxis 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#64748b', fontWeight: 600, fontSize: 12 }} 
+                      dx={-10}
+                    />
+                    <RechartsTooltip 
+                      cursor={{ fill: '#f1f5f9' }}
+                      contentStyle={{ 
+                        borderRadius: '16px', 
+                        border: 'none', 
+                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                        fontWeight: 'bold'
+                      }}
+                    />
+                    <Bar 
+                      dataKey="rate" 
+                      fill="#3b82f6" 
+                      radius={[8, 8, 0, 0]} 
+                      barSize={40}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+
+            <motion.div variants={item} className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl shadow-slate-200/20 dark:shadow-none">
+              <h3 className="font-black text-xl text-slate-800 dark:text-white mb-6 flex items-center gap-3">
+                <div className="w-2 h-6 bg-purple-500 rounded-full" />
+                Tiến độ hoàn thành theo tuần (%)
+              </h3>
+              <div className="h-72 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={weeklyData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                    <XAxis 
+                      dataKey="week" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#64748b', fontWeight: 600, fontSize: 12 }}
+                      dy={10}
+                    />
+                    <YAxis 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#64748b', fontWeight: 600, fontSize: 12 }}
+                      dx={-10}
+                    />
+                    <RechartsTooltip 
+                      cursor={{ fill: '#f1f5f9' }}
+                      contentStyle={{ 
+                        borderRadius: '16px', 
+                        border: 'none', 
+                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                        fontWeight: 'bold'
+                      }}
+                    />
+                    <Bar 
+                      dataKey="progress" 
+                      fill="#8b5cf6" 
+                      radius={[8, 8, 0, 0]} 
+                      barSize={40}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          </div>
+
           <motion.div variants={item} className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl shadow-slate-200/20 dark:shadow-none">
-            <h3 className="font-black text-xl text-slate-800 dark:text-white mb-6 flex items-center gap-2">
-              <div className="w-2 h-6 bg-blue-500 rounded-full" />
-              Tỷ lệ hoàn thành bài tập
-            </h3>
-            <div className="h-72">
-              <Bar data={barData} options={{ 
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                  y: { beginAtZero: true, grid: { display: false } },
-                  x: { grid: { display: false } }
-                }
-              }} />
-            </div>
-          </motion.div>
-          <motion.div variants={item} className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl shadow-slate-200/20 dark:shadow-none">
-            <h3 className="font-black text-xl text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+            <h3 className="font-black text-xl text-slate-800 dark:text-white mb-6 flex items-center gap-3">
               <div className="w-2 h-6 bg-emerald-500 rounded-full" />
-              Phân loại học lực
+              Phân loại học lực lớp học
             </h3>
             <div className="h-72 flex items-center justify-center">
-              <Pie data={pieData} options={{ 
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'right' } }
-              }} />
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip 
+                    contentStyle={{ borderRadius: '16px', border: 'none', fontWeight: 'bold' }}
+                  />
+                  <RechartsLegend verticalAlign="middle" align="right" layout="vertical" />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
+          </motion.div>
+
+          <motion.div variants={item} className="bg-gradient-to-br from-indigo-500 to-purple-600 p-8 rounded-3xl text-white shadow-xl relative overflow-hidden">
+             <div className="absolute top-0 right-0 opacity-10"><BrainCircuit className="w-40 h-40" /></div>
+             <div className="relative z-10 flex flex-col items-center text-center">
+                <h3 className="text-2xl font-black mb-4 flex items-center gap-2">
+                   <Sparkles className="w-8 h-8 text-yellow-300" /> Trợ Lý AI: Tư Vấn Lớp Học
+                </h3>
+                <p className="text-indigo-100 mb-8 font-medium max-w-md">
+                   Sử dụng trí tuệ nhân tạo để phân tích dữ liệu và nhận các lời khuyên chuyên sâu cho lớp học của bạn.
+                </p>
+                
+                <AnimatePresence mode="wait">
+                   {aiAdvice ? (
+                     <motion.div 
+                       initial={{ opacity: 0, y: 10 }}
+                       animate={{ opacity: 1, y: 0 }}
+                       className="bg-white/10 backdrop-blur-md rounded-2xl p-6 text-left w-full border border-white/20 mb-6"
+                     >
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap">{aiAdvice}</p>
+                     </motion.div>
+                   ) : null}
+                </AnimatePresence>
+
+                <button 
+                  onClick={generateAIAdvice}
+                  disabled={isGeneratingAdvice}
+                  className="px-10 py-4 bg-white text-indigo-600 rounded-2xl font-black hover:scale-105 transition disabled:opacity-50 flex items-center gap-2 shadow-2xl"
+                >
+                  {isGeneratingAdvice ? <Loader2 className="w-5 h-5 animate-spin" /> : <BrainCircuit className="w-5 h-5" />}
+                  {aiAdvice ? 'Cập nhật tư vấn' : 'Phân tích dữ liệu'}
+                </button>
+             </div>
           </motion.div>
         </div>
       )}

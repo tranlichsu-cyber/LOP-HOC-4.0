@@ -186,7 +186,7 @@ export default function LessonAI() {
           }),
         ],
         alignment: "center",
-        spacing: { after: 400 },
+        spacing: { after: 300, line: 276 },
       }));
 
       const lines = result.split('\n');
@@ -216,7 +216,8 @@ export default function LessonAI() {
                       size: 24,
                       color: i === 0 || (inTable && currentTableRows.length === 0) ? "FFFFFF" : "000000",
                       font: "Times New Roman"
-                    })] 
+                    })],
+                    spacing: { line: 276, before: 100, after: 100 }
                   })],
                   borders: {
                     top: { style: BorderStyle.SINGLE, size: 1, color: selectedTheme.primary.replace('#', '') },
@@ -241,20 +242,27 @@ export default function LessonAI() {
           
           if (line) {
             const isHeader = /^(I|II|III|IV)\./.test(line);
+            const isSubHeader = /^(Hoạt động|Mục tiêu|Nội dung|Sản phẩm|Tổ chức)/.test(line);
+            
             docChildren.push(new Paragraph({
               children: [
                 new TextRun({
                   text: line,
-                  bold: isHeader,
+                  bold: isHeader || isSubHeader,
                   size: isHeader ? 28 : 24,
                   color: isHeader ? selectedTheme.primary.replace('#', '') : "000000",
                   font: "Times New Roman"
                 }),
               ],
-              spacing: { before: isHeader ? 200 : 0, after: 200 },
+              spacing: { 
+                before: isHeader ? 200 : (isSubHeader ? 100 : 0), 
+                after: isHeader ? 100 : 0, 
+                line: 276 
+              },
             }));
           } else {
-            docChildren.push(new Paragraph({ spacing: { after: 200 } }));
+            // Optional: Only add a small space for empty lines to avoid double-gaps
+            docChildren.push(new Paragraph({ spacing: { after: 60, line: 276 } }));
           }
         }
       }

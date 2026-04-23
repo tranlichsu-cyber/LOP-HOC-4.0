@@ -320,7 +320,7 @@ export default function App() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard': return <Dashboard role={role} stats={{ students: students.length, games: offlineGames.length + liveGames.length }} />;
+      case 'dashboard': return <Dashboard role={role} stats={{ students: students.length, games: offlineGames.length + liveGames.length }} studentsList={students} homeworkList={homework} studentProfile={studentProfile} />;
       case 'school-admin': return userProfile ? <SchoolAdmin userProfile={userProfile} /> : null;
       case 'lesson-ai': return <LessonAI />;
       case 'worksheet': return <Worksheet />;
@@ -329,7 +329,7 @@ export default function App() {
       case 'interactive-library': return <InteractiveLibrary />;
       case 'student-homework': return <StudentHomework homework={homework} />;
       case 'student-games': return <StudentGames offlineGames={offlineGames} studentProfile={studentProfile} onCompleteGame={() => awardStudentXP(100)} />;
-      default: return <Dashboard role={role} stats={{ students: students.length, games: offlineGames.length + liveGames.length }} />;
+      default: return <Dashboard role={role} stats={{ students: students.length, games: offlineGames.length + liveGames.length }} studentsList={students} homeworkList={homework} studentProfile={studentProfile} />;
     }
   };
 
