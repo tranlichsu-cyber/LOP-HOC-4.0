@@ -15,7 +15,6 @@ import {
   X,
   ArrowLeft,
   ShieldCheck,
-  Library,
   Globe
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -36,7 +35,6 @@ import Classroom from './components/Classroom';
 import SchoolAdmin from './components/SchoolAdmin';
 import StudentHomework from './components/StudentHomework';
 import StudentGames from './components/StudentGames';
-import InteractiveLibrary from './components/InteractiveLibrary';
 import ResourceLibrary from './components/ResourceLibrary';
 import Login from './components/Login';
 
@@ -334,7 +332,6 @@ export default function App() {
       case 'worksheet': return <Worksheet />;
       case 'games': return <Games offlineGames={offlineGames} liveGames={liveGames} setOfflineGames={setOfflineGames} setLiveGames={setLiveGames} students={students} />;
       case 'classroom': return <Classroom userProfile={userProfile} students={students} setStudents={setStudents} homework={homework} setHomework={setHomework} offlineGames={offlineGames} />;
-      case 'interactive-library': return <InteractiveLibrary />;
       case 'resource-library': return userProfile ? <ResourceLibrary userProfile={userProfile} /> : null;
       case 'student-homework': return <StudentHomework homework={homework} />;
       case 'student-games': return <StudentGames offlineGames={offlineGames} studentProfile={studentProfile} onCompleteGame={() => awardStudentXP(100)} />;
@@ -454,15 +451,6 @@ export default function App() {
           <div className="pt-4 pb-2">
             {isSidebarOpen && <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-3">Học Liệu</p>}
           </div>
-          <NavItem 
-            icon={<Library />} 
-            label="Thí nghiệm ảo 3D" 
-            active={activeTab === 'interactive-library'} 
-            onClick={() => setActiveTab('interactive-library')}
-            color="text-blue-600 dark:text-blue-400"
-            bgColor="bg-blue-50 dark:bg-blue-900/30"
-            collapsed={!isSidebarOpen}
-          />
           <NavItem 
             icon={<Globe />} 
             label="Kho học liệu số" 
@@ -640,7 +628,6 @@ export default function App() {
               <MobileNavItem icon={<Joystick />} active={activeTab === 'student-games'} onClick={() => setActiveTab('student-games')} />
             </>
           )}
-          <MobileNavItem icon={<Library />} active={activeTab === 'interactive-library'} onClick={() => setActiveTab('interactive-library')} />
         </div>
       </main>
     </div>

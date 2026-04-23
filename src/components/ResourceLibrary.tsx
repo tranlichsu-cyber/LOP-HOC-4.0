@@ -47,6 +47,7 @@ export default function ResourceLibrary({ userProfile }: ResourceLibraryProps) {
   const [selectedSubject, setSelectedSubject] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [newResource, setNewResource] = useState<Partial<DigitalResource>>({
     type: 'lesson_plan',
     isPublic: true,
@@ -54,10 +55,23 @@ export default function ResourceLibrary({ userProfile }: ResourceLibraryProps) {
     grade: 'Lớp 3'
   });
 
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     fetchResources();
     fetchDepartments();
   }, [userProfile.schoolId, activeType, selectedGrade, selectedSubject]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      // Automatically set title if empty
+      if (!newResource.title) {
+        setNewResource(prev => ({ ...prev, title: file.name.split('.')[0] }));
+      }
+    }
+  };
 
   const fetchResources = async () => {
     if (!userProfile.schoolId) return;
@@ -113,12 +127,14 @@ export default function ResourceLibrary({ userProfile }: ResourceLibraryProps) {
         authorId: userProfile.uid,
         authorName: userProfile.displayName || 'Giáo viên',
         schoolId: userProfile.schoolId,
+        fileName: selectedFile?.name || null,
         createdAt: new Date().toISOString(),
         downloads: 0
       };
       
       await addDoc(collection(db, 'schools', userProfile.schoolId, 'resources'), resourceData);
       setShowUploadModal(false);
+      setSelectedFile(null);
       fetchResources();
     } catch (error) {
       console.error("Error uploading resource:", error);
@@ -186,34 +202,40 @@ export default function ResourceLibrary({ userProfile }: ResourceLibraryProps) {
         </div>
       </div>
 
+      {/* Resources Summary / Quick Sort */}
+      <div className="flex overflow-x-auto pb-2 gap-4 no-scrollbar">
+        <button 
+          onClick={() => setActiveType('all')}
+          className={`flex-none flex flex-col items-center justify-center p-4 rounded-2xl border transition-all w-32 ${activeType === 'all' ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none translate-y-[-4px]' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-indigo-400'}`}
+        >
+          <div className={`p-2 rounded-xl mb-2 ${activeType === 'all' ? 'bg-white/20' : 'bg-indigo-50 dark:bg-indigo-900/30'}`}>
+            <Globe className="w-6 h-6" />
+          </div>
+          <span className="text-xs font-bold">Tất cả</span>
+          <span className="text-[10px] opacity-60 font-medium mt-1">{resources.length} tài liệu</span>
+        </button>
+
+        {RESOURCE_TYPES.map(item => (
+          <button 
+            key={item.type}
+            onClick={() => setActiveType(item.type)}
+            className={`flex-none flex flex-col items-center justify-center p-4 rounded-2xl border transition-all w-32 ${activeType === item.type ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none translate-y-[-4px]' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-indigo-400'}`}
+          >
+            <div className={`p-2 rounded-xl mb-2 ${activeType === item.type ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-900/50'}`}>
+              {item.icon}
+            </div>
+            <span className="text-xs font-bold text-center leading-tight">{item.label}</span>
+            <span className="text-[10px] opacity-60 font-medium mt-1">{resources.filter(r => r.type === item.type).length} tài liệu</span>
+          </button>
+        ))}
+      </div>
+
       {/* Main Content Grid */}
       <div className="flex flex-col lg:flex-row gap-6 flex-1 overflow-hidden">
-        {/* Left Sidebar: Types & Departments */}
-        <div className="w-full lg:w-64 space-y-6 shrink-0">
+        {/* Left Sidebar: Departments */}
+        <div className="w-full lg:w-48 space-y-6 shrink-0">
           <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Loại học liệu</h3>
-            <div className="space-y-1">
-              <button 
-                onClick={() => setActiveType('all')}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition ${activeType === 'all' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900'}`}
-              >
-                <span className="flex items-center gap-2"><Globe className="w-4 h-4" /> Tất cả</span>
-                <span className="text-[10px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-full">{resources.length}</span>
-              </button>
-              {RESOURCE_TYPES.map(item => (
-                <button 
-                  key={item.type}
-                  onClick={() => setActiveType(item.type)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition ${activeType === item.type ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900'}`}
-                >
-                  <span className="flex items-center gap-2">{item.icon} {item.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Tổ chuyên môn</h3>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Môn học / Tổ</h3>
             <div className="space-y-2">
               {departments.length === 0 ? (
                 <p className="text-[10px] text-slate-400 text-center py-2 italic font-medium">Chưa có tổ chuyên môn</p>
@@ -221,9 +243,9 @@ export default function ResourceLibrary({ userProfile }: ResourceLibraryProps) {
                 departments.map(dept => (
                   <button 
                     key={dept.id}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 group"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 group text-left"
                   >
-                    <Users className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />
+                    <Users className="w-4 h-4 text-slate-400 group-hover:text-indigo-500 shrink-0" />
                     <span className="truncate">{dept.name}</span>
                   </button>
                 ))
@@ -330,33 +352,62 @@ export default function ResourceLibrary({ userProfile }: ResourceLibraryProps) {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tên tài liệu / Tiêu đề</label>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1 text-center">Tệp tin tài liệu</label>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all ${selectedFile ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:border-indigo-400'}`}
+                  >
+                    <div className={`p-2 rounded-full mb-2 ${selectedFile ? 'bg-indigo-500 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
+                      <Upload className="w-5 h-5" />
+                    </div>
+                    {selectedFile ? (
+                      <div className="text-center">
+                        <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400 truncate max-w-[250px]">{selectedFile.name}</p>
+                        <p className="text-[10px] text-slate-500">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB • Nhấp để thay đổi</p>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-sm font-bold text-slate-600 dark:text-slate-400">Nhấp vào đây để chọn tệp</p>
+                        <p className="text-[10px] text-slate-500 mt-1">Hỗ trợ PDF, DOCX, PPTX, MP4, .zip...</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Tên tài liệu / Tiêu đề</label>
                   <input 
                     type="text"
                     value={newResource.title || ''}
                     onChange={(e) => setNewResource({...newResource, title: e.target.value})}
                     placeholder="VD: Giáo án Tiếng Việt Lớp 3 Tuần 24..."
-                    className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-indigo-500 dark:text-white"
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-white transition-all shadow-inner"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Loại tài liệu</label>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Nhóm tài liệu</label>
                     <select 
                       value={newResource.type}
                       onChange={(e) => setNewResource({...newResource, type: e.target.value as ResourceType})}
-                      className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none dark:text-white"
+                      className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 appearance-none"
                     >
                       {RESOURCE_TYPES.map(t => <option key={t.type} value={t.type}>{t.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Khối lớp</label>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Dành cho Khối</label>
                     <select 
                       value={newResource.grade}
                       onChange={(e) => setNewResource({...newResource, grade: e.target.value})}
-                      className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none dark:text-white"
+                      className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 appearance-none"
                     >
                       <option>Lớp 1</option>
                       <option>Lớp 2</option>
@@ -367,40 +418,59 @@ export default function ResourceLibrary({ userProfile }: ResourceLibraryProps) {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Môn học</label>
-                  <select 
-                    value={newResource.subject}
-                    onChange={(e) => setNewResource({...newResource, subject: e.target.value})}
-                    className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none dark:text-white"
-                  >
-                    <option>Tiếng Việt</option>
-                    <option>Toán</option>
-                    <option>Tiếng Anh</option>
-                    <option>Tự nhiên & Xã hội</option>
-                    <option>Lịch sử & Địa lí</option>
-                    <option>Tin học</option>
-                  </select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Môn học</label>
+                    <select 
+                      value={newResource.subject}
+                      onChange={(e) => setNewResource({...newResource, subject: e.target.value})}
+                      className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 appearance-none"
+                    >
+                      <option>Tiếng Việt</option>
+                      <option>Toán</option>
+                      <option>Tiếng Anh</option>
+                      <option>Tự nhiên & Xã hội</option>
+                      <option>Lịch sử & Địa lí</option>
+                      <option>Khoa học</option>
+                      <option>Tin học</option>
+                      <option>Công nghệ</option>
+                      <option>Đạo đức</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Tổ chuyên môn</label>
+                    <select 
+                      value={newResource.departmentId || ''}
+                      onChange={(e) => setNewResource({...newResource, departmentId: e.target.value})}
+                      className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 appearance-none"
+                    >
+                      <option value="">-- Chọn tổ --</option>
+                      {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                    </select>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-4 py-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={newResource.isPublic}
-                      onChange={(e) => setNewResource({...newResource, isPublic: e.target.checked})}
-                      className="w-4 h-4 text-indigo-600 rounded"
-                    />
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Chia sẻ toàn trường</span>
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <div className="relative flex items-center">
+                      <input 
+                        type="checkbox" 
+                        checked={newResource.isPublic}
+                        onChange={(e) => setNewResource({...newResource, isPublic: e.target.checked})}
+                        className="peer w-5 h-5 rounded-md border-2 border-slate-300 dark:border-slate-600 appearance-none checked:bg-indigo-600 checked:border-indigo-600 transition-all font-bold"
+                      />
+                      <svg className="absolute w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 left-1 transition-opacity font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span className="text-sm font-bold text-slate-600 dark:text-slate-400 group-hover:text-indigo-600 transition-colors">Chia sẻ công khai toàn trường</span>
                   </label>
                 </div>
 
                 <button 
                   onClick={handleUpload}
                   disabled={!newResource.title}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold py-4 rounded-2xl transition shadow-lg shadow-indigo-100 dark:shadow-none"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-indigo-200 dark:shadow-none active:scale-95"
                 >
-                  Xác nhận tải lên
+                  Xác nhận đưa lên kho
                 </button>
               </div>
             </motion.div>
