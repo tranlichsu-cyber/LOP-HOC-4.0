@@ -124,7 +124,7 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
             <h2 className="text-xl font-black text-white tracking-widest uppercase">Trường Lý Tự Trọng</h2>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] font-bold text-slate-400 tracking-[0.2em] uppercase">Hệ thống giáo dục thông minh</span>
+              <span className="text-[10px] font-bold text-slate-400 tracking-[0.2em] uppercase">Hệ thống giáo dục thông minh nội bộ</span>
             </div>
           </div>
         </motion.div>
@@ -183,7 +183,7 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
                 />
             </div>
             <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Trường Lý Tự Trọng</h1>
-            <p className="text-sm font-bold text-slate-400">Hệ thống giáo dục thông minh</p>
+            <p className="text-sm font-bold text-slate-400">Hệ thống giáo dục thông minh nội bộ</p>
         </div>
 
         <motion.div 
