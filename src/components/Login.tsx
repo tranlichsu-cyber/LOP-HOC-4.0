@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
-import { motion } from 'motion/react';
-import { Sparkles, GraduationCap, UserCircle, KeyRound, ArrowRight, Chrome } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Sparkles, GraduationCap, UserCircle, KeyRound, ArrowRight, Chrome, BookOpen, BrainCircuit, Gamepad2, LineChart, ShieldCheck } from 'lucide-react';
 
 export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: string, pass: string) => Promise<{success: boolean, message?: string}> }) {
   const [email, setEmail] = useState('');
@@ -44,7 +44,6 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
       setIsLoading(true);
       setMessage("Đang mở cửa sổ đăng nhập Google...");
       const provider = new GoogleAuthProvider();
-      // Ensure cross-origin auth works better in iframe environments
       provider.setCustomParameters({
         prompt: 'select_account'
       });
@@ -52,13 +51,13 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
     } catch (error: any) {
       console.error("Google Login Error:", error);
       if (error.code === 'auth/operation-not-allowed') {
-        setMessage("Lỗi: Bạn chưa bật đăng nhập Google trong Firebase Console. Vui lòng vào Authentication > Sign-in method để bật.");
+        setMessage("Lỗi: Bạn chưa bật đăng nhập Google trong Firebase Console.");
       } else if (error.code === 'auth/unauthorized-domain') {
-        setMessage("Lỗi: Tên miền này chưa được thêm vào danh sách 'Authorized domains' trong Firebase Console.");
+        setMessage("Lỗi: Tên miền này chưa được xác thực trong Firebase.");
       } else if (error.code === 'auth/popup-blocked') {
-        setMessage("Lỗi: Trình duyệt đã chặn cửa sổ bật lên. Vui lòng cho phép hiện popup để đăng nhập.");
+        setMessage("Lỗi: Trình duyệt đã chặn cửa sổ bật lên.");
       } else {
-        setMessage("Lỗi đăng nhập Google: " + (error.message || "Không rõ nguyên nhân"));
+        setMessage("Lỗi: " + (error.message || "Không rõ nguyên nhân"));
       }
     } finally {
       setIsLoading(false);
@@ -73,7 +72,7 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
     try {
       setIsLoading(true);
       await sendPasswordResetEmail(auth, email);
-      setMessage("Liên kết đặt lại mật khẩu đã được gửi đến email của bạn.");
+      setMessage("Liên kết đặt lại mật khẩu đã được gửi đến email!");
     } catch (error: any) {
       setMessage("Lỗi: " + error.message);
     } finally {
@@ -95,167 +94,276 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
     }
   };
 
+  const features = [
+    { icon: <BrainCircuit className="w-5 h-5" />, title: "AI Giáo Dục", desc: "Soạn giáo án & đề thi tự động bằng trí tuệ nhân tạo." },
+    { icon: <Gamepad2 className="w-5 h-5" />, title: "Game Hóa", desc: "Học tập vui nhộn qua hệ thống trò chơi tương tác." },
+    { icon: <LineChart className="w-5 h-5" />, title: "Báo Cáo Thông Minh", desc: "Theo dõi tiến độ học tập của từng học sinh chi tiết." },
+    { icon: <ShieldCheck className="w-5 h-5" />, title: "An Toàn & Bảo Mật", desc: "Hệ thống quản lý nội bộ bảo vệ dữ liệu nhà trường." },
+  ];
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-50 dark:bg-slate-950 overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-[0.03] dark:opacity-[0.05]" 
-             style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+    <div className="fixed inset-0 z-[100] flex flex-col md:flex-row bg-white dark:bg-slate-950 overflow-hidden font-sans">
+      
+      {/* Left Pane: Branding & Features (Hidden on mobile or moved to top) */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-slate-900 border-r border-slate-800 relative group overflow-hidden">
+        {/* Animated Background Gradients */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[140px] translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[140px] -translate-x-1/2 translate-y-1/2" />
+        
+        {/* Header Branding */}
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="relative z-10 flex items-center gap-3"
+        >
+          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-2xl shadow-white/10">
+            <Sparkles className="text-blue-600 w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-white tracking-widest uppercase">SmartEdu</h2>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] font-bold text-slate-400 tracking-[0.2em] uppercase">Digital Excellence</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Hero Text */}
+        <div className="relative z-10 space-y-6 max-w-lg">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-6xl font-black text-white leading-tight"
+          >
+            Nền tảng giáo dục <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Thế hệ mới.</span>
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-lg text-slate-400 leading-relaxed font-medium"
+          >
+            Đưa công nghệ AI và mô hình Game-based Learning vào môi trường tiểu học, giúp giáo viên rảnh tay và học sinh thêm say mê kiến thức.
+          </motion.p>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="grid grid-cols-2 gap-6 pt-8"
+          >
+            {features.map((f, i) => (
+              <div key={i} className="space-y-2 group/feat">
+                <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-blue-400 group-hover/feat:bg-blue-600 group-hover/feat:text-white transition-all cursor-default">
+                  {f.icon}
+                </div>
+                <h4 className="text-white font-bold text-sm tracking-wide">{f.title}</h4>
+                <p className="text-xs text-slate-500 leading-normal">{f.desc}</p>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+
+        {/* Footer info */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="relative z-10 text-slate-500 text-xs font-bold uppercase tracking-widest"
+        >
+          Trường Tiểu học Lý Tự Trọng &copy; 2026
+        </motion.div>
       </div>
 
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative w-full max-w-[440px] p-4"
-      >
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl p-8 rounded-[2.5rem] shadow-2xl border border-white dark:border-slate-800">
-          <div className="text-center mb-10">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/20">
-              <Sparkles className="text-white w-8 h-8" />
+      {/* Right Pane: Login Portal */}
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 md:p-12 relative overflow-y-auto">
+        {/* Mobile Header Branding (Visible only on small screens) */}
+        <div className="lg:hidden mb-12 text-center">
+            <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-600/20">
+                <Sparkles className="text-white w-8 h-8" />
             </div>
-            <h1 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight leading-tight">
-              Trường Tiểu học<br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Lý Tự Trọng</span>
-            </h1>
-          </div>
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Trường Lý Tự Trọng</h1>
+            <p className="text-sm font-bold text-slate-400">Hệ thống giáo dục thông minh</p>
+        </div>
 
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-sm"
+        >
           {/* Tab Switcher */}
-          <div className="flex p-1.5 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-8">
+          <div className="flex p-1.5 bg-slate-100 dark:bg-slate-900 rounded-2xl mb-10">
             <button 
               onClick={() => setActiveTab('teacher')}
-              className={`flex-1 py-3 rounded-xl text-sm font-black transition-all ${activeTab === 'teacher' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500'}`}
+              className={`flex-1 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'teacher' ? 'bg-white dark:bg-slate-800 text-blue-600 shadow-xl' : 'text-slate-400'}`}
             >
-              Giáo viên
+              Cổng Giáo Viên
             </button>
             <button 
               onClick={() => setActiveTab('student')}
-              className={`flex-1 py-3 rounded-xl text-sm font-black transition-all ${activeTab === 'student' ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' : 'text-slate-500'}`}
+              className={`flex-1 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'student' ? 'bg-white dark:bg-slate-800 text-emerald-600 shadow-xl' : 'text-slate-400'}`}
             >
-              Học sinh
+              Cổng Học Sinh
             </button>
           </div>
 
-          <div className="space-y-6">
-            {activeTab === 'teacher' ? (
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  <div className="relative">
-                    <UserCircle className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                    <input 
-                      type="email" 
-                      placeholder="Email của bạn" 
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:border-blue-500 dark:text-white transition-all font-medium" 
-                    />
-                  </div>
-                  <div className="relative">
-                    <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                    <input 
-                      type="password" 
-                      placeholder="Mật khẩu" 
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:border-blue-500 dark:text-white transition-all font-medium" 
-                    />
-                  </div>
-                </div>
-                
-                {message && <p className={`text-xs font-bold text-center ${message.includes('thành công') ? 'text-emerald-500' : 'text-red-500'}`}>{message}</p>}
-
-                <div className="flex flex-col gap-3 pt-2">
-                  <button 
-                    disabled={isLoading} 
-                    onClick={handleTeacherLogin} 
-                    className="w-full bg-slate-900 dark:bg-white dark:text-slate-900 text-white font-black py-4 rounded-2xl transition-all shadow-xl hover:scale-[1.02] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {isRegistering ? 'Tạo tài khoản' : 'Đăng nhập ngay'}
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
-
-                  {!isRegistering && (
-                    <div className="flex items-center gap-4 py-2">
-                      <div className="h-[1px] flex-1 bg-slate-200 dark:bg-slate-800" />
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hoặc</span>
-                      <div className="h-[1px] flex-1 bg-slate-200 dark:bg-slate-800" />
+          <div className="space-y-8">
+            <AnimatePresence mode="wait">
+              {activeTab === 'teacher' ? (
+                <motion.div 
+                    key="teacher-form"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-4"
+                >
+                  <div className="space-y-3">
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <UserCircle className="text-slate-400 w-5 h-5 group-focus-within:text-blue-600 transition-colors" />
+                      </div>
+                      <input 
+                        type="email" 
+                        placeholder="Địa chỉ Email" 
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/30 dark:text-white transition-all font-bold placeholder:text-slate-400 text-sm" 
+                      />
                     </div>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <KeyRound className="text-slate-400 w-5 h-5 group-focus-within:text-blue-600 transition-colors" />
+                      </div>
+                      <input 
+                        type="password" 
+                        placeholder="Mật khẩu" 
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/30 dark:text-white transition-all font-bold placeholder:text-slate-400 text-sm" 
+                      />
+                    </div>
+                  </div>
+                  
+                  {message && (
+                    <motion.p 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className={`text-xs font-black text-center py-2 px-4 rounded-xl ${message.includes('thành công') || message.includes('gửi') ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}
+                    >
+                        {message}
+                    </motion.p>
                   )}
 
-                  {!isRegistering && (
+                  <div className="flex flex-col gap-4 pt-4">
                     <button 
-                      disabled={isLoading}
-                      onClick={handleGoogleLogin}
-                      className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold py-4 rounded-2xl transition-all hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 shadow-sm"
+                      disabled={isLoading} 
+                      onClick={handleTeacherLogin} 
+                      className="w-full bg-slate-900 dark:bg-white dark:text-slate-900 text-white font-black py-4 rounded-2xl transition-all shadow-2xl shadow-slate-900/10 hover:translate-y-[-2px] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
                     >
-                      <Chrome className="w-5 h-5 text-blue-500" />
-                      Đăng nhập bằng Google
+                      {isRegistering ? 'Xác nhận tạo tài khoản' : 'Đăng nhập giáo viên'}
+                      <ArrowRight className="w-5 h-5" />
                     </button>
-                  )}
 
-                  <div className="flex flex-col gap-2 mt-2">
-                    <button 
-                      onClick={() => setIsRegistering(!isRegistering)} 
-                      className="w-full text-slate-500 dark:text-slate-400 text-sm font-bold hover:text-blue-600 transition-colors"
-                    >
-                      {isRegistering ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Đăng ký ngay'}
-                    </button>
                     {!isRegistering && (
                       <button 
-                        onClick={handleForgotPassword}
-                        className="w-full text-slate-400 text-xs font-medium hover:text-indigo-600 transition-colors"
+                        disabled={isLoading}
+                        onClick={handleGoogleLogin}
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-black py-4 rounded-2xl transition-all hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 shadow-sm border-b-4 border-slate-200 active:border-b-0"
                       >
-                        Quên mật khẩu?
+                        <Chrome className="w-5 h-5 text-blue-500" />
+                        Đăng nhập với Google
                       </button>
                     )}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  <div className="relative">
-                    <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 w-5 h-5" />
-                    <input 
-                      type="text" 
-                      placeholder="Nhập ID học sinh..." 
-                      value={studentId}
-                      onChange={e => setStudentId(e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl outline-none focus:border-emerald-500 dark:text-white transition-all font-medium" 
-                    />
-                  </div>
-                  <div className="relative">
-                    <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 w-5 h-5" />
-                    <input 
-                      type="password" 
-                      placeholder="Mật khẩu..." 
-                      value={studentPass}
-                      onChange={e => setStudentPass(e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl outline-none focus:border-emerald-500 dark:text-white transition-all font-medium" 
-                    />
-                  </div>
-                </div>
-                
-                {studentMessage && <p className="text-xs text-red-500 font-bold text-center">{studentMessage}</p>}
 
-                <button 
-                  disabled={isLoading}
-                  onClick={handleStudentLogin}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-2xl transition-all shadow-xl shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                    <div className="flex flex-col items-center gap-3 mt-4">
+                      <button 
+                        onClick={() => setIsRegistering(!isRegistering)} 
+                        className="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] hover:text-blue-600 transition-colors"
+                      >
+                        {isRegistering ? 'Bạn đã có tài khoản?' : 'Tạo tài khoản mới'}
+                      </button>
+                      {!isRegistering && (
+                        <button 
+                          onClick={handleForgotPassword}
+                          className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] hover:text-indigo-600 transition-colors"
+                        >
+                          Quên mật khẩu?
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div 
+                    key="student-form"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-6"
                 >
-                  Vào học ngay!
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-              </div>
-            )}
+                  <div className="space-y-4">
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <GraduationCap className="text-emerald-500 w-5 h-5 group-focus-within:text-emerald-600 transition-colors" />
+                      </div>
+                      <input 
+                        type="text" 
+                        placeholder="Mã định danh học sinh (ID)" 
+                        value={studentId}
+                        onChange={e => setStudentId(e.target.value)}
+                        className="w-full pl-12 pr-4 py-4 bg-emerald-50/20 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900 border-b-4 rounded-2xl outline-none focus:border-emerald-500 dark:text-white transition-all font-bold placeholder:text-emerald-300 text-sm" 
+                      />
+                    </div>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <KeyRound className="text-emerald-500 w-5 h-5 group-focus-within:text-emerald-600 transition-colors" />
+                      </div>
+                      <input 
+                        type="password" 
+                        placeholder="Mã bí mật" 
+                        value={studentPass}
+                        onChange={e => setStudentPass(e.target.value)}
+                        className="w-full pl-12 pr-4 py-4 bg-emerald-50/20 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900 border-b-4 rounded-2xl outline-none focus:border-emerald-500 dark:text-white transition-all font-bold placeholder:text-emerald-300 text-sm" 
+                      />
+                    </div>
+                  </div>
+                  
+                  {studentMessage && (
+                    <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-xs text-red-500 font-black text-center py-2 bg-red-50 rounded-xl"
+                    >
+                        {studentMessage}
+                    </motion.p>
+                  )}
+
+                  <button 
+                    disabled={isLoading}
+                    onClick={handleStudentLogin}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-5 rounded-[2rem] transition-all shadow-xl shadow-emerald-600/20 hover:translate-y-[-4px] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 text-lg"
+                  >
+                    Bắt đầu học ngay!
+                    <ArrowRight className="w-6 h-6" />
+                  </button>
+
+                  <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl">
+                    <p className="text-[10px] text-slate-500 text-center font-bold leading-relaxed">
+                        Mã học sinh và mã bí mật do giáo viên chủ nhiệm cung cấp. Nếu quên mã, vui lòng liên hệ giáo viên.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </div>
+        </motion.div>
         
-        <p className="text-center mt-8 text-slate-400 dark:text-slate-600 text-xs font-bold uppercase tracking-widest">
-          Hệ thống quản lý giáo dục thông minh
-        </p>
-      </motion.div>
+        {/* Visual Decoration for Login side (Subtle) */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-[0.02] dark:opacity-[0.05] pointer-events-none" 
+             style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+      </div>
     </div>
   );
 }
