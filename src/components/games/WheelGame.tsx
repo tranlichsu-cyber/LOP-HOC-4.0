@@ -128,18 +128,20 @@ export default function WheelGame({ students, onClose }: { students: Student[], 
           )}
           
           <div className={`flex-1 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-[3rem] shadow-2xl border-4 border-white flex flex-col items-center justify-center relative overflow-hidden p-8 w-full ${isPlayMode ? 'mx-auto max-w-3xl' : ''}`}>
-            <div className="relative flex flex-col items-center mt-4">
+            <div className="relative flex flex-col items-center mt-4 gap-8">
               <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[20px] border-r-[20px] border-t-[40px] border-transparent border-t-rose-600 z-20 filter drop-shadow-md"></div>
               <div className="rounded-full shadow-[0_0_30px_rgba(0,0,0,0.15)] border-[12px] border-white p-3 bg-gradient-to-br from-rose-100 to-blue-100 relative">
                 <canvas ref={canvasRef} width="600" height="600" className="rounded-full max-w-[350px] max-h-[350px] w-full h-auto bg-white shadow-inner"></canvas>
-                <button 
-                  onClick={spinWheel} 
-                  disabled={isSpinning}
-                  className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 sm:w-24 sm:h-24 bg-rose-500 hover:bg-rose-600 text-white rounded-full font-black text-xl sm:text-2xl shadow-[0_6px_0_#be123c] active:translate-y-1 active:shadow-none transition-all hover:scale-105 border-4 border-white z-30 flex items-center justify-center tracking-widest uppercase ${isSpinning ? 'opacity-50 animate-pulse' : ''}`}
-                >
-                  QUAY
-                </button>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full border-4 border-rose-500 z-30 shadow-inner"></div>
               </div>
+
+              <button 
+                onClick={spinWheel} 
+                disabled={isSpinning}
+                className={`px-12 py-5 bg-rose-500 hover:bg-rose-600 text-white rounded-[2rem] font-black text-2xl shadow-[0_8px_0_#be123c] active:translate-y-1 active:shadow-none transition-all hover:scale-105 border-4 border-white uppercase tracking-widest z-30 ${isSpinning ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {isSpinning ? 'Đang quay...' : 'Bắt đầu'}
+              </button>
             </div>
           </div>
         </div>
