@@ -49,6 +49,17 @@
         "passHash": { "type": "string" }
       },
       "required": ["id", "name", "user", "passHash"]
+    },
+    "Department": {
+      "title": "Department",
+      "description": "Department information within a school",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "memberIds": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["id", "name"]
     }
   },
   "firestore": {
@@ -67,6 +78,10 @@
     "/schools/{schoolId}/classes/{classId}/students/{studentId}": {
       "schema": "Student",
       "description": "Students within a class"
+    },
+    "/schools/{schoolId}/departments/{departmentId}": {
+      "schema": "Department",
+      "description": "Departments within a school"
     }
   }
 }

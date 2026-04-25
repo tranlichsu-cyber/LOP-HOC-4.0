@@ -165,11 +165,28 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
     }
   };
 
+  const handleDeleteStaff = async (staffUid: string) => {
+    if (staffUid === auth.currentUser?.uid) {
+      alert("Bạn không thể tự xóa tài khoản của chính mình!");
+      return;
+    }
+    if (!confirm("Bạn có chắc chắn muốn xóa nhân sự này? Thao tác này sẽ xóa vĩnh viễn hồ sơ và quyền truy cập của họ.")) return;
+    try {
+      await deleteDoc(doc(db, 'users', staffUid));
+      setStaff(staff.filter(s => s.uid !== staffUid));
+      alert("Đã xóa nhân sự thành công.");
+    } catch (error) {
+      console.error("Error deleting staff:", error);
+      alert("Lỗi khi xóa nhân sự!");
+    }
+  };
+
   const handleDeleteClass = async (classId: string) => {
     if (!userProfile.schoolId || !confirm("Bạn có chắc chắn muốn xóa lớp học này?")) return;
     try {
       await deleteDoc(doc(db, 'schools', userProfile.schoolId, 'classes', classId));
       setClasses(classes.filter(c => c.id !== classId));
+      alert("Đã xóa lớp học thành công.");
     } catch (error) {
       console.error("Error deleting class:", error);
       alert("Lỗi khi xóa lớp học!");
@@ -181,6 +198,7 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
     try {
       await deleteDoc(doc(db, 'schools', userProfile.schoolId, 'departments', deptId));
       setDepartments(departments.filter(d => d.id !== deptId));
+      alert("Đã xóa tổ chuyên môn thành công.");
     } catch (error) {
       console.error("Error deleting department:", error);
       alert("Lỗi khi xóa tổ chuyên môn!");
@@ -453,20 +471,28 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <button 
-                            onClick={() => {
-                              setEditingStaff(member);
-                              setNewStaff({
-                                email: member.email,
-                                displayName: member.displayName || '',
-                                role: member.role
-                              });
-                              setIsStaffModalOpen(true);
-                            }}
-                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 transition"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex gap-1">
+                            <button 
+                              onClick={() => {
+                                setEditingStaff(member);
+                                setNewStaff({
+                                  email: member.email,
+                                  displayName: member.displayName || '',
+                                  role: member.role
+                                });
+                                setIsStaffModalOpen(true);
+                              }}
+                              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 transition"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteStaff(member.uid)}
+                              className="p-2 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg text-slate-400 hover:text-red-600 transition"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

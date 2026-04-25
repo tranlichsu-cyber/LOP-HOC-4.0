@@ -491,6 +491,7 @@ export default function Classroom({ userProfile, students, setStudents, homework
   };
 
   const deleteHomework = async (id: string) => {
+    if (!confirm("Bạn có chắc chắn muốn xóa bài tập này?")) return;
     const teacherUid = auth.currentUser?.uid;
     if (teacherUid) {
       try {

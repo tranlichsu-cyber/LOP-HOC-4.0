@@ -30,7 +30,12 @@ service cloud.firestore {
     // ===============================================================
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow write: if isGlobalAdmin() || (isAuthenticated() && request.auth.uid == userId);
+      allow create: if isGlobalAdmin() || 
+                     (isAuthenticated() && request.auth.uid == userId) ||
+                     (request.resource.data.schoolId != null && isSchoolAdmin(request.resource.data.schoolId));
+      allow update, delete: if isGlobalAdmin() || 
+                            (isAuthenticated() && request.auth.uid == userId) ||
+                            (resource.data.schoolId != null && isSchoolAdmin(resource.data.schoolId));
     }
 
     // ===============================================================
@@ -48,6 +53,11 @@ service cloud.firestore {
           allow read: if isAuthenticated();
           allow write: if isGlobalAdmin() || isSchoolAdmin(schoolId) || (hasRole('teacher') && getUserData().schoolId == schoolId);
         }
+      }
+
+      match /departments/{departmentId} {
+        allow read: if isAuthenticated();
+        allow write: if isGlobalAdmin() || isSchoolAdmin(schoolId);
       }
     }
 
