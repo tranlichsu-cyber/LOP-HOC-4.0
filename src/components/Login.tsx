@@ -116,12 +116,8 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
           <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-2xl shadow-white/10 overflow-hidden">
             <img 
               src="/school-logo.png" 
-              alt="Logo" 
-              className="w-full h-full object-contain p-1" 
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                e.currentTarget.parentElement?.insertAdjacentHTML('afterbegin', '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles text-blue-600 w-6 h-6"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.937A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063A2 2 0 0 0 14.063 15.5L12.5 21.635a.5.5 0 0 1-.962 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>');
-              }}
+              alt="Logo Trường Tiểu học Lý Tự Trọng" 
+              className="w-full h-full object-contain p-0.5" 
             />
           </div>
           <div>
@@ -182,12 +178,8 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
             <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-600/10 overflow-hidden border border-slate-100">
                 <img 
                   src="/school-logo.png" 
-                  alt="Logo" 
-                  className="w-full h-full object-contain p-1" 
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.parentElement?.insertAdjacentHTML('afterbegin', '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles text-blue-600 w-8 h-8"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.937A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063A2 2 0 0 0 14.063 15.5L12.5 21.635a.5.5 0 0 1-.962 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>');
-                  }}
+                  alt="Logo Trường Tiểu học Lý Tự Trọng" 
+                  className="w-full h-full object-contain p-0.5" 
                 />
             </div>
             <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Trường Lý Tự Trọng</h1>
