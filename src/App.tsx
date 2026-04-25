@@ -39,6 +39,7 @@ import StudentHomework from './components/StudentHomework';
 import StudentGames from './components/StudentGames';
 import ResourceLibrary from './components/ResourceLibrary';
 import TestGeneratorAI from './components/TestGeneratorAI';
+import Worksheet from './components/Worksheet';
 import Login from './components/Login';
 
 import ErrorBoundary from './components/ErrorBoundary';
@@ -59,6 +60,7 @@ export default function App() {
   // Data State
   const [students, setStudents] = useState<Student[]>([]);
   const [homework, setHomework] = useState<Homework[]>([]);
+  const [worksheets, setWorksheets] = useState<WorksheetType[]>([]);
   const [offlineGames, setOfflineGames] = useState<Game[]>([
     { 
         id: 'g1', title: 'Toán học vui nhộn', type: 'math',
@@ -176,14 +178,16 @@ export default function App() {
       console.log("Attempting to load data for UID:", uid);
       
       // Use Promise.all for faster loading
-      const [studentsSnap, homeworkSnap, gamesSnap] = await Promise.all([
+      const [studentsSnap, homeworkSnap, worksheetsSnap, gamesSnap] = await Promise.all([
         getDocs(collection(db, 'teachers', uid, 'students')),
         getDocs(collection(db, 'teachers', uid, 'homework')),
+        getDocs(collection(db, 'teachers', uid, 'worksheets')),
         getDocs(collection(db, 'teachers', uid, 'games'))
       ]);
 
       setStudents(studentsSnap.docs.map(doc => doc.data() as Student));
       setHomework(homeworkSnap.docs.map(doc => doc.data() as Homework));
+      setWorksheets(worksheetsSnap.docs.map(doc => doc.data() as WorksheetType));
       
       const loadedGames = gamesSnap.docs.map(doc => doc.data() as Game);
       console.log("Loaded games count:", loadedGames.length);
@@ -329,6 +333,7 @@ export default function App() {
       
       case 'school-admin': return userProfile ? <SchoolAdmin userProfile={userProfile} /> : null;
       case 'lesson-ai': return <LessonAI />;
+      case 'worksheet': return <Worksheet />;
       case 'test-ai': return <TestGeneratorAI />;
       case 'games': return <Games offlineGames={offlineGames} liveGames={liveGames} setOfflineGames={setOfflineGames} setLiveGames={setLiveGames} students={students} />;
       case 'classroom': return <Classroom userProfile={userProfile} students={students} setStudents={setStudents} homework={homework} setHomework={setHomework} offlineGames={offlineGames} />;
@@ -375,9 +380,9 @@ export default function App() {
             <motion.h1 
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`text-xl font-black tracking-tight ${role === 'student' ? 'text-indigo-900' : 'text-slate-800 dark:text-white'}`}
+              className={`text-2xl font-black tracking-tight ${role === 'student' ? 'text-indigo-900' : 'text-slate-800 dark:text-white'}`}
             >
-              Lý Tự Trọng
+              Edu<span className={role === 'teacher' ? 'text-blue-600' : 'text-orange-500'}>Pro</span>
             </motion.h1>
           )}
         </div>
@@ -424,6 +429,16 @@ export default function App() {
                     onClick={() => setActiveTab('lesson-ai')}
                     color="text-purple-600 dark:text-purple-400"
                     bgColor="bg-purple-50 dark:bg-purple-900/30"
+                    collapsed={!isSidebarOpen}
+                    role={role}
+                  />
+                  <NavItem 
+                    icon={<FilePlus2 />} 
+                    label="Tạo phiếu học tập" 
+                    active={activeTab === 'worksheet'} 
+                    onClick={() => setActiveTab('worksheet')}
+                    color="text-pink-600 dark:text-pink-400"
+                    bgColor="bg-pink-50 dark:bg-pink-900/30"
                     collapsed={!isSidebarOpen}
                     role={role}
                   />
@@ -560,11 +575,12 @@ export default function App() {
               <h2 className={`text-3xl font-black tracking-tight leading-none ${role === 'student' ? 'text-indigo-900' : 'text-slate-800 dark:text-white'}`}>
                 {activeTab === 'dashboard' ? 'Chào em!' : 
                  activeTab === 'lesson-ai' ? 'Soạn giáo án AI' :
+                 activeTab === 'worksheet' ? 'Phiếu học tập' :
                  activeTab === 'test-ai' ? 'Tạo đề thi AI' :
                  activeTab === 'games' ? 'Trò chơi' :
                  activeTab === 'classroom' ? 'Lớp học' :
                  activeTab === 'student-homework' ? 'Bài tập của em' :
-                 activeTab === 'student-games' ? 'Vui chơi thôi nào!' : 'Trường LTT'}
+                 activeTab === 'student-games' ? 'Vui chơi thôi nào!' : 'EduPro'}
               </h2>
               <p className={`text-xs font-black uppercase tracking-widest mt-2 ${role === 'student' ? 'text-indigo-400' : 'text-slate-400 dark:text-slate-500'}`}>
                 {school?.name || 'Trường TH Lý Tự Trọng'}

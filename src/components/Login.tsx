@@ -95,6 +95,8 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
   };
 
   const features = [
+    { icon: <BrainCircuit className="w-5 h-5" />, title: "AI Giáo Dục", desc: "Soạn giáo án & đề thi tự động bằng trí tuệ nhân tạo." },
+    { icon: <Gamepad2 className="w-5 h-5" />, title: "Game Hóa", desc: "Học tập vui nhộn qua hệ thống trò chơi tương tác." },
     { icon: <LineChart className="w-5 h-5" />, title: "Báo Cáo Thông Minh", desc: "Theo dõi tiến độ học tập của từng học sinh chi tiết." },
     { icon: <ShieldCheck className="w-5 h-5" />, title: "An Toàn & Bảo Mật", desc: "Hệ thống quản lý nội bộ bảo vệ dữ liệu nhà trường." },
   ];
@@ -102,11 +104,11 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col md:flex-row bg-white dark:bg-slate-950 overflow-hidden font-sans">
       
-      {/* Left Pane: Simple Branding */}
+      {/* Left Pane: Branding & Features */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-slate-900 border-r border-slate-800 relative group overflow-hidden">
         {/* Animated Background Gradients */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[140px] translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[140px] -translate-x-1/2 translate-y-1/2" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[140px] translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[140px] -translate-x-1/2 translate-y-1/2" />
         
         {/* Header Branding */}
         <motion.div 
@@ -126,41 +128,47 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
             />
           </div>
           <div>
-            <h2 className="text-xl font-black text-white tracking-widest uppercase">Trường Tiểu học Lý Tự Trọng</h2>
+            <h2 className="text-xl font-black text-white tracking-widest uppercase">SmartEdu</h2>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] font-bold text-slate-400 tracking-[0.2em] uppercase">Hệ thống quản lý nội bộ</span>
+              <span className="text-[10px] font-bold text-slate-400 tracking-[0.2em] uppercase">Digital Excellence</span>
             </div>
           </div>
         </motion.div>
 
-        {/* Hero Text Placeholder / Simplified */}
+        {/* Hero Text */}
         <div className="relative z-10 space-y-6 max-w-lg">
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-5xl font-black text-white leading-tight"
+            className="text-6xl font-black text-white leading-tight"
           >
-            Chào mừng Quý thầy cô <br/>
-            & các em học sinh.
+            Nền tảng giáo dục <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Thế hệ mới.</span>
           </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-lg text-slate-400 leading-relaxed font-medium"
+          >
+            Đưa công nghệ AI và mô hình Game-based Learning vào môi trường tiểu học, giúp giáo viên rảnh tay và học sinh thêm say mê kiến thức.
+          </motion.p>
           
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="grid grid-cols-1 gap-6 pt-8"
+            className="grid grid-cols-2 gap-6 pt-8"
           >
             {features.map((f, i) => (
-              <div key={i} className="flex items-start gap-4 group/feat">
-                <div className="shrink-0 w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-blue-400 group-hover/feat:bg-blue-600 group-hover/feat:text-white transition-all cursor-default">
+              <div key={i} className="space-y-2 group/feat">
+                <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-blue-400 group-hover/feat:bg-blue-600 group-hover/feat:text-white transition-all cursor-default">
                   {f.icon}
                 </div>
-                <div>
-                  <h4 className="text-white font-bold text-sm tracking-wide">{f.title}</h4>
-                  <p className="text-xs text-slate-500 leading-normal">{f.desc}</p>
-                </div>
+                <h4 className="text-white font-bold text-sm tracking-wide">{f.title}</h4>
+                <p className="text-xs text-slate-500 leading-normal">{f.desc}</p>
               </div>
             ))}
           </motion.div>
