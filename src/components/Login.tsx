@@ -42,11 +42,24 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
   const handleGoogleLogin = async () => {
     try {
       setIsLoading(true);
-      setMessage("Đang kết nối Google...");
+      setMessage("Đang mở cửa sổ đăng nhập Google...");
       const provider = new GoogleAuthProvider();
+      // Ensure cross-origin auth works better in iframe environments
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
       await signInWithPopup(auth, provider);
     } catch (error: any) {
-      setMessage("Lỗi đăng nhập Google: " + error.message);
+      console.error("Google Login Error:", error);
+      if (error.code === 'auth/operation-not-allowed') {
+        setMessage("Lỗi: Bạn chưa bật đăng nhập Google trong Firebase Console. Vui lòng vào Authentication > Sign-in method để bật.");
+      } else if (error.code === 'auth/unauthorized-domain') {
+        setMessage("Lỗi: Tên miền này chưa được thêm vào danh sách 'Authorized domains' trong Firebase Console.");
+      } else if (error.code === 'auth/popup-blocked') {
+        setMessage("Lỗi: Trình duyệt đã chặn cửa sổ bật lên. Vui lòng cho phép hiện popup để đăng nhập.");
+      } else {
+        setMessage("Lỗi đăng nhập Google: " + (error.message || "Không rõ nguyên nhân"));
+      }
     } finally {
       setIsLoading(false);
     }
