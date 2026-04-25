@@ -165,6 +165,28 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
     }
   };
 
+  const handleDeleteClass = async (classId: string) => {
+    if (!userProfile.schoolId || !confirm("Bạn có chắc chắn muốn xóa lớp học này?")) return;
+    try {
+      await deleteDoc(doc(db, 'schools', userProfile.schoolId, 'classes', classId));
+      setClasses(classes.filter(c => c.id !== classId));
+    } catch (error) {
+      console.error("Error deleting class:", error);
+      alert("Lỗi khi xóa lớp học!");
+    }
+  };
+
+  const handleDeleteDepartment = async (deptId: string) => {
+    if (!userProfile.schoolId || !confirm("Bạn có chắc chắn muốn xóa tổ chuyên môn này?")) return;
+    try {
+      await deleteDoc(doc(db, 'schools', userProfile.schoolId, 'departments', deptId));
+      setDepartments(departments.filter(d => d.id !== deptId));
+    } catch (error) {
+      console.error("Error deleting department:", error);
+      alert("Lỗi khi xóa tổ chuyên môn!");
+    }
+  };
+
   const handleResetSystem = async () => {
     if (!confirm("CẢNH BÁO: Hành động này sẽ xóa TOÀN BỘ dữ liệu (Trường học, Giáo viên, Lớp học, Học sinh, Trò chơi, Bài tập) trên hệ thống. Bạn có chắc chắn muốn tiếp tục?")) return;
     if (!confirm("XÁC NHẬN LẦN CUỐI: Dữ liệu sẽ không thể khôi phục. Tiếp tục xóa?")) return;
@@ -473,7 +495,10 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
                       <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl text-indigo-600">
                         <BookOpen className="w-6 h-6" />
                       </div>
-                      <button className="text-slate-400 hover:text-red-500 transition">
+                      <button 
+                        onClick={() => handleDeleteClass(cls.id)}
+                        className="text-slate-400 hover:text-red-500 transition"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -510,7 +535,10 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
                       <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl text-indigo-600">
                         <Users className="w-6 h-6" />
                       </div>
-                      <button className="text-slate-400 hover:text-red-500 transition">
+                      <button 
+                        onClick={() => handleDeleteDepartment(dept.id)}
+                        className="text-slate-400 hover:text-red-500 transition"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
