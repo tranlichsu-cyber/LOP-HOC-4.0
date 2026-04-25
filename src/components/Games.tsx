@@ -21,7 +21,7 @@ import { db, auth } from '../firebase';
 import { doc, deleteDoc, setDoc } from 'firebase/firestore';
 
 export default function Games({ offlineGames, liveGames, setOfflineGames, setLiveGames, students }: any) {
-  const [activeTab, setActiveTab] = useState<'library' | 'live' | 'offline' | 'wheel'>('library');
+  const [activeTab, setActiveTab] = useState<'live' | 'offline' | 'wheel'>('live');
   const [playingGame, setPlayingGame] = useState<Game | null>(null);
   const [isWheelOpen, setIsWheelOpen] = useState(false);
 
@@ -289,12 +289,6 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
     <div className="h-full flex flex-col">
       <div className="flex gap-4 mb-6 border-b border-slate-200 dark:border-slate-700 pb-px shrink-0">
         <button 
-          onClick={() => setActiveTab('library')} 
-          className={`px-6 py-3 font-bold text-sm border-b-4 transition-colors font-kids uppercase tracking-wider flex items-center gap-2 ${activeTab === 'library' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500'}`}
-        >
-          Kho trò chơi
-        </button>
-        <button 
           onClick={() => setActiveTab('live')} 
           className={`px-6 py-3 font-bold text-sm border-b-4 transition-colors font-kids uppercase tracking-wider flex items-center gap-2 ${activeTab === 'live' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500'}`}
         >
@@ -305,7 +299,7 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
           onClick={() => setActiveTab('offline')} 
           className={`px-6 py-3 font-bold text-sm border-b-4 transition-colors font-kids uppercase tracking-wider ${activeTab === 'offline' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500'}`}
         >
-          Bài tập ôn tập
+          Kho trò chơi
         </button>
         <button 
           onClick={() => setIsWheelOpen(true)} 
@@ -324,56 +318,6 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
           transition={{ duration: 0.3 }}
           className="flex-1 overflow-auto"
         >
-          {activeTab === 'library' && (
-            <div className="space-y-6 pb-20">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h3 className="font-black text-2xl text-slate-800 dark:text-white">Thư viện trò chơi tương tác</h3>
-                  <p className="text-slate-500 text-sm">Chọn một mẫu trò chơi và bắt đầu tùy chỉnh cho lớp học của bạn</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                {GAME_TEMPLATES.map((tmpl) => (
-                  <div key={tmpl.id} className="bg-white dark:bg-slate-800 rounded-[2rem] p-6 shadow-sm border-2 border-slate-100 dark:border-slate-700 relative group hover:shadow-xl hover:border-indigo-200 transition-all duration-300 flex flex-col min-h-[220px]">
-                    {tmpl.badge && (
-                      <div className={`absolute -top-2 -right-2 rotate-12 ${tmpl.badge === 'PRO' ? 'bg-orange-500' : 'bg-red-500'} text-white text-[10px] font-black px-3 py-1 rounded-lg shadow-lg z-10 flex items-center gap-1`}>
-                        {tmpl.badge === 'PRO' && <Zap className="w-3 h-3 fill-current" />}
-                        {tmpl.badge}
-                      </div>
-                    )}
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className={`w-14 h-14 rounded-2xl ${tmpl.color} flex items-center justify-center shrink-0`}>
-                        {tmpl.icon}
-                      </div>
-                      <div className="space-y-1">
-                        <h4 className="font-extrabold text-slate-800 dark:text-white text-lg leading-tight group-hover:text-indigo-600 transition-colors">
-                          {tmpl.title}
-                        </h4>
-                      </div>
-                    </div>
-                    
-                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 flex-1">
-                      {tmpl.desc}
-                    </p>
-                    
-                    <div className="mt-auto">
-                      <button 
-                        onClick={() => {
-                          setNewGame({ title: '', type: tmpl.id.includes('race') || tmpl.id.includes('star') ? 'race' : 'math', questionsList: [] });
-                          setIsAddModalOpen(true);
-                        }}
-                        className="px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-black hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 dark:shadow-none"
-                      >
-                        Bắt đầu
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {activeTab === 'live' && (
             <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -446,10 +390,10 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
           </div>
         )}
 
-        {activeTab === 'offline' && (
+          {activeTab === 'offline' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h3 className="font-bold text-lg text-slate-800 dark:text-white">Kho trò chơi ôn tập</h3>
+              <h3 className="font-bold text-lg text-slate-800 dark:text-white">Kho trò chơi</h3>
               <div className="flex gap-2">
                 <button 
                   onClick={async () => {
