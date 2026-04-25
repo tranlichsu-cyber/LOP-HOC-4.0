@@ -193,6 +193,23 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
     }
   };
 
+  const [isManagingMembers, setIsManagingMembers] = useState<Department | null>(null);
+
+  const toggleMemberInDepartment = async (dept: Department, teacherUid: string) => {
+    const isMember = dept.memberIds.includes(teacherUid);
+    const newMemberIds = isMember 
+      ? dept.memberIds.filter(id => id !== teacherUid)
+      : [...dept.memberIds, teacherUid];
+    
+    try {
+      await setDoc(doc(db, 'schools', userProfile.schoolId!, 'departments', dept.id), { memberIds: newMemberIds }, { merge: true });
+      setDepartments(departments.map(d => d.id === dept.id ? { ...d, memberIds: newMemberIds } : d));
+      setIsManagingMembers({ ...dept, memberIds: newMemberIds });
+    } catch (error) {
+      console.error("Error toggling member:", error);
+    }
+  };
+
   const handleDeleteDepartment = async (deptId: string) => {
     if (!userProfile.schoolId || !confirm("Bạn có chắc chắn muốn xóa tổ chuyên môn này?")) return;
     try {
@@ -571,7 +588,10 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
                     <h3 className="font-bold text-lg dark:text-white mb-1">{dept.name}</h3>
                     <p className="text-sm text-slate-500 mb-4">{dept.memberIds.length} thành viên</p>
                     <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
-                      <button className="text-xs font-medium text-indigo-600 hover:underline">
+                      <button 
+                        onClick={() => setIsManagingMembers(dept)}
+                        className="text-xs font-medium text-indigo-600 hover:underline"
+                      >
                         Quản lý thành viên
                       </button>
                     </div>
@@ -780,6 +800,66 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
                 <button onClick={() => setIsDepartmentModalOpen(false)} className="flex-1 py-4 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-white font-black rounded-2xl transition hover:bg-slate-200 active:scale-95">Hủy</button>
                 <button onClick={handleAddDepartment} className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-2xl transition hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 active:scale-95">Xác nhận tạo</button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {isManagingMembers && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-2xl w-full max-w-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h3 className="text-2xl font-black text-slate-800 dark:text-white">Thành viên: {isManagingMembers.name}</h3>
+                <p className="text-sm text-slate-500">Chọn giáo viên để thêm hoặc xóa khỏi tổ</p>
+              </div>
+              <button 
+                onClick={() => setIsManagingMembers(null)} 
+                className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-full"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+              {staff.map(teacher => (
+                <div 
+                  key={teacher.uid}
+                  className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
+                    isManagingMembers.memberIds.includes(teacher.uid)
+                      ? 'border-indigo-100 bg-indigo-50/50 dark:bg-indigo-900/20 dark:border-indigo-900/40'
+                      : 'border-slate-50 bg-white dark:bg-slate-900 dark:border-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-indigo-600">
+                      {teacher.displayName?.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-800 dark:text-white">{teacher.displayName}</p>
+                      <p className="text-xs text-slate-500">{teacher.email}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => toggleMemberInDepartment(isManagingMembers, teacher.uid)}
+                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                      isManagingMembers.memberIds.includes(teacher.uid)
+                        ? 'bg-rose-100 text-rose-600 hover:bg-rose-200'
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-100'
+                    }`}
+                  >
+                    {isManagingMembers.memberIds.includes(teacher.uid) ? 'Xóa' : 'Thêm'}
+                  </button>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-700">
+              <button 
+                onClick={() => setIsManagingMembers(null)}
+                className="w-full py-4 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white font-black rounded-2xl transition hover:bg-slate-200"
+              >
+                Xong
+              </button>
             </div>
           </div>
         </div>

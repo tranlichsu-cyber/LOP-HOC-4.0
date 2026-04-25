@@ -22,7 +22,7 @@ service cloud.firestore {
     }
 
     function isSchoolAdmin(schoolId) {
-      return hasRole('admin') && getUserData().schoolId == schoolId;
+      return (hasRole('school_admin') || hasRole('admin')) && getUserData().schoolId == schoolId;
     }
 
     // ===============================================================

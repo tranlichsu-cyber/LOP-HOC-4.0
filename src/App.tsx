@@ -16,7 +16,9 @@ import {
   ArrowLeft,
   ShieldCheck,
   Globe,
-  GraduationCap
+  GraduationCap,
+  Trophy,
+  Flame
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, db, getDocFromServer } from './firebase';
@@ -343,7 +345,7 @@ export default function App() {
   };
 
   return (
-    <div className={`h-screen flex overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-300 ${role === 'teacher' ? 'role-teacher' : 'role-student'}`}>
+    <div className={`h-screen flex overflow-hidden transition-colors duration-500 ${role === 'student' ? 'bg-indigo-50 font-sans' : 'bg-slate-50 dark:bg-slate-900'} ${role === 'teacher' ? 'role-teacher' : 'role-student'}`}>
       {/* Sidebar Overlay for Mobile */}
       <AnimatePresence>
         {isSidebarOpen && (
@@ -360,45 +362,47 @@ export default function App() {
       {/* Sidebar */}
       <aside className={`
         ${isSidebarOpen ? 'w-72 translate-x-0' : 'w-20 -translate-x-full md:translate-x-0'} 
-        fixed md:relative h-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-r border-slate-200/50 dark:border-slate-700/50 flex-col shadow-xl transition-all duration-500 z-50 flex
+        fixed md:relative h-full ${role === 'student' ? 'bg-white border-r-4 border-indigo-100 shadow-2xl' : 'bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-r border-slate-200/50 dark:border-slate-700/50 shadow-xl'} flex-col transition-all duration-500 z-50 flex
       `}>
-        <div className="p-8 flex items-center gap-3 border-b border-slate-100/50 dark:border-slate-700/50">
-          <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${role === 'teacher' ? 'from-blue-600 to-indigo-600' : 'from-emerald-500 to-teal-600'} flex items-center justify-center shadow-lg shadow-blue-500/20 shrink-0`}>
-            <Sparkles className="text-white w-6 h-6" />
+        <div className={`p-8 flex items-center gap-3 ${role === 'student' ? 'border-b-4 border-indigo-50' : 'border-b border-slate-100/50 dark:border-slate-700/50'}`}>
+          <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${role === 'teacher' ? 'from-blue-600 to-indigo-600' : 'from-yellow-400 to-orange-500'} flex items-center justify-center shadow-lg transform hover:rotate-6 transition-transform shrink-0`}>
+            <Sparkles className="text-white w-7 h-7" />
           </div>
           {isSidebarOpen && (
             <motion.h1 
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-xl font-black text-slate-800 dark:text-white tracking-tight"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className={`text-2xl font-black tracking-tight ${role === 'student' ? 'text-indigo-900' : 'text-slate-800 dark:text-white'}`}
             >
-              Edu<span className={role === 'teacher' ? 'text-blue-600' : 'text-emerald-500'}>Pro</span>
+              Edu<span className={role === 'teacher' ? 'text-blue-600' : 'text-orange-500'}>Pro</span>
             </motion.h1>
           )}
         </div>
 
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-3 overflow-y-auto">
           <NavItem 
             icon={<LayoutDashboard />} 
             label="Tổng quan" 
             active={activeTab === 'dashboard'} 
             onClick={() => setActiveTab('dashboard')}
             collapsed={!isSidebarOpen}
+            role={role}
           />
 
           {(role === 'school_admin' || user?.email?.toLowerCase() === 'tranlichsu@gmail.com' || user?.email?.toLowerCase() === 'tienganhltt@thainguyen.edu.vn') && (
             <>
               <div className="pt-4 pb-2">
-                {isSidebarOpen && <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-3">Hệ thống</p>}
+                {isSidebarOpen && <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3">Hệ thống</p>}
               </div>
               <NavItem 
-                icon={<ShieldCheck className="text-indigo-500" />} 
+                icon={<ShieldCheck />} 
                 label="Quản trị Trường học" 
                 active={activeTab === 'school-admin'} 
                 onClick={() => setActiveTab('school-admin')}
                 color="text-indigo-600 dark:text-indigo-400"
                 bgColor="bg-indigo-50 dark:bg-indigo-900/30"
                 collapsed={!isSidebarOpen}
+                role={role}
               />
             </>
           )}
@@ -406,7 +410,7 @@ export default function App() {
           {(role === 'teacher' || role === 'homeroom_teacher' || role === 'principal') && (
             <>
               <div className="pt-4 pb-2">
-                {isSidebarOpen && <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-3">Công cụ Giáo dục</p>}
+                {isSidebarOpen && <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3">Công cụ Giáo dục</p>}
               </div>
               {(role === 'teacher' || role === 'homeroom_teacher') && (
                 <>
@@ -418,6 +422,7 @@ export default function App() {
                     color="text-purple-600 dark:text-purple-400"
                     bgColor="bg-purple-50 dark:bg-purple-900/30"
                     collapsed={!isSidebarOpen}
+                    role={role}
                   />
                   <NavItem 
                     icon={<FilePlus2 />} 
@@ -427,15 +432,17 @@ export default function App() {
                     color="text-pink-600 dark:text-pink-400"
                     bgColor="bg-pink-50 dark:bg-pink-900/30"
                     collapsed={!isSidebarOpen}
+                    role={role}
                   />
                   <NavItem 
                     icon={<GraduationCap />} 
-                    label="Tạo đề thi AI (TT27)" 
+                    label="Tạo đề thi AI" 
                     active={activeTab === 'test-ai'} 
                     onClick={() => setActiveTab('test-ai')}
                     color="text-indigo-600 dark:text-indigo-400"
                     bgColor="bg-indigo-50 dark:bg-indigo-900/30"
                     collapsed={!isSidebarOpen}
+                    role={role}
                   />
                   <NavItem 
                     icon={<Gamepad2 />} 
@@ -445,6 +452,7 @@ export default function App() {
                     color="text-orange-500 dark:text-orange-400"
                     bgColor="bg-orange-50 dark:bg-orange-900/30"
                     collapsed={!isSidebarOpen}
+                    role={role}
                   />
                 </>
               )}
@@ -456,12 +464,13 @@ export default function App() {
                 color="text-emerald-600 dark:text-emerald-400"
                 bgColor="bg-emerald-50 dark:bg-emerald-900/30"
                 collapsed={!isSidebarOpen}
+                role={role}
               />
             </>
           )}
 
           <div className="pt-4 pb-2">
-            {isSidebarOpen && <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-3">Học Liệu</p>}
+            {isSidebarOpen && <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3">Học Liệu</p>}
           </div>
           <NavItem 
             icon={<Globe />} 
@@ -471,41 +480,44 @@ export default function App() {
             color="text-indigo-600 dark:text-indigo-400"
             bgColor="bg-indigo-50 dark:bg-indigo-900/30"
             collapsed={!isSidebarOpen}
+            role={role}
           />
 
           {(role === 'student' || role === 'parent') && (
             <>
               <div className="pt-4 pb-2">
-                {isSidebarOpen && <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-3">Góc Gia Đình</p>}
+                {isSidebarOpen && <p className={`text-xs font-black uppercase tracking-widest px-3 ${role === 'student' ? 'text-indigo-400' : 'text-slate-400'}`}>Góc Của Em</p>}
               </div>
               <NavItem 
                 icon={<BookOpenCheck />} 
-                label={role === 'parent' ? "Kết quả của con" : "Bài tập của tôi"} 
+                label={role === 'parent' ? "Kết quả của con" : "Bài tập của em"} 
                 active={activeTab === 'student-homework'} 
                 onClick={() => setActiveTab('student-homework')}
-                color="text-blue-600 dark:text-blue-400"
-                bgColor="bg-blue-50 dark:bg-blue-900/30"
+                color={role === 'student' ? "text-blue-600" : "text-blue-600"}
+                bgColor={role === 'student' ? "bg-blue-100" : "bg-blue-50"}
                 collapsed={!isSidebarOpen}
+                role={role}
               />
               {role === 'student' && (
                 <NavItem 
                   icon={<Joystick />} 
-                  label="Trò chơi Tương tác" 
+                  label="Vui chơi cùng AI" 
                   active={activeTab === 'student-games'} 
                   onClick={() => setActiveTab('student-games')}
-                  color="text-orange-500 dark:text-orange-400"
-                  bgColor="bg-orange-50 dark:bg-orange-900/30"
+                  color="text-orange-500"
+                  bgColor="bg-orange-100"
                   collapsed={!isSidebarOpen}
+                  role={role}
                 />
               )}
             </>
           )}
         </nav>
 
-        <div className="p-4 border-t border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+        <div className={`p-4 ${role === 'student' ? 'border-t-4 border-indigo-50 bg-indigo-50/30' : 'border-t border-slate-200/50 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/50'} flex items-center justify-between`}>
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700 flex items-center justify-center overflow-hidden border border-slate-300 dark:border-slate-600 shrink-0 shadow-inner">
-              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email || 'Student'}`} alt="Avatar" className="w-full h-full object-cover" />
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden border-2 ${role === 'student' ? 'border-indigo-200 bg-indigo-100' : 'border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700'} shrink-0 shadow-inner`}>
+              <img src={studentProfile?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email || 'Student'}`} alt="Avatar" className="w-full h-full object-cover" />
             </div>
             {isSidebarOpen && (
               <motion.div 
@@ -513,17 +525,17 @@ export default function App() {
                 animate={{ opacity: 1 }}
                 className="overflow-hidden"
               >
-                <p className="text-sm font-bold text-slate-800 dark:text-white truncate max-w-[120px]">
-                  {user.displayName || (user.email ? user.email.split('@')[0] : 'Người dùng')}
+                <p className={`text-sm font-black truncate max-w-[120px] ${role === 'student' ? 'text-indigo-900' : 'text-slate-800 dark:text-white'}`}>
+                  {studentProfile?.name || user.displayName || (user.email ? user.email.split('@')[0] : 'Người dùng')}
                 </p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[120px] font-medium">
-                  {user.email}
+                <p className={`text-[10px] truncate max-w-[120px] font-bold ${role === 'student' ? 'text-indigo-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                  {role === 'student' ? `Cấp độ ${studentProfile?.level || 1}` : user.email}
                 </p>
               </motion.div>
             )}
           </div>
           {isSidebarOpen && (
-            <button onClick={handleLogout} className="text-slate-400 hover:text-red-500 transition-all p-2 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl">
+            <button onClick={handleLogout} className={`transition-all p-2 rounded-xl ${role === 'student' ? 'text-indigo-300 hover:text-red-500 hover:bg-red-50' : 'text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30'}`}>
               <LogOut className="w-5 h-5" />
             </button>
           )}
@@ -532,11 +544,11 @@ export default function App() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        <header className="h-20 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between px-4 sm:px-8 z-30 shrink-0 transition-all">
+        <header className={`h-24 px-4 sm:px-8 flex items-center justify-between z-30 shrink-0 transition-all ${role === 'student' ? 'bg-white border-b-4 border-indigo-50' : 'bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50'}`}>
           <div className="flex items-center gap-3 sm:gap-6">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-              className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition-all active:scale-95 md:flex hidden"
+              className={`p-3 rounded-2xl transition-all active:scale-95 md:flex hidden ${role === 'student' ? 'bg-indigo-50 text-indigo-500 hover:bg-indigo-100' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500'}`}
             >
               <Menu className="w-6 h-6" />
             </button>
@@ -545,75 +557,91 @@ export default function App() {
             <div className="md:hidden">
               <button 
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                className={`p-3 rounded-2xl ${role === 'student' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}
               >
                 <Menu className="w-6 h-6" />
               </button>
             </div>
 
             <div className="flex flex-col">
-              <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight leading-none">
-                {activeTab === 'dashboard' ? 'Tổng quan' : 
+              <h2 className={`text-3xl font-black tracking-tight leading-none ${role === 'student' ? 'text-indigo-900' : 'text-slate-800 dark:text-white'}`}>
+                {activeTab === 'dashboard' ? 'Chào em!' : 
                  activeTab === 'lesson-ai' ? 'Soạn giáo án AI' :
                  activeTab === 'worksheet' ? 'Phiếu học tập' :
                  activeTab === 'test-ai' ? 'Tạo đề thi AI' :
                  activeTab === 'games' ? 'Trò chơi' :
                  activeTab === 'classroom' ? 'Lớp học' :
-                 activeTab === 'student-homework' ? 'Bài tập' :
-                 activeTab === 'student-games' ? 'Trò chơi' : 'EduPro'}
+                 activeTab === 'student-homework' ? 'Bài tập của em' :
+                 activeTab === 'student-games' ? 'Vui chơi thôi nào!' : 'EduPro'}
               </h2>
-              <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
-                Trường TH Lý Tự Trọng
+              <p className={`text-xs font-black uppercase tracking-widest mt-2 ${role === 'student' ? 'text-indigo-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                {school?.name || 'Trường TH Lý Tự Trọng'}
               </p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
-              <button 
-                onClick={() => setIsDarkMode(false)} 
-                className={`p-2 rounded-lg transition-all ${!isDarkMode ? 'bg-white dark:bg-slate-800 shadow-sm text-blue-600' : 'text-slate-400'}`}
-              >
-                <Sun className="w-4 h-4" />
-              </button>
-              <button 
-                onClick={() => setIsDarkMode(true)} 
-                className={`p-2 rounded-lg transition-all ${isDarkMode ? 'bg-white dark:bg-slate-800 shadow-sm text-blue-400' : 'text-slate-400'}`}
-              >
-                <Moon className="w-4 h-4" />
-              </button>
-            </div>
+          <div className="flex items-center gap-4">
+            {role !== 'student' && (
+              <div className="hidden sm:flex items-center bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-inner">
+                <button 
+                  onClick={() => setIsDarkMode(false)} 
+                  className={`p-2 rounded-xl transition-all ${!isDarkMode ? 'bg-white dark:bg-slate-800 shadow-md text-blue-600' : 'text-slate-400'}`}
+                >
+                  <Sun className="w-5 h-5" />
+                </button>
+                <button 
+                  onClick={() => setIsDarkMode(true)} 
+                  className={`p-2 rounded-xl transition-all ${isDarkMode ? 'bg-white dark:bg-slate-800 shadow-md text-blue-400' : 'text-slate-400'}`}
+                >
+                  <Moon className="w-5 h-5" />
+                </button>
+              </div>
+            )}
             
-            <button className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition-all relative active:scale-95">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-800 rounded-full"></span>
+            {role === 'student' && studentProfile && (
+              <div className="hidden sm:flex items-center gap-4 px-4 py-2 bg-indigo-50 border-2 border-indigo-100 rounded-2xl shadow-sm">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-yellow-500" />
+                  <span className="font-black text-indigo-900">{studentProfile.xp || 0} XP</span>
+                </div>
+                <div className="w-[2px] h-6 bg-indigo-200" />
+                <div className="flex items-center gap-2">
+                  <Flame className="w-5 h-5 text-orange-500" />
+                  <span className="font-black text-indigo-900">{studentProfile.streak || 0} Ngày</span>
+                </div>
+              </div>
+            )}
+
+            <button className={`p-3 rounded-2xl transition-all relative active:scale-95 ${role === 'student' ? 'bg-indigo-50 text-indigo-500 hover:bg-indigo-100' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-50'}`}>
+              <Bell className="w-6 h-6" />
+              <span className="absolute top-3 right-3 w-3 h-3 bg-red-500 border-2 border-white dark:border-slate-800 rounded-full shadow-sm"></span>
             </button>
           </div>
         </header>
         
-        <div className="flex-1 overflow-auto p-8 relative">
+        <div className={`flex-1 overflow-auto p-4 sm:p-10 relative ${role === 'student' ? 'bg-indigo-50/50' : ''}`}>
           {connectionError && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-3 text-red-700 dark:text-red-400 font-medium shadow-sm">
-              <X className="w-5 h-5 shrink-0" />
+            <div className="mb-8 p-5 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-2xl flex items-center gap-4 text-red-700 dark:text-red-400 font-bold shadow-sm animate-in fade-in slide-in-from-top-2">
+              <X className="w-6 h-6 shrink-0" />
               <p className="flex-1">{connectionError}</p>
               <button 
-                onClick={() => loadData(teacherUid)} 
-                className="px-3 py-1 bg-red-100 dark:bg-red-800 rounded-lg text-xs hover:bg-red-200 transition"
+                onClick={() => loadData(teacherUid || '')} 
+                className="px-4 py-2 bg-red-100 dark:bg-red-800 rounded-xl text-sm hover:bg-red-200 transition active:scale-95"
               >
                 Thử lại
               </button>
-              <button onClick={() => setConnectionError(null)} className="text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
+              <button onClick={() => setConnectionError(null)} className="text-red-400 hover:text-red-600 transition-colors"><X className="w-5 h-5" /></button>
             </div>
           )}
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, x: 20, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, x: -20, filter: 'blur(10px)' }}
+              initial={{ opacity: 0, scale: 0.98, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98, y: -10 }}
               transition={{ 
                 duration: 0.4, 
-                ease: [0.23, 1, 0.32, 1] // Custom cubic-bezier for smoothness
+                ease: [0.23, 1, 0.32, 1]
               }}
               className="h-full"
             >
@@ -625,10 +653,10 @@ export default function App() {
         </div>
 
         {/* Mobile Bottom Navigation */}
-        <div className="md:hidden h-16 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-around px-2 z-50">
+        <div className={`md:hidden h-20 border-t flex items-center justify-around px-2 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] ${role === 'student' ? 'bg-white border-indigo-50' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
           <MobileNavItem icon={<LayoutDashboard />} active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
           {(role === 'school_admin' || user?.email?.toLowerCase() === 'tranlichsu@gmail.com') && (
-            <MobileNavItem icon={<ShieldCheck className="text-indigo-500" />} active={activeTab === 'school-admin'} onClick={() => setActiveTab('school-admin')} />
+            <MobileNavItem icon={<ShieldCheck />} active={activeTab === 'school-admin'} onClick={() => setActiveTab('school-admin')} />
           )}
           {role === 'teacher' || role === 'homeroom_teacher' || role === 'principal' || role === 'school_admin' ? (
             <>
@@ -644,6 +672,7 @@ export default function App() {
         </div>
       </main>
     </div>
+
   );
 }
 

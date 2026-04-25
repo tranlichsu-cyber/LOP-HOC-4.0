@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { auth } from '../firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
 import { motion } from 'motion/react';
-import { Sparkles, GraduationCap, UserCircle, KeyRound, ArrowRight } from 'lucide-react';
+import { Sparkles, GraduationCap, UserCircle, KeyRound, ArrowRight, Chrome } from 'lucide-react';
 
 export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: string, pass: string) => Promise<{success: boolean, message?: string}> }) {
   const [email, setEmail] = useState('');
@@ -34,6 +34,35 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
         errorMsg = "Lỗi kết nối: Vui lòng thử mở ứng dụng trong tab mới.";
       }
       setMessage(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true);
+      setMessage("Đang kết nối Google...");
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (error: any) {
+      setMessage("Lỗi đăng nhập Google: " + error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setMessage("Vui lòng nhập email để đặt lại mật khẩu!");
+      return;
+    }
+    try {
+      setIsLoading(true);
+      await sendPasswordResetEmail(auth, email);
+      setMessage("Liên kết đặt lại mật khẩu đã được gửi đến email của bạn.");
+    } catch (error: any) {
+      setMessage("Lỗi: " + error.message);
     } finally {
       setIsLoading(false);
     }
@@ -132,12 +161,42 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
                     {isRegistering ? 'Tạo tài khoản' : 'Đăng nhập ngay'}
                     <ArrowRight className="w-5 h-5" />
                   </button>
-                  <button 
-                    onClick={() => setIsRegistering(!isRegistering)} 
-                    className="w-full text-slate-500 dark:text-slate-400 text-sm font-bold hover:text-blue-600 transition-colors"
-                  >
-                    {isRegistering ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Đăng ký ngay'}
-                  </button>
+
+                  {!isRegistering && (
+                    <div className="flex items-center gap-4 py-2">
+                      <div className="h-[1px] flex-1 bg-slate-200 dark:bg-slate-800" />
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hoặc</span>
+                      <div className="h-[1px] flex-1 bg-slate-200 dark:bg-slate-800" />
+                    </div>
+                  )}
+
+                  {!isRegistering && (
+                    <button 
+                      disabled={isLoading}
+                      onClick={handleGoogleLogin}
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold py-4 rounded-2xl transition-all hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 shadow-sm"
+                    >
+                      <Chrome className="w-5 h-5 text-blue-500" />
+                      Đăng nhập bằng Google
+                    </button>
+                  )}
+
+                  <div className="flex flex-col gap-2 mt-2">
+                    <button 
+                      onClick={() => setIsRegistering(!isRegistering)} 
+                      className="w-full text-slate-500 dark:text-slate-400 text-sm font-bold hover:text-blue-600 transition-colors"
+                    >
+                      {isRegistering ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Đăng ký ngay'}
+                    </button>
+                    {!isRegistering && (
+                      <button 
+                        onClick={handleForgotPassword}
+                        className="w-full text-slate-400 text-xs font-medium hover:text-indigo-600 transition-colors"
+                      >
+                        Quên mật khẩu?
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (

@@ -47,14 +47,15 @@ export default function TestGeneratorAI() {
       const ai = new GoogleGenAI({ apiKey });
 
       const prompt = `
-        Bạn là một chuyên gia giáo dục tiểu học tại Việt Nam, am hiểu Công văn 27/2020/TT-BGDĐT.
+        Bạn là một chuyên gia giáo dục tiểu học tại Việt Nam.
         Nhiệm vụ: Tạo một đề thi ${testType} cho môn ${subject}, ${grade}.
-        Chủ đề/Nội dung trọng tâm: ${topic}
         
-        Cấu trúc đề thi phải tuân thủ 3 mức độ theo Thông tư 27:
-        - Mức 1 (${structure.m1} câu): Nhận biết, nhắc lại hoặc mô tả được nội dung đã học và áp dụng trực tiếp để giải quyết một số tình huống, vấn đề quen thuộc trong học tập.
-        - Mức 2 (${structure.m2} câu): Kết nối, sắp xếp được một số nội dung đã học để giải quyết vấn đề có nội dung tương tự.
-        - Mức 3 (${structure.m3} câu): Vận dụng các nội dung đã học để giải quyết vấn đề mới hoặc đưa ra những phản hồi hợp lý trong học tập và cuộc sống.
+        QUAN TRỌNG: Nội dung đề thi PHẢI dựa hoàn toàn vào kiến thức trong Sách giáo khoa hiện hành cho chủ đề: ${topic}
+        
+        Cấu trúc đề thi gồm ${numQuestions} câu hỏi được phân bổ như sau:
+        - Nhận biết (${structure.m1} câu): Nhắc lại hoặc mô tả được nội dung đã học.
+        - Thông hiểu (${structure.m2} câu): Giải quyết vấn đề có nội dung tương tự SGK.
+        - Vận dụng (${structure.m3} câu): Giải quyết vấn đề mới hoặc tình huống thực tế.
 
         Yêu cầu định dạng phản hồi:
         Sử dụng Markdown. Đề thi bao gồm:
@@ -128,8 +129,8 @@ export default function TestGeneratorAI() {
             <GraduationCap className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-800 dark:text-white">Tạo đề thi AI (Thông tư 27)</h2>
-            <p className="text-sm text-slate-500">Thiết kế đề thi chuẩn 3 mức độ theo quy định của Bộ GD&ĐT</p>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-white">Tạo đề thi bằng AI</h2>
+            <p className="text-sm text-slate-500">Dựa vào nội dung trong sách giáo khoa</p>
           </div>
         </div>
         <div className="flex items-center gap-2">

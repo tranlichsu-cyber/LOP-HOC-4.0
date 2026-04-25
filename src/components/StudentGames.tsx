@@ -137,102 +137,161 @@ export default function StudentGames({ offlineGames, studentProfile, onCompleteG
   }
 
   return (
-    <div className="flex flex-col gap-6 h-full w-full pb-6 font-kids">
+    <div className="flex flex-col gap-8 h-full w-full pb-10 font-kids">
       {/* Gamification Header */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
-        <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-[2rem] p-6 text-white shadow-lg border-4 border-white flex items-center gap-4 relative overflow-hidden">
-          <Star className="w-12 h-12 text-white/50 absolute -top-2 -right-2 rotate-12" />
-          <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
-            <Zap className="w-8 h-8 fill-current" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
+        <motion.div 
+          whileHover={{ scale: 1.02, rotate: 1 }}
+          className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-[2.5rem] p-8 text-white shadow-2xl border-4 border-white flex items-center gap-5 relative overflow-hidden group"
+        >
+          <Star className="w-20 h-20 text-white/20 absolute -top-4 -right-4 rotate-12 group-hover:rotate-45 transition-transform duration-700" />
+          <div className="bg-white/20 p-4 rounded-3xl backdrop-blur-md shadow-inner border border-white/30">
+            <Zap className="w-10 h-10 fill-current text-white" />
           </div>
           <div>
-            <div className="text-xs font-black uppercase opacity-80">Cấp độ {studentProfile?.level || 1}</div>
-            <div className="text-2xl font-black">{studentProfile?.xp || 0} XP</div>
-            <div className="w-32 h-2 bg-black/20 rounded-full mt-2 overflow-hidden border border-white/20">
-              <div className="h-full bg-white" style={{ width: `${getProgressToNextLevel(studentProfile?.xp || 0)}%` }}></div>
+            <div className="text-xs font-black uppercase tracking-widest opacity-80 mb-1">Cấp độ {studentProfile?.level || 1}</div>
+            <div className="text-3xl font-black drop-shadow-md">{studentProfile?.xp || 0} XP</div>
+            <div className="w-32 h-3 bg-black/20 rounded-full mt-3 overflow-hidden border border-white/20">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${getProgressToNextLevel(studentProfile?.xp || 0)}%` }}
+                className="h-full bg-white shadow-[0_0_10px_#fff]"
+              ></motion.div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-gradient-to-br from-rose-400 to-pink-500 rounded-[2rem] p-6 text-white shadow-lg border-4 border-white flex items-center gap-4 relative overflow-hidden">
-          <Flame className="w-12 h-12 text-white/50 absolute -top-2 -right-2 rotate-12" />
-          <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
-            <Flame className="w-8 h-8 fill-current" />
+        <motion.div 
+          whileHover={{ scale: 1.02, rotate: -1 }}
+          className="bg-gradient-to-br from-rose-400 to-pink-600 rounded-[2.5rem] p-8 text-white shadow-2xl border-4 border-white flex items-center gap-5 relative overflow-hidden group"
+        >
+          <Flame className="w-20 h-20 text-white/20 absolute -top-4 -right-4 rotate-12 group-hover:scale-125 transition-transform duration-700" />
+          <div className="bg-white/20 p-4 rounded-3xl backdrop-blur-md shadow-inner border border-white/30">
+            <Flame className="w-10 h-10 fill-current text-white" />
           </div>
           <div>
-            <div className="text-xs font-black uppercase opacity-80">Chuỗi học tập</div>
-            <div className="text-2xl font-black">{studentProfile?.streak || 0} Ngày</div>
+            <div className="text-xs font-black uppercase tracking-widest opacity-80 mb-1">Chuỗi học tập</div>
+            <div className="text-3xl font-black drop-shadow-md">{studentProfile?.streak || 0} Ngày</div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-gradient-to-br from-indigo-400 to-purple-500 rounded-[2rem] p-6 text-white shadow-lg border-4 border-white flex items-center gap-4 relative overflow-hidden">
-          <Award className="w-12 h-12 text-white/50 absolute -top-2 -right-2 rotate-12" />
-          <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
-            <Award className="w-8 h-8 fill-current" />
+        <motion.div 
+          whileHover={{ scale: 1.02, rotate: 1 }}
+          className="bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-600 rounded-[2.5rem] p-8 text-white shadow-2xl border-4 border-white flex items-center gap-5 relative overflow-hidden group"
+        >
+          <Award className="w-20 h-20 text-white/20 absolute -top-4 -right-4 rotate-12 group-hover:rotate-[-12deg] transition-transform duration-700" />
+          <div className="bg-white/20 p-4 rounded-3xl backdrop-blur-md shadow-inner border border-white/30">
+            <Award className="w-10 h-10 fill-current text-white" />
           </div>
           <div>
-            <div className="text-xs font-black uppercase opacity-80">Huy hiệu đạt được</div>
-            <div className="text-2xl font-black">{studentProfile?.badges?.length || 0} Badges</div>
+            <div className="text-xs font-black uppercase tracking-widest opacity-80 mb-1">Huy hiệu</div>
+            <div className="text-3xl font-black drop-shadow-md">{studentProfile?.badges?.length || 0} Đã đạt</div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8 flex-1 min-h-0">
-        <div className="w-full lg:w-1/3 bg-kids-fun rounded-[3rem] p-8 sm:p-12 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-xl shrink-0 border-4 border-white h-full">
-          <Swords className="w-24 h-24 text-rose-500 mb-6 z-10 animate-bounce" />
-          <h3 className="text-3xl sm:text-5xl font-black text-rose-600 mb-4 z-10 drop-shadow-sm uppercase">Vào phòng ngay!</h3>
-          <input 
-            type="text" 
-            placeholder="NHẬP MÃ PIN" 
-            value={pin}
-            onChange={(e) => setPin(e.target.value)}
-            className="w-full max-w-[280px] bg-white/80 border-4 border-white rounded-3xl p-5 text-center text-3xl font-black text-rose-600 uppercase outline-none focus:border-rose-400 z-10 mb-2 shadow-inner placeholder-rose-300" 
-          />
-          {error && <p className="text-red-500 font-bold text-xs mb-4 z-10">{error}</p>}
-          <button 
-            onClick={handleJoinSession}
-            disabled={isJoining || !pin}
-            className="w-full max-w-[280px] bg-rose-500 hover:bg-rose-600 text-white font-black py-5 rounded-3xl z-10 text-2xl uppercase shadow-[0_8px_0_#be123c] active:translate-y-2 active:shadow-none transition border-2 border-rose-400 tracking-widest disabled:opacity-50"
-          >
-            {isJoining ? <Loader2 className="w-8 h-8 animate-spin mx-auto" /> : 'VÀO CHƠI'}
-          </button>
-        </div>
+      <div className="flex flex-col lg:flex-row gap-10 flex-1 min-h-0">
+        {/* JOIN ROOM CARD */}
+        <motion.div 
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          className="w-full lg:w-1/3 bg-kids-fun rounded-[3.5rem] p-10 sm:p-14 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-2xl shrink-0 border-4 border-white h-full"
+        >
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+          <div className="relative z-10 flex flex-col items-center w-full">
+            <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-xl mb-8 border-4 border-rose-100 group">
+               <Swords className="w-14 h-14 text-rose-500 animate-bounce cursor-pointer group-hover:scale-110 transition-transform" />
+            </div>
+            <h3 className="text-4xl sm:text-5xl font-black text-rose-600 mb-6 drop-shadow-sm uppercase leading-tight">Đấu Trường<br/>Tri Thức!</h3>
+            
+            <div className="w-full space-y-4 mb-2">
+              <input 
+                type="text" 
+                placeholder="NHẬP MÃ PIN" 
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                className="w-full max-w-[300px] bg-white border-4 border-rose-200 rounded-[2rem] p-6 text-center text-4xl font-black text-rose-600 uppercase outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-100 transition-all shadow-inner placeholder-rose-200" 
+              />
+              {error && (
+                <motion.p 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-rose-500 font-black text-sm bg-rose-50 px-4 py-2 rounded-xl border border-rose-100"
+                >
+                  {error}
+                </motion.p>
+              )}
+            </div>
+
+            <button 
+              onClick={handleJoinSession}
+              disabled={isJoining || !pin}
+              className="w-full max-w-[300px] mt-6 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-black py-6 rounded-[2rem] text-3xl uppercase shadow-[0_12px_0_#9f1239] active:translate-y-2 active:shadow-none transition-all duration-200 border-2 border-white/20 tracking-[0.2em] disabled:opacity-50 flex items-center justify-center gap-4 group"
+            >
+              {isJoining ? (
+                <Loader2 className="w-10 h-10 animate-spin" />
+              ) : (
+                <>
+                  VÀO CHƠI <Zap className="w-8 h-8 fill-current group-hover:scale-125 transition-transform" />
+                </>
+              )}
+            </button>
+            <p className="mt-6 text-rose-400 font-bold text-sm uppercase tracking-widest opacity-80">Hỏi Thầy Cô mã PIN để bắt đầu</p>
+          </div>
+        </motion.div>
         
-        <div className="w-full lg:w-2/3 bg-white/80 backdrop-blur-md p-8 rounded-[3rem] shadow-xl overflow-y-auto flex-1 border-4 border-white flex flex-col">
-          <div className="flex items-center justify-between mb-8 border-b-2 border-indigo-100 pb-4">
-            <h3 className="text-3xl font-black flex items-center gap-3 text-indigo-800 uppercase">
-              <div className="bg-indigo-500 p-2 rounded-xl text-white"><Gamepad2 className="w-8 h-8" /></div> 
-              Tự Luyện Tập
-            </h3>
-            <div className="text-4xl">🎮</div>
+        {/* OFFLINE GAMES LIST */}
+        <motion.div 
+          initial={{ x: 20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          className="w-full lg:w-2/3 bg-white/90 backdrop-blur-md p-10 rounded-[3.5rem] shadow-2xl overflow-y-auto flex-1 border-4 border-white flex flex-col"
+        >
+          <div className="flex items-center justify-between mb-10 border-b-4 border-indigo-50 pb-6">
+            <div className="flex items-center gap-4">
+              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-4 rounded-2xl text-white shadow-lg transform -rotate-2">
+                <Gamepad2 className="w-10 h-10" />
+              </div>
+              <h3 className="text-3xl sm:text-4xl font-black text-indigo-950 uppercase tracking-tight">Rèn luyện ngay</h3>
+            </div>
+            <div className="text-5xl hidden sm:block animate-pulse">🎮</div>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-8 pr-2 custom-scrollbar">
             {offlineGames.map((game: Game) => (
-              <div key={game.id} className="bg-white rounded-3xl border-4 border-indigo-100 shadow-xl flex flex-col h-[200px] transform hover:-translate-y-2 transition cursor-pointer relative overflow-hidden group" onClick={() => setPlayingGame(game)}>
-                <div className="h-20 bg-gradient-to-br from-indigo-400 to-purple-500 p-4 relative overflow-hidden">
-                  <Joystick className="absolute -top-4 -right-4 w-20 h-20 text-white/30" />
+              <motion.div 
+                key={game.id} 
+                whileHover={{ y: -8 }}
+                onClick={() => setPlayingGame(game)}
+                className="bg-white rounded-[2.5rem] border-4 border-indigo-50 shadow-xl flex flex-col h-[220px] cursor-pointer relative overflow-hidden group transition-all"
+              >
+                <div className="h-24 bg-gradient-to-br from-indigo-400 via-purple-500 to-indigo-500 p-5 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
+                  <Joystick className="absolute -top-4 -right-4 w-24 h-24 text-white/30 group-hover:rotate-12 transition-transform duration-500" />
                   {game.subject && (
-                    <span className="absolute top-2 left-2 bg-white/20 backdrop-blur-md text-white text-[10px] font-black px-2 py-0.5 rounded-lg border border-white/30 uppercase tracking-tighter">
+                    <span className="absolute top-3 left-3 bg-white/20 backdrop-blur-md text-white text-[10px] sm:text-xs font-black px-3 py-1 rounded-xl border border-white/30 uppercase tracking-widest">
                       {game.subject}
                     </span>
                   )}
                 </div>
-                <div className="p-5 flex-1 flex flex-col bg-indigo-50/50">
-                  <h3 className="font-black text-indigo-900 text-xl">{game.title}</h3>
-                  <div className="mt-auto">
-                    <button className="w-full bg-slate-800 text-white font-bold py-2 rounded-xl flex justify-center gap-2 items-center">
-                      <Play className="w-4 h-4 fill-current" /> Chơi ngay
+                <div className="p-6 flex-1 flex flex-col justify-between bg-indigo-50/30">
+                  <h3 className="font-black text-indigo-950 text-xl sm:text-2xl line-clamp-1">{game.title}</h3>
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-indigo-400 font-bold text-sm">Chơi cùng AI 🤖</span>
+                    <button className="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-6 py-2.5 rounded-2xl flex items-center gap-2 shadow-lg shadow-indigo-200 transition-all active:scale-95 text-sm uppercase tracking-widest">
+                      <Play className="w-4 h-4 fill-current" /> CHƠI
                     </button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
             {offlineGames.length === 0 && (
-              <p className="text-center text-slate-400 col-span-2 py-10">Chưa có trò chơi nào được giao.</p>
+              <div className="text-center py-16 bg-slate-50 rounded-[2.5rem] border-4 border-dashed border-slate-200 col-span-2">
+                 <div className="text-5xl mb-4">🎈</div>
+                 <p className="text-xl font-black text-slate-400">Chưa có trò chơi mới.</p>
+              </div>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
