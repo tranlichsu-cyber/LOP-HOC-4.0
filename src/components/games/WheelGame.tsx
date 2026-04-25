@@ -127,8 +127,8 @@ export default function WheelGame({ students, onClose }: { students: Student[], 
             </div>
           )}
           
-          <div className={`flex-1 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-[3rem] shadow-2xl border-4 border-white flex flex-col items-center justify-center relative overflow-hidden p-8 w-full ${isPlayMode ? 'mx-auto max-w-3xl' : ''}`}>
-            <div className="relative flex flex-col items-center mt-4 gap-8">
+          <div className={`flex-1 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-[3rem] shadow-2xl border-4 border-white flex flex-col items-center justify-start relative overflow-hidden p-8 pt-12 sm:pt-20 w-full ${isPlayMode ? 'mx-auto max-w-3xl' : ''}`}>
+            <div className="relative flex flex-col items-center gap-8">
               <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[20px] border-r-[20px] border-t-[40px] border-transparent border-t-rose-600 z-20 filter drop-shadow-md"></div>
               <div className="rounded-full shadow-[0_0_30px_rgba(0,0,0,0.15)] border-[12px] border-white p-3 bg-gradient-to-br from-rose-100 to-blue-100 relative">
                 <canvas ref={canvasRef} width="600" height="600" className="rounded-full max-w-[350px] max-h-[350px] w-full h-auto bg-white shadow-inner"></canvas>
