@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, BookOpen, Gamepad2, ShieldCheck, Sparkles, LayoutPanelLeft, Loader2, BrainCircuit, Trophy, Zap } from 'lucide-react';
+import { Users, BookOpen, Gamepad2, ShieldCheck, Sparkles, LayoutPanelLeft, Loader2, BrainCircuit, Trophy, Zap, Camera, Image as ImageIcon } from 'lucide-react';
 import { motion, Variants, AnimatePresence } from 'motion/react';
 import { 
   BarChart, 
@@ -20,15 +20,31 @@ import { Student, Homework } from '../types';
 
 import { GoogleGenAI } from "@google/genai";
 
-export default function Dashboard({ role, stats, studentsList = [], homeworkList = [], studentProfile }: { 
+export default function Dashboard({ role, stats, studentsList = [], homeworkList = [], studentProfile, onUpdateStudentProfile }: { 
   role: string, 
   stats: { students: number, games: number },
   studentsList?: Student[],
   homeworkList?: Homework[],
-  studentProfile?: Student | null
+  studentProfile?: Student | null,
+  onUpdateStudentProfile?: (updatedData: Partial<Student>) => void
 }) {
   const [aiAdvice, setAiAdvice] = React.useState<string>('');
   const [isGeneratingAdvice, setIsGeneratingAdvice] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      if (onUpdateStudentProfile) {
+        onUpdateStudentProfile({ avatar: base64String });
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const generateAIAdvice = async () => {
     setIsGeneratingAdvice(true);
@@ -337,9 +353,36 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -ml-20 -mb-20 group-hover:scale-110 transition-transform duration-700" />
         
         <div className="relative z-10 flex flex-col items-center text-center">
-          <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-[1.5rem] flex items-center justify-center mb-6 border border-white/30 shadow-inner group-hover:rotate-12 transition-transform">
-            <Sparkles className="text-yellow-300 w-10 h-10 drop-shadow-lg" />
-          </div>
+          {role === 'student' && (
+            <div className="relative mb-6 group">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-[2rem] overflow-hidden border-4 border-white/50 shadow-2xl bg-white/20 backdrop-blur-xl group-hover:scale-105 transition-transform duration-500">
+                <img 
+                  src={studentProfile?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${studentProfile?.name || 'Student'}`} 
+                  alt="Avatar" 
+                  className="w-full h-full object-cover" 
+                />
+              </div>
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute -bottom-2 -right-2 bg-white text-indigo-600 p-3 rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all border-2 border-indigo-100"
+                title="Đổi ảnh đại diện"
+              >
+                <Camera className="w-5 h-5" />
+              </button>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleAvatarUpload} 
+                accept="image/*" 
+                className="hidden" 
+              />
+            </div>
+          )}
+          {!studentProfile?.avatar && (
+            <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-[1.5rem] flex items-center justify-center mb-6 border border-white/30 shadow-inner group-hover:rotate-12 transition-transform">
+              <Sparkles className="text-yellow-300 w-10 h-10 drop-shadow-lg" />
+            </div>
+          )}
           <h3 className="text-4xl font-black text-white tracking-tight mb-4">
             {role === 'student' ? `Chào ${studentProfile?.name || 'em'} yêu! 👋` : 'Chào mừng trở lại!'}
           </h3>

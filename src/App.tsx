@@ -324,12 +324,38 @@ export default function App() {
     }
   };
 
+  const updateStudentProfile = async (updatedData: Partial<Student>) => {
+    if (!studentProfile) return;
+
+    const updatedProfile = { ...studentProfile, ...updatedData };
+    setStudentProfile(updatedProfile);
+
+    try {
+      // 1. Update in lookup collection
+      await setDoc(doc(db, 'edupro_students', studentProfile.id), updatedData, { merge: true });
+      
+      // 2. Update in class collection if exists
+      if (studentProfile.schoolId && studentProfile.classId) {
+        await setDoc(doc(db, 'schools', studentProfile.schoolId, 'classes', studentProfile.classId, 'students', studentProfile.id), updatedData, { merge: true });
+      }
+    } catch (e) {
+      console.error("Error updating student profile:", e);
+    }
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard': 
         if (role === 'principal') return <PrincipalDashboard schoolStats={{ totalStudents: 500, totalTeachers: 45, totalClasses: 20, avgCompletionRate: 82, activeSessions: 12 }} />;
         if (role === 'parent') return <ParentDashboard childrenList={students.filter(s => userProfile?.studentIds?.includes(s.id))} homeworkList={homework} />;
-        return <Dashboard role={role} stats={{ students: students.length, games: offlineGames.length + liveGames.length }} studentsList={students} homeworkList={homework} studentProfile={studentProfile} />;
+        return <Dashboard 
+          role={role} 
+          stats={{ students: students.length, games: offlineGames.length + liveGames.length }} 
+          studentsList={students} 
+          homeworkList={homework} 
+          studentProfile={studentProfile} 
+          onUpdateStudentProfile={updateStudentProfile}
+        />;
       
       case 'school-admin': return userProfile ? <SchoolAdmin userProfile={userProfile} /> : null;
       case 'lesson-ai': return <LessonAI />;
@@ -340,7 +366,14 @@ export default function App() {
       case 'resource-library': return userProfile ? <ResourceLibrary userProfile={userProfile} /> : null;
       case 'student-homework': return <StudentHomework homework={homework} />;
       case 'student-games': return <StudentGames offlineGames={offlineGames} studentProfile={studentProfile} onCompleteGame={() => awardStudentXP(100)} />;
-      default: return <Dashboard role={role} stats={{ students: students.length, games: offlineGames.length + liveGames.length }} studentsList={students} homeworkList={homework} studentProfile={studentProfile} />;
+      default: return <Dashboard 
+        role={role} 
+        stats={{ students: students.length, games: offlineGames.length + liveGames.length }} 
+        studentsList={students} 
+        homeworkList={homework} 
+        studentProfile={studentProfile} 
+        onUpdateStudentProfile={updateStudentProfile}
+      />;
     }
   };
 
@@ -425,16 +458,6 @@ export default function App() {
                     onClick={() => setActiveTab('lesson-ai')}
                     color="text-purple-600 dark:text-purple-400"
                     bgColor="bg-purple-50 dark:bg-purple-900/30"
-                    collapsed={!isSidebarOpen}
-                    role={role}
-                  />
-                  <NavItem 
-                    icon={<FilePlus2 />} 
-                    label="Tạo phiếu học tập" 
-                    active={activeTab === 'worksheet'} 
-                    onClick={() => setActiveTab('worksheet')}
-                    color="text-pink-600 dark:text-pink-400"
-                    bgColor="bg-pink-50 dark:bg-pink-900/30"
                     collapsed={!isSidebarOpen}
                     role={role}
                   />
