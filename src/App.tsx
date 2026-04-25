@@ -576,7 +576,7 @@ export default function App() {
                  activeTab === 'games' ? 'Trò chơi' :
                  activeTab === 'classroom' ? 'Lớp học' :
                  activeTab === 'student-homework' ? 'Bài tập của em' :
-                 activeTab === 'student-games' ? 'Vui chơi thôi nào!' : 'EduPro'}
+                 activeTab === 'student-games' ? 'Vui chơi thôi nào!' : 'Lý Tự Trọng'}
               </h2>
               <p className={`text-xs font-black uppercase tracking-widest mt-2 ${role === 'student' ? 'text-indigo-400' : 'text-slate-400 dark:text-slate-500'}`}>
                 {school?.name || 'Trường TH Lý Tự Trọng'}
