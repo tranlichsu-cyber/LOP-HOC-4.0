@@ -361,7 +361,15 @@ export default function App() {
       `}>
         <div className={`p-8 flex items-center gap-3 ${role === 'student' ? 'border-b-4 border-indigo-50' : 'border-b border-slate-100/50 dark:border-slate-700/50'}`}>
           <div className={`w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-lg transform hover:rotate-6 transition-transform shrink-0 overflow-hidden border border-slate-100`}>
-            <img src="/school-logo.png" alt="Logo" className="w-full h-full object-contain p-1" />
+            <img 
+              src="/school-logo.png" 
+              alt="Logo" 
+              className="w-full h-full object-contain p-1" 
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.parentElement?.insertAdjacentHTML('afterbegin', '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles text-blue-600 w-6 h-6"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.937A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063A2 2 0 0 0 14.063 15.5L12.5 21.635a.5.5 0 0 1-.962 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>');
+              }}
+            />
           </div>
           {isSidebarOpen && (
             <motion.h1 
