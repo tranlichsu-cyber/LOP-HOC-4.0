@@ -299,7 +299,13 @@ export default function LessonAI() {
 3. Thông tư 02/2025/TT-BGDĐT & Công văn 3456/BGDĐT-GDPT: Khung năng lực số (NLS) cho người học.
 4. Quyết định 3439/QĐ-BGDĐT: Khung nội dung thí điểm giáo dục Trí tuệ nhân tạo (AI).
 
-Nhiệm vụ: Hãy soạn kế hoạch bài dạy (Giáo án) theo CTGDPT 2018 cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. ${duration ? `Số tiết: ${duration}.` : ''}${provinceContext}${textbookContext}
+Nhiệm vụ: ${fileText || fileBase64 ? 'CẬP NHẬT VÀ LỒNG GHÉP NỘI DUNG VÀO GIÁO ÁN CÓ SẴN.' : `Hãy soạn kế hoạch bài dạy (Giáo án) theo CTGDPT 2018 cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. ${duration ? `Số tiết: ${duration}.` : ''}`} ${provinceContext}${textbookContext}
+
+${fileText || fileBase64 ? `QUAN TRỌNG: Bạn đang được cung cấp một bản giáo án cũ. 
+YÊU CẦU BẮT BUỘC: 
+- GIỮ NGUYÊN HOÀN TOÀN TỪNG CÂU CHỮ, NỘI DUNG VÀ BỐ CỤC (layout) của giáo án cũ. KHÔNG được tóm tắt, không được thay đổi từ ngữ vốn có.
+- CHỈ ĐƯỢC PHÉP CHÈN THÊM (lồng ghép) các nội dung mới (Năng lực số, AI, An ninh quốc phòng) vào các vị trí phù hợp.
+- Nội dung lồng ghép phải được trình bày tự nhiên, không làm gãy mạch logic của giáo án cũ.` : ''}
 
 YÊU CẦU QUAN TRỌNG:
 - BÁM SÁT CTGDPT 2018: Phải đảm bảo các yêu cầu cần đạt (YCCĐ) theo đúng khung chương trình mới.
@@ -335,7 +341,7 @@ LƯU Ý ĐỊNH DẠNG:
       const contents: any[] = [{ text: promptTemplate }];
       
       if (fileText) {
-        contents.push({ text: `NỘI DUNG GIÁO ÁN CŨ ĐỂ THAM KHẢO VÀ GIỮ NGUYÊN: \n\n ${fileText}` });
+        contents.push({ text: `ĐÂY LÀ NỘI DUNG GIÁO ÁN GỐC CẦN GIỮ NGUYÊN: \n\n ${fileText}` });
       } else if (file && fileBase64) {
         contents.push({
           inlineData: {
