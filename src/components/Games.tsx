@@ -391,68 +391,241 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
         )}
 
           {activeTab === 'offline' && (
-            <div className="space-y-10 pb-20">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <h3 className="font-black text-3xl text-slate-800 dark:text-white font-kids tracking-tight uppercase italic">Kho Trò Chơi</h3>
-                  <p className="text-slate-500 font-medium text-lg mt-1 italic">Học tập vui nhộn qua hệ thống trò chơi tương tác thế hệ mới</p>
-                </div>
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-black text-3xl text-slate-800 dark:text-white font-kids tracking-tight uppercase">Thư viện Trò chơi</h3>
+                <p className="text-slate-500 font-medium text-lg mt-1 italic">Học tập vui nhộn qua hệ thống trò chơi tương tác thế hệ mới</p>
+              </div>
+              <button 
+                onClick={() => {
+                  setNewGame({ title: '', type: 'math', questionsList: [] });
+                  setIsAddModalOpen(true);
+                }}
+                className="bg-orange-500 text-white px-8 py-3.5 rounded-2xl font-black text-base flex items-center gap-2 hover:bg-orange-600 shadow-xl shadow-orange-200"
+              >
+                <Plus className="w-6 h-6" /> Tạo trò chơi mới
+              </button>
+            </div>
+            
+            <div className="flex flex-wrap gap-3">
                 <button 
-                  onClick={() => {
-                    setNewGame({ title: '', type: 'math', questionsList: [] });
+                  onClick={async () => {
+                    const teacherUid = auth.currentUser?.uid;
+                    if (!teacherUid) return;
+                    const sampleMemory: Game = {
+                      id: 'sample-memory-' + Date.now(),
+                      title: "Lật hình: Động vật ngộ nghĩnh",
+                      type: 'memory',
+                      questionsList: [
+                        { id: '1', type: 'multiple_choice', text: "Con Mèo", mediaUrl: "https://picsum.photos/seed/cat/200/200" },
+                        { id: '2', type: 'multiple_choice', text: "Con Chó", mediaUrl: "https://picsum.photos/seed/dog/200/200" },
+                        { id: '3', type: 'multiple_choice', text: "Con Thỏ", mediaUrl: "https://picsum.photos/seed/rabbit/200/200" },
+                        { id: '4', type: 'multiple_choice', text: "Con Gấu", mediaUrl: "https://picsum.photos/seed/bear/200/200" },
+                        { id: '5', type: 'multiple_choice', text: "Con Hổ", mediaUrl: "https://picsum.photos/seed/tiger/200/200" },
+                        { id: '6', type: 'multiple_choice', text: "Con Sư Tử", mediaUrl: "https://picsum.photos/seed/lion/200/200" },
+                        { id: '7', type: 'multiple_choice', text: "Con Voi", mediaUrl: "https://picsum.photos/seed/elephant/200/200" },
+                        { id: '8', type: 'multiple_choice', text: "Con Khỉ", mediaUrl: "https://picsum.photos/seed/monkey/200/200" }
+                      ],
+                      timeLimit: 60
+                    };
+                    try {
+                      await setDoc(doc(db, 'teachers', teacherUid, 'games', sampleMemory.id), sampleMemory);
+                      setOfflineGames([...offlineGames, sampleMemory]);
+                      alert("Đã thêm trò chơi 'Lật hình' mẫu!");
+                    } catch (e) {
+                      console.error(e);
+                      alert("Lỗi khi thêm trò chơi mẫu!");
+                    }
+                  }}
+                  className="px-4 py-2 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-blue-200 transition border border-blue-200 dark:border-blue-800"
+                >
+                  <Plus className="w-4 h-4" /> Tạo trò chơi Lật hình
+                </button>
+                <button 
+                  onClick={async () => {
+                    const teacherUid = auth.currentUser?.uid;
+                    if (!teacherUid) return;
+                    const sampleMatching: Game = {
+                      id: 'sample-match-' + Date.now(),
+                      title: "Nối thẻ: Từ vựng Tiếng Anh",
+                      type: 'matching',
+                      questionsList: [
+                        { id: '1', type: 'multiple_choice', text: "Apple", options: ["Quả táo"], correct: 0 },
+                        { id: '2', type: 'multiple_choice', text: "Banana", options: ["Quả chuối"], correct: 0 },
+                        { id: '3', type: 'multiple_choice', text: "Orange", options: ["Quả cam"], correct: 0 },
+                        { id: '4', type: 'multiple_choice', text: "Grapes", options: ["Quả nho"], correct: 0 },
+                        { id: '5', type: 'multiple_choice', text: "Watermelon", options: ["Dưa hấu"], correct: 0 },
+                        { id: '6', type: 'multiple_choice', text: "Strawberry", options: ["Dâu tây"], correct: 0 }
+                      ],
+                      timeLimit: 60
+                    };
+                    try {
+                      await setDoc(doc(db, 'teachers', teacherUid, 'games', sampleMatching.id), sampleMatching);
+                      setOfflineGames([...offlineGames, sampleMatching]);
+                      alert("Đã thêm trò chơi 'Nối thẻ' mẫu!");
+                    } catch (e) {
+                      console.error(e);
+                      alert("Lỗi khi thêm trò chơi mẫu!");
+                    }
+                  }}
+                  className="px-4 py-2 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-emerald-200 transition border border-emerald-200 dark:border-emerald-800"
+                >
+                  <Plus className="w-4 h-4" /> Tạo trò chơi Nối thẻ
+                </button>
+                <button 
+                  onClick={async () => {
+                    const teacherUid = auth.currentUser?.uid;
+                    if (!teacherUid) return;
+                    const sampleWordLink: Game = {
+                      id: 'sample-wordlink-' + Date.now(),
+                      title: "Nối từ: Tiếng Việt vui",
+                      type: 'word_link',
+                      questionsList: [],
+                      timeLimit: 60
+                    };
+                    try {
+                      await setDoc(doc(db, 'teachers', teacherUid, 'games', sampleWordLink.id), sampleWordLink);
+                      setOfflineGames([...offlineGames, sampleWordLink]);
+                      alert("Đã thêm trò chơi 'Nối từ' mẫu!");
+                    } catch (e) {
+                      console.error(e);
+                      alert("Lỗi khi thêm trò chơi mẫu!");
+                    }
+                  }}
+                  className="px-4 py-2 bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-pink-200 transition border border-pink-200 dark:border-pink-800"
+                >
+                  <Plus className="w-4 h-4" /> Tạo trò chơi Nối từ
+                </button>
+                <button 
+                  onClick={async () => {
+                    const teacherUid = auth.currentUser?.uid;
+                    if (!teacherUid) return;
+                    const sampleCrossword: Game = {
+                      id: 'sample-crossword-' + Date.now(),
+                      title: "Giải đố ô chữ: Thế giới quanh ta",
+                      type: 'crossword',
+                      questionsList: [
+                        { id: '1', type: 'multiple_choice', text: "Hành tinh chúng ta đang sống?", options: ["TRAIDAT"] },
+                        { id: '2', type: 'multiple_choice', text: "Con vật có vòi dài?", options: ["CONVOI"] },
+                        { id: '3', type: 'multiple_choice', text: "Màu của bầu trời?", options: ["XANH"] },
+                        { id: '4', type: 'multiple_choice', text: "Quả gì có gai, mùi rất thơm?", options: ["SURIENG"] }
+                      ],
+                      timeLimit: 300
+                    };
+                    try {
+                      await setDoc(doc(db, 'teachers', teacherUid, 'games', sampleCrossword.id), sampleCrossword);
+                      setOfflineGames([...offlineGames, sampleCrossword]);
+                      alert("Đã thêm trò chơi 'Giải đố ô chữ' mẫu!");
+                    } catch (e) {
+                      console.error(e);
+                      alert("Lỗi khi thêm trò chơi mẫu!");
+                    }
+                  }}
+                  className="px-4 py-2 bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-teal-200 transition border border-teal-200 dark:border-teal-800"
+                >
+                  <Plus className="w-4 h-4" /> Tạo trò chơi Ô chữ
+                </button>
+                <button 
+                  onClick={async () => {
+                    const teacherUid = auth.currentUser?.uid;
+                    if (!teacherUid) return;
+                    const sampleWise: Game = {
+                      id: 'sample-wise-' + Date.now(),
+                      title: "Ai Là Nhà Thông Thái: Khoa học vui",
+                      type: 'wise_one',
+                      questionsList: []
+                    };
+                    try {
+                      await setDoc(doc(db, 'teachers', teacherUid, 'games', sampleWise.id), sampleWise);
+                      setOfflineGames([...offlineGames, sampleWise]);
+                      alert("Đã thêm trò chơi 'Ai Là Nhà Thông Thái'!");
+                    } catch (e) {
+                      console.error(e);
+                      alert("Lỗi khi thêm trò chơi mẫu!");
+                    }
+                  }}
+                  className="px-4 py-2 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-purple-200 transition border border-purple-200 dark:border-purple-800"
+                >
+                  <Brain className="w-4 h-4" /> Tạo trò chơi AI
+                </button>
+                <button 
+                  onClick={async () => {
+                    const teacherUid = auth.currentUser?.uid;
+                    if (!teacherUid) return;
+                    const sampleMil: Game = {
+                      id: 'sample-mil-' + Date.now(),
+                      title: "Ai Là Triệu Phú: Kiến thức tổng hợp",
+                      type: 'millionaire',
+                      questionsList: [
+                        { id: '1', type: 'multiple_choice', text: "Đỉnh núi cao nhất thế giới là gì?", options: ["Fansipan", "Everest", "Phú Sĩ", "K2"], correct: 1 },
+                        { id: '2', type: 'multiple_choice', text: "Ai là người đầu tiên đặt chân lên Mặt Trăng?", options: ["Yuri Gagarin", "Neil Armstrong", "Buzz Aldrin", "Michael Collins"], correct: 1 },
+                        { id: '3', type: 'multiple_choice', text: "Thủ đô của nước Pháp là gì?", options: ["London", "Berlin", "Paris", "Rome"], correct: 2 },
+                        { id: '4', type: 'multiple_choice', text: "Hành tinh nào gần Mặt Trời nhất?", options: ["Kim tinh", "Thủy tinh", "Hỏa tinh", "Trái Đất"], correct: 1 },
+                        { id: '5', type: 'multiple_choice', text: "Loài động vật nào lớn nhất thế giới?", options: ["Voi", "Cá voi xanh", "Khủng long", "Hươu cao cổ"], correct: 1 }
+                      ]
+                    };
+                    try {
+                      await setDoc(doc(db, 'teachers', teacherUid, 'games', sampleMil.id), sampleMil);
+                      setOfflineGames([...offlineGames, sampleMil]);
+                      alert("Đã thêm trò chơi 'Ai Là Triệu Phú' mẫu!");
+                    } catch (e) {
+                      console.error(e);
+                      alert("Lỗi khi thêm trò chơi mẫu!");
+                    }
+                  }}
+                  className="px-4 py-2 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-indigo-200 transition border border-indigo-200 dark:border-indigo-800"
+                >
+                  <Star className="w-4 h-4" /> Tạo Ai Là Triệu Phú
+                </button>
+                <button 
+                  onClick={async () => {
+                    const teacherUid = auth.currentUser?.uid;
+                    if (!teacherUid) return;
+                    const sampleDragDrop: Game = {
+                      id: 'sample-dragdrop-' + Date.now(),
+                      title: "Kéo thả: Toán học vui",
+                      type: 'drag_drop' as any,
+                      questionsList: [
+                        { id: '1', type: 'multiple_choice', text: "4", options: ["2 + 2"] },
+                        { id: '2', type: 'multiple_choice', text: "10", options: ["5 x 2"] },
+                        { id: '3', type: 'multiple_choice', text: "Con Mèo", options: ["Cat"] },
+                        { id: '4', type: 'multiple_choice', text: "Mặt Trời", options: ["Sun"] }
+                      ],
+                      timeLimit: 120
+                    };
+                    try {
+                      await setDoc(doc(db, 'teachers', teacherUid, 'games', sampleDragDrop.id), sampleDragDrop);
+                      setOfflineGames([...offlineGames, sampleDragDrop]);
+                      alert("Đã thêm trò chơi 'Kéo thả' mẫu!");
+                    } catch (e) {
+                      console.error(e);
+                      alert("Lỗi khi thêm trò chơi mẫu!");
+                    }
+                  }}
+                  className="px-4 py-2 bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-teal-200 transition border border-teal-200 dark:border-teal-800"
+                >
+                  <Plus className="w-4 h-4" /> Tạo trò chơi Kéo thả
+                </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
+              {offlineGames.map((game: Game) => (
+                <GameCard 
+                  key={game.id} 
+                  game={game} 
+                  onPlay={() => setPlayingGame(game)} 
+                  onDelete={() => deleteGame(game.id, game.type)} 
+                  onEdit={() => {
+                    setEditingGame(game);
+                    setNewGame(game);
                     setIsAddModalOpen(true);
                   }}
-                  className="bg-orange-500 text-white px-8 py-3.5 rounded-2xl font-black text-base flex items-center gap-2 hover:bg-orange-600 shadow-xl shadow-orange-200 transition-all hover:scale-105 active:scale-95"
-                >
-                  <Plus className="w-6 h-6" /> Tạo trò chơi mới
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
-                {GAME_TEMPLATES.map((tmpl) => (
-                  <div key={tmpl.id} className="bg-white dark:bg-slate-800 rounded-[2.5rem] p-8 shadow-sm border-[3px] border-slate-50 dark:border-slate-700 relative group hover:shadow-2xl hover:border-indigo-400 dark:hover:border-indigo-500 transition-all duration-500 flex flex-col min-h-[340px] transform hover:-translate-y-2">
-                    {tmpl.badge ? (
-                      <div className={`absolute -top-3 -right-3 rotate-12 ${tmpl.badge === 'PRO' ? 'bg-orange-500' : 'bg-red-500'} text-white text-[12px] font-black px-4 py-1.5 rounded-xl shadow-lg z-10 flex items-center gap-1.5 ring-4 ring-white dark:ring-slate-900`}>
-                        {tmpl.badge === 'PRO' && <Zap className="w-3.5 h-3.5 fill-current" />}
-                        {tmpl.badge}
-                      </div>
-                    ) : null}
-                    
-                    <div className="flex items-start gap-5 mb-6">
-                      <div className={`w-16 h-16 rounded-[1.25rem] ${tmpl.color} flex items-center justify-center shrink-0 shadow-inner group-hover:rotate-12 transition-transform duration-500`}>
-                        {tmpl.icon}
-                      </div>
-                      <div className="pt-1">
-                        <h4 className="font-extrabold text-slate-800 dark:text-white text-xl leading-[1.2] group-hover:text-indigo-600 transition-colors">
-                          {tmpl.title}
-                        </h4>
-                      </div>
-                    </div>
-                    
-                    <p className="flex-1 text-slate-500 dark:text-slate-400 text-[15px] leading-relaxed font-medium line-clamp-4 italic border-l-4 border-slate-100 dark:border-slate-700 pl-4">
-                      {tmpl.desc}
-                    </p>
-                    
-                    <div className="mt-8">
-                      <button 
-                        onClick={() => {
-                          setNewGame({ 
-                            title: tmpl.title, 
-                            type: tmpl.id.includes('race') || tmpl.id.includes('star') || tmpl.id.includes('versus') ? 'race' : 'math', 
-                            questionsList: "" 
-                          });
-                          setIsAddModalOpen(true);
-                        }}
-                        className="w-full py-4 bg-[#6366f1] text-white rounded-[1.25rem] text-[17px] font-black hover:bg-[#4f46e5] transition-all shadow-lg shadow-indigo-100 dark:shadow-none hover:scale-[1.02] active:scale-95"
-                      >
-                        Bắt đầu
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                />
+              ))}
             </div>
-          )}
+          </div>
+        )}
       </motion.div>
     </AnimatePresence>
 
