@@ -52,7 +52,7 @@ export default function WheelGame({ students, onClose }: { students: Student[], 
       ctx.rotate(start + sA / 2);
       ctx.textAlign = "right";
       ctx.fillStyle = "#fff";
-      ctx.font = "900 24px Arial";
+      ctx.font = "900 24px 'Times New Roman'";
       ctx.fillText(names[i], r - 20, 10);
       ctx.restore();
     }
