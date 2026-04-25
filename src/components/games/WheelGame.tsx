@@ -127,21 +127,23 @@ export default function WheelGame({ students, onClose }: { students: Student[], 
             </div>
           )}
           
-          <div className={`flex-1 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-[3rem] shadow-2xl border-4 border-white flex flex-col items-center justify-start relative overflow-hidden p-8 pt-12 sm:pt-20 w-full ${isPlayMode ? 'mx-auto max-w-3xl' : ''}`}>
-            <div className="relative flex flex-col items-center gap-8">
-              <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[20px] border-r-[20px] border-t-[40px] border-transparent border-t-rose-600 z-20 filter drop-shadow-md"></div>
-              <div className="rounded-full shadow-[0_0_30px_rgba(0,0,0,0.15)] border-[12px] border-white p-3 bg-gradient-to-br from-rose-100 to-blue-100 relative">
-                <canvas ref={canvasRef} width="600" height="600" className="rounded-full max-w-[350px] max-h-[350px] w-full h-auto bg-white shadow-inner"></canvas>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full border-4 border-rose-500 z-30 shadow-inner"></div>
-              </div>
-
+          <div className={`flex-1 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-[3rem] shadow-2xl border-4 border-white flex flex-col items-center justify-center relative overflow-hidden p-8 w-full ${isPlayMode ? 'mx-auto max-w-5xl' : ''}`}>
+            <div className="relative flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-20">
               <button 
                 onClick={spinWheel} 
                 disabled={isSpinning}
-                className={`px-12 py-5 bg-rose-500 hover:bg-rose-600 text-white rounded-[2rem] font-black text-2xl shadow-[0_8px_0_#be123c] active:translate-y-1 active:shadow-none transition-all hover:scale-105 border-4 border-white uppercase tracking-widest z-30 ${isSpinning ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`order-2 lg:order-1 px-10 py-6 bg-rose-500 hover:bg-rose-600 text-white rounded-[2.5rem] font-black text-2xl lg:text-3xl shadow-[0_10px_0_#be123c] active:translate-y-1 active:shadow-none transition-all hover:scale-105 border-4 border-white uppercase tracking-widest z-30 shrink-0 min-w-[200px] ${isSpinning ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {isSpinning ? 'Đang quay...' : 'Bắt đầu'}
               </button>
+
+              <div className="relative order-1 lg:order-2 flex flex-col items-center">
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[20px] border-r-[20px] border-t-[40px] border-transparent border-t-rose-600 z-20 filter drop-shadow-md"></div>
+                <div className="rounded-full shadow-[0_0_40px_rgba(0,0,0,0.2)] border-[15px] border-white p-3 bg-gradient-to-br from-rose-100 to-blue-100 relative">
+                  <canvas ref={canvasRef} width="600" height="600" className="rounded-full max-w-[320px] sm:max-w-[400px] lg:max-w-[500px] w-full h-auto bg-white shadow-inner"></canvas>
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white rounded-full border-4 border-rose-500 z-30 shadow-inner"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
