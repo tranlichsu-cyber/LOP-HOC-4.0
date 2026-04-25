@@ -360,16 +360,16 @@ export default function App() {
         fixed md:relative h-full ${role === 'student' ? 'bg-white border-r-4 border-indigo-100 shadow-2xl' : 'bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-r border-slate-200/50 dark:border-slate-700/50 shadow-xl'} flex-col transition-all duration-500 z-50 flex
       `}>
         <div className={`p-8 flex items-center gap-3 ${role === 'student' ? 'border-b-4 border-indigo-50' : 'border-b border-slate-100/50 dark:border-slate-700/50'}`}>
-          <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${role === 'teacher' ? 'from-blue-600 to-indigo-600' : 'from-yellow-400 to-orange-500'} flex items-center justify-center shadow-lg transform hover:rotate-6 transition-transform shrink-0`}>
-            <Sparkles className="text-white w-7 h-7" />
+          <div className={`w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-lg transform hover:rotate-6 transition-transform shrink-0 overflow-hidden border border-slate-100`}>
+            <img src="/school-logo.png" alt="Logo" className="w-full h-full object-contain p-1" />
           </div>
           {isSidebarOpen && (
             <motion.h1 
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`text-2xl font-black tracking-tight ${role === 'student' ? 'text-indigo-900' : 'text-slate-800 dark:text-white'}`}
+              className={`text-xl font-black tracking-tight ${role === 'student' ? 'text-indigo-900' : 'text-slate-800 dark:text-white'}`}
             >
-              Edu<span className={role === 'teacher' ? 'text-blue-600' : 'text-orange-500'}>Pro</span>
+              Lý Tự Trọng
             </motion.h1>
           )}
         </div>
@@ -556,7 +556,7 @@ export default function App() {
                  activeTab === 'games' ? 'Trò chơi' :
                  activeTab === 'classroom' ? 'Lớp học' :
                  activeTab === 'student-homework' ? 'Bài tập của em' :
-                 activeTab === 'student-games' ? 'Vui chơi thôi nào!' : 'EduPro'}
+                 activeTab === 'student-games' ? 'Vui chơi thôi nào!' : 'Trường LTT'}
               </h2>
               <p className={`text-xs font-black uppercase tracking-widest mt-2 ${role === 'student' ? 'text-indigo-400' : 'text-slate-400 dark:text-slate-500'}`}>
                 {school?.name || 'Trường TH Lý Tự Trọng'}

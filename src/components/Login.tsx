@@ -114,8 +114,8 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
           animate={{ opacity: 1, x: 0 }}
           className="relative z-10 flex items-center gap-3"
         >
-          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-2xl shadow-white/10">
-            <Sparkles className="text-blue-600 w-6 h-6" />
+          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-2xl shadow-white/10 overflow-hidden">
+            <img src="/school-logo.png" alt="Logo" className="w-full h-full object-contain p-1" />
           </div>
           <div>
             <h2 className="text-xl font-black text-white tracking-widest uppercase">Trường Tiểu học Lý Tự Trọng</h2>
@@ -173,8 +173,8 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
       <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 md:p-12 relative overflow-y-auto">
         {/* Mobile Header Branding (Visible only on small screens) */}
         <div className="lg:hidden mb-12 text-center">
-            <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-600/20">
-                <Sparkles className="text-white w-8 h-8" />
+            <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-600/10 overflow-hidden border border-slate-100">
+                <img src="/school-logo.png" alt="Logo" className="w-full h-full object-contain p-1" />
             </div>
             <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Trường Lý Tự Trọng</h1>
             <p className="text-sm font-bold text-slate-400">Hệ thống giáo dục thông minh</p>
