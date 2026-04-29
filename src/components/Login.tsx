@@ -102,10 +102,10 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
     <div className="fixed inset-0 z-[100] flex flex-col md:flex-row bg-white dark:bg-slate-950 overflow-hidden font-sans">
       
       {/* Left Pane: Simple School Branding */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-slate-900 border-r border-slate-800 relative group overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-blue-700 border-r border-blue-800 relative group overflow-hidden">
         {/* Animated Background Gradients */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[140px] translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[140px] -translate-x-1/2 translate-y-1/2" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-sky-400/20 rounded-full blur-[140px] translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-[140px] -translate-x-1/2 translate-y-1/2" />
         
         {/* Header Branding */}
         <motion.div 
@@ -148,12 +148,12 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
           >
             {features.map((f, i) => (
               <div key={i} className="flex items-center gap-4 group/feat">
-                <div className="shrink-0 w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-blue-400 group-hover/feat:bg-blue-600 group-hover/feat:text-white transition-all cursor-default">
+                <div className="shrink-0 w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-blue-200 group-hover/feat:bg-white group-hover/feat:text-blue-700 transition-all cursor-default">
                   {f.icon}
                 </div>
                 <div>
                   <h4 className="text-white font-bold text-sm tracking-wide">{f.title}</h4>
-                  <p className="text-xs text-slate-500 leading-normal">{f.desc}</p>
+                  <p className="text-xs text-blue-100/70 leading-normal">{f.desc}</p>
                 </div>
               </div>
             ))}
@@ -165,7 +165,7 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="relative z-10 text-slate-500 text-xs font-bold uppercase tracking-widest"
+          className="relative z-10 text-blue-200/50 text-xs font-bold uppercase tracking-widest"
         >
           Trường Tiểu học Lý Tự Trọng &copy; 2026
         </motion.div>

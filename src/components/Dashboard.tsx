@@ -384,7 +384,9 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
             </div>
           )}
           <h3 className="text-4xl font-black text-white tracking-tight mb-4">
-            {role === 'student' ? `Chào ${studentProfile?.name || 'em'} yêu! 👋` : 'Chào mừng trở lại!'}
+            {role === 'student' ? `Chào ${studentProfile?.name || 'em'} yêu! 👋` : 
+             role === 'teacher' ? 'Chào thầy cô! 🍎' :
+             'Chào mừng trở lại!'}
           </h3>
           <p className="text-white/80 max-w-lg leading-relaxed font-bold text-lg">
             {role === 'admin' ? 'Hệ thống đang hoạt động ổn định. Bạn có toàn quyền quản trị và điều hành các hoạt động của trường.' : 
