@@ -18,11 +18,14 @@ import {
   Globe,
   GraduationCap,
   Trophy,
-  Flame
+  Flame,
+  KeyRound,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, db, getDocFromServer } from './firebase';
-import { onAuthStateChanged, signOut, signInAnonymously } from 'firebase/auth';
+import { onAuthStateChanged, signOut, signInAnonymously, updatePassword } from 'firebase/auth';
 import { doc, getDoc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
 import { UserRole, UserProfile, School, Class, Game, Student, Homework, Lesson, Worksheet as WorksheetType } from './types';
 import { calculateLevel, checkAwards } from './lib/gamification';
@@ -56,6 +59,11 @@ export default function App() {
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [teacherUid, setTeacherUid] = useState<string | null>(null);
   const [studentProfile, setStudentProfile] = useState<Student | null>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [passwordStatus, setPasswordStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // Data State
   const [students, setStudents] = useState<Student[]>([]);
@@ -207,6 +215,34 @@ export default function App() {
   const handleLogout = async () => {
     await signOut(auth);
     window.location.reload();
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!auth.currentUser || !newPassword) return;
+    if (newPassword.length < 6) {
+      setPasswordStatus({ type: 'error', message: 'Mật khẩu phải ít nhất 6 ký tự!' });
+      return;
+    }
+
+    setIsChangingPassword(true);
+    setPasswordStatus({ type: null, message: '' });
+
+    try {
+      await updatePassword(auth.currentUser, newPassword);
+      setPasswordStatus({ type: 'success', message: 'Đổi mật khẩu thành công!' });
+      setNewPassword('');
+      setTimeout(() => setShowPasswordModal(false), 2000);
+    } catch (error: any) {
+      console.error("Change password error:", error);
+      if (error.code === 'auth/requires-recent-login') {
+        setPasswordStatus({ type: 'error', message: 'Vui lòng đăng xuất và đăng nhập lại để thực hiện thay đổi này vì lý do bảo mật.' });
+      } else {
+        setPasswordStatus({ type: 'error', message: error.message || 'Lỗi đổi mật khẩu. Vui lòng thử lại!' });
+      }
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   const toggleDarkMode = () => {
@@ -561,11 +597,23 @@ export default function App() {
               </motion.div>
             )}
           </div>
-          {isSidebarOpen && (
-            <button onClick={handleLogout} className={`transition-all p-2 rounded-xl ${role === 'student' ? 'text-indigo-300 hover:text-red-500 hover:bg-red-50' : 'text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30'}`}>
-              <LogOut className="w-5 h-5" />
-            </button>
-          )}
+            {isSidebarOpen && (
+              <div className="flex items-center gap-1">
+                <button 
+                  onClick={() => {
+                    setPasswordStatus({ type: null, message: '' });
+                    setShowPasswordModal(true);
+                  }}
+                  className={`transition-all p-2 rounded-xl ${role === 'student' ? 'text-indigo-300 hover:text-indigo-600 hover:bg-indigo-50' : 'text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30'}`}
+                  title="Đổi mật khẩu"
+                >
+                  <KeyRound className="w-5 h-5" />
+                </button>
+                <button onClick={handleLogout} className={`transition-all p-2 rounded-xl ${role === 'student' ? 'text-indigo-300 hover:text-red-500 hover:bg-red-50' : 'text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30'}`}>
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
+            )}
         </div>
       </aside>
 
@@ -592,7 +640,7 @@ export default function App() {
 
             <div className="flex flex-col">
               <h2 className={`text-3xl font-black tracking-tight leading-none ${role === 'student' ? 'text-indigo-900' : 'text-slate-800 dark:text-white'}`}>
-                {activeTab === 'dashboard' ? 'Chào em!' : 
+                {activeTab === 'dashboard' ? (role === 'student' ? 'Chào em!' : 'Bảng điều khiển') : 
                  activeTab === 'lesson-ai' ? 'Soạn giáo án AI' :
                  activeTab === 'worksheet' ? 'Phiếu học tập' :
                  activeTab === 'test-ai' ? 'Tạo đề thi AI' :
@@ -697,6 +745,79 @@ export default function App() {
             </>
           )}
         </div>
+
+        {/* Change Password Modal */}
+        <AnimatePresence>
+          {showPasswordModal && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowPasswordModal(false)}
+                className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative bg-white dark:bg-slate-800 rounded-3xl shadow-2xl p-8 w-full max-w-md border border-slate-200 dark:border-slate-700"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                      <KeyRound className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-xl font-black text-slate-800 dark:text-white">Đổi mật khẩu</h3>
+                  </div>
+                  <button onClick={() => setShowPasswordModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleChangePassword} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Mật khẩu mới</label>
+                    <div className="relative">
+                      <input 
+                        type={showNewPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Nhập ít nhất 6 ký tự"
+                        className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all dark:text-white"
+                        required
+                        minLength={6}
+                      />
+                      <button 
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      >
+                        {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {passwordStatus.type && (
+                    <div className={`p-4 rounded-xl text-sm font-bold ${passwordStatus.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                      {passwordStatus.message}
+                    </div>
+                  )}
+
+                  <button 
+                    type="submit"
+                    disabled={isChangingPassword}
+                    className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isChangingPassword ? (
+                      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
+                    ) : 'Cập nhật mật khẩu'}
+                  </button>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
 

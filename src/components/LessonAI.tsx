@@ -10,6 +10,8 @@ import { db, auth } from '../firebase';
 import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { getVietnam34ProvincesContext } from '../data/vietnam34Provinces';
 import { getTextbookContext } from '../data/textbookTNXH2';
+import { getKetNoiTriThucContext } from '../data/ketNoiTriThucContext';
+import { getNLSContext } from '../data/nlsContext';
 
 export default function LessonAI() {
   const [subject, setSubject] = useState('Tiếng Việt');
@@ -292,14 +294,16 @@ export default function LessonAI() {
       
       const provinceContext = isGeographyOrProvinces ? `\n\nKIẾN THỨC NỀN TẢNG QUAN TRỌNG (Cập nhật mới nhất):\n${getVietnam34ProvincesContext()}\nHãy sử dụng thông tin trên nếu bài học liên quan đến các tỉnh thành Việt Nam.` : '';
       const textbookContext = isTNXH2 ? `\n\nTHAM KHẢO NỘI DUNG SÁCH GIÁO KHOA (Kết nối tri thức):\n${getTextbookContext()}\nHãy bám sát khung chương trình này khi soạn bài.` : '';
+      const ketNoiTriThucContext = `\n\nKIẾN THỨC BỘ SÁCH KẾT NỐI TRI THỨC VỚI CUỘC SỐNG:\n${getKetNoiTriThucContext()}\nĐây là kim chỉ nam cho phương pháp và nội dung dạy học.`;
+      const nlsDetailedContext = `\n\nDANH MỤC MÃ CHỈ BÁO NĂNG LỰC SỐ (CV 3456):\n${getNLSContext()}\nQUY TẮC: Khi lồng ghép NLS, phải ghi đúng định dạng "Mã : Nội dung" (Ví dụ: 1.1.CB1a : Xác định được nhu cầu thông tin...).`;
 
-      const promptTemplate = `Bạn là một chuyên gia sư phạm cấp tiểu học xuất sắc tại Việt Nam, am hiểu sâu sắc Chương trình Giáo dục Phổ thông 2018 (CTGDPT 2018) và các văn bản quy phạm pháp luật sau:
+      const promptTemplate = `Bạn là một chuyên gia sư phạm cấp tiểu học xuất sắc tại Việt Nam, am hiểu sâu sắc Chương trình Giáo dục Phổ thông 2018 (CTGDPT 2018) và bộ sách "Kết nối tri thức với cuộc sống". Bạn cũng nắm vững các văn bản quy phạm pháp luật sau:
 1. Công văn 2345/BGDĐT-GDTH: Hướng dẫn xây dựng kế hoạch giáo dục nhà trường và Kế hoạch bài dạy (giáo án).
 2. Thông tư 08/2024/TT-BGDĐT: Hướng dẫn lồng ghép nội dung giáo dục quốc phòng và an ninh.
 3. Thông tư 02/2025/TT-BGDĐT & Công văn 3456/BGDĐT-GDPT: Khung năng lực số (NLS) cho người học.
 4. Quyết định 3439/QĐ-BGDĐT: Khung nội dung thí điểm giáo dục Trí tuệ nhân tạo (AI).
-
-Nhiệm vụ: ${fileText || fileBase64 ? 'CẬP NHẬT VÀ LỒNG GHÉP NỘI DUNG VÀO GIÁO ÁN CÓ SẴN.' : `Hãy soạn kế hoạch bài dạy (Giáo án) theo CTGDPT 2018 cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. ${duration ? `Số tiết: ${duration}.` : ''}`} ${provinceContext}${textbookContext}
+ 
+Nhiệm vụ: ${fileText || fileBase64 ? 'CẬP NHẬT VÀ LỒNG GHÉP NỘI DUNG VÀO GIÁO ÁN CÓ SẴN.' : `Hãy soạn kế hoạch bài dạy (Giáo án) theo CTGDPT 2018 cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. ${duration ? `Số tiết: ${duration}.` : ''}`} ${provinceContext}${textbookContext}${ketNoiTriThucContext}${nlsDetailedContext}
 
 ${fileText || fileBase64 ? `QUAN TRỌNG: Bạn đang được cung cấp một bản giáo án cũ. 
 YÊU CẦU BẮT BUỘC: 
