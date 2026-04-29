@@ -400,7 +400,7 @@ export default function App() {
         <div className={`p-8 flex items-center gap-3 ${role === 'student' ? 'border-b-4 border-indigo-50' : 'border-b border-slate-100/50 dark:border-slate-700/50'}`}>
           <div className={`w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-lg transform hover:rotate-6 transition-transform shrink-0 overflow-hidden border border-slate-100`}>
             <img 
-              src="/school-logo.png" 
+              src="school-logo.png" 
               alt="Logo Trường Tiểu học Lý Tự Trọng" 
               className="w-full h-full object-contain p-0.5" 
             />

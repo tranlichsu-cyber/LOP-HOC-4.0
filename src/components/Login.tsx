@@ -115,7 +115,7 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
         >
           <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-2xl shadow-white/10 overflow-hidden">
             <img 
-              src="/school-logo.png" 
+              src="school-logo.png" 
               alt="Logo Trường Tiểu học Lý Tự Trọng" 
               className="w-full h-full object-contain p-0.5" 
             />
@@ -177,7 +177,7 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
         <div className="lg:hidden mb-12 text-center">
             <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-600/10 overflow-hidden border border-slate-100">
                 <img 
-                  src="/school-logo.png" 
+                  src="school-logo.png" 
                   alt="Logo Trường Tiểu học Lý Tự Trọng" 
                   className="w-full h-full object-contain p-0.5" 
                 />
