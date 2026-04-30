@@ -11,6 +11,7 @@ import { getVietnam34ProvincesContext } from '../data/vietnam34Provinces';
 import { getTextbookContext } from '../data/textbookTNXH2';
 import { getKetNoiTriThucContext } from '../data/ketNoiTriThucContext';
 import { getNLSContext } from '../data/nlsContext';
+import { getGrade5Updates } from '../data/grade5Updates';
 
 export default function LessonAI() {
   const [subject, setSubject] = useState('Tiếng Việt');
@@ -283,9 +284,11 @@ export default function LessonAI() {
                                      title.toLowerCase().includes('34');
       
       const isTNXH2 = subject.toLowerCase().includes('tự nhiên và xã hội') && grade.includes('2');
+      const isGrade5 = grade.includes('5');
       
       const provinceContext = isGeographyOrProvinces ? `\n\nKIẾN THỨC NỀN TẢNG QUAN TRỌNG (Cập nhật mới nhất):\n${getVietnam34ProvincesContext()}\nHãy sử dụng thông tin trên nếu bài học liên quan đến các tỉnh thành Việt Nam.` : '';
       const textbookContext = isTNXH2 ? `\n\nTHAM KHẢO NỘI DUNG SÁCH GIÁO KHOA (Kết nối tri thức):\n${getTextbookContext()}\nHãy bám sát khung chương trình này khi soạn bài.` : '';
+      const grade5UpdatesContext = isGrade5 ? `\n\nTHÔNG TIN CẬP NHẬT TRỌNG TÂM LỚP 5 (Kết nối tri thức):\n${getGrade5Updates(subject)}\nBẮT BUỘC: Phải sử dụng đúng các thông tin cập nhật này khi soạn giáo án.` : '';
       const ketNoiTriThucContext = `\n\nKIẾN THỨC BỘ SÁCH KẾT NỐI TRI THỨC VỚI CUỘC SỐNG:\n${getKetNoiTriThucContext()}\nĐây là kim chỉ nam cho phương pháp và nội dung dạy học.`;
       const nlsDetailedContext = `\n\nDANH MỤC MÃ CHỈ BÁO NĂNG LỰC SỐ (CV 3456):\n${getNLSContext()}\nQUY TẮC: Khi lồng ghép NLS, phải ghi đúng định dạng "Mã : Nội dung" (Ví dụ: 1.1.CB1a : Xác định được nhu cầu thông tin...).`;
 
@@ -295,7 +298,7 @@ export default function LessonAI() {
 3. Thông tư 02/2025/TT-BGDĐT & Công văn 3456/BGDĐT-GDPT: Khung năng lực số (NLS) cho người học.
 4. Quyết định 3439/QĐ-BGDĐT: Khung nội dung thí điểm giáo dục Trí tuệ nhân tạo (AI).
 
-Nhiệm vụ: ${fileText || fileBase64 ? 'CẬP NHẬT VÀ LỒNG GHÉP NỘI DUNG VÀO GIÁO ÁN CÓ SẴN.' : `Hãy soạn kế hoạch bài dạy (Giáo án) theo CTGDPT 2018 cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. ${duration ? `Số tiết: ${duration}.` : ''}`} ${provinceContext}${textbookContext}${ketNoiTriThucContext}${nlsDetailedContext}
+Nhiệm vụ: ${fileText || fileBase64 ? 'CẬP NHẬT VÀ LỒNG GHÉP NỘI DUNG VÀO GIÁO ÁN CÓ SẴN.' : `Hãy soạn kế hoạch bài dạy (Giáo án) theo CTGDPT 2018 cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. ${duration ? `Số tiết: ${duration}.` : ''}`} ${provinceContext}${textbookContext}${grade5UpdatesContext}${ketNoiTriThucContext}${nlsDetailedContext}
 
 ${fileText || fileBase64 ? `QUAN TRỌNG: Bạn đang được cung cấp một bản giáo án cũ. 
 YÊU CẦU BẮT BUỘC: 
