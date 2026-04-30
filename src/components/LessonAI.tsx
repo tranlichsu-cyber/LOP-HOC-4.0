@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Sparkles, Cpu, FileText, Loader2, Bot, Download, Upload, FileCheck, X, Eye, Save } from 'lucide-react';
+import { Sparkles, Cpu, Loader2, Bot, Download, Upload, FileCheck, X, Eye } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import mammoth from 'mammoth';
 import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, BorderStyle } from 'docx';
@@ -7,7 +7,6 @@ import { saveAs } from 'file-saver';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { db, auth } from '../firebase';
-import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { getVietnam34ProvincesContext } from '../data/vietnam34Provinces';
 import { getTextbookContext } from '../data/textbookTNXH2';
 import { getKetNoiTriThucContext } from '../data/ketNoiTriThucContext';
@@ -29,17 +28,10 @@ export default function LessonAI() {
   const [fileText, setFileText] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [theme, setTheme] = useState('Classic Blue');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Removed fetchClasses as per request to simplify UI and remove class selection
-
-  const themes: Record<string, { primary: string, secondary: string }> = {
-    'Classic Blue': { primary: '#1e40af', secondary: '#3b82f6' },
-    'Modern Green': { primary: '#065f46', secondary: '#10b981' },
-    'Vibrant Orange': { primary: '#9a3412', secondary: '#f97316' }
-  };
 
   const lessonSuggestions: Record<string, string[]> = {
     "Toán": ["Ôn tập các số đến 100", "Phép cộng trong phạm vi 10", "Hình học cơ bản", "Giải toán có lời văn"],
@@ -147,7 +139,7 @@ export default function LessonAI() {
   const downloadDocx = async () => {
     if (!result) return;
     setIsDownloading(true);
-    const selectedTheme = themes[theme] || themes['Classic Blue'];
+    const selectedTheme = { primary: '#1e40af', secondary: '#3b82f6' };
     
     try {
       const docChildren: any[] = [];
@@ -302,7 +294,7 @@ export default function LessonAI() {
 2. Thông tư 08/2024/TT-BGDĐT: Hướng dẫn lồng ghép nội dung giáo dục quốc phòng và an ninh.
 3. Thông tư 02/2025/TT-BGDĐT & Công văn 3456/BGDĐT-GDPT: Khung năng lực số (NLS) cho người học.
 4. Quyết định 3439/QĐ-BGDĐT: Khung nội dung thí điểm giáo dục Trí tuệ nhân tạo (AI).
- 
+
 Nhiệm vụ: ${fileText || fileBase64 ? 'CẬP NHẬT VÀ LỒNG GHÉP NỘI DUNG VÀO GIÁO ÁN CÓ SẴN.' : `Hãy soạn kế hoạch bài dạy (Giáo án) theo CTGDPT 2018 cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. ${duration ? `Số tiết: ${duration}.` : ''}`} ${provinceContext}${textbookContext}${ketNoiTriThucContext}${nlsDetailedContext}
 
 ${fileText || fileBase64 ? `QUAN TRỌNG: Bạn đang được cung cấp một bản giáo án cũ. 

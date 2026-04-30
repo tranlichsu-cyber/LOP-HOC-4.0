@@ -13,7 +13,6 @@ import {
   Bell,
   Menu,
   X,
-  ArrowLeft,
   ShieldCheck,
   Globe,
   GraduationCap,
@@ -121,8 +120,6 @@ export default function App() {
             const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
             const userEmail = currentUser.email?.toLowerCase();
             const isAdminEmail = userEmail === 'tranlichsu@gmail.com' || userEmail === 'tienganhltt@thainguyen.edu.vn';
-            
-            console.log("Auth State Changed - Email:", userEmail, "Is Admin Email:", isAdminEmail);
 
             let currentRole: UserRole = isAdminEmail ? 'school_admin' : 'teacher';
             
@@ -158,7 +155,6 @@ export default function App() {
             }
             
             setRole(currentRole);
-            console.log("Role set to:", currentRole, "for email:", userEmail);
             
             document.body.classList.remove('role-teacher', 'role-student', 'role-school_admin', 'role-admin');
             document.body.classList.add(`role-${currentRole}`);
@@ -472,8 +468,8 @@ export default function App() {
                 label="Quản trị Trường học" 
                 active={activeTab === 'school-admin'} 
                 onClick={() => setActiveTab('school-admin')}
-                color="text-indigo-600 dark:text-indigo-400"
-                bgColor="bg-indigo-50 dark:bg-indigo-900/30"
+                color="text-slate-700 dark:text-slate-200"
+                bgColor="bg-slate-100 dark:bg-slate-700"
                 collapsed={!isSidebarOpen}
                 role={role}
               />
@@ -492,8 +488,8 @@ export default function App() {
                     label="Soạn giáo án AI" 
                     active={activeTab === 'lesson-ai'} 
                     onClick={() => setActiveTab('lesson-ai')}
-                    color="text-purple-600 dark:text-purple-400"
-                    bgColor="bg-purple-50 dark:bg-purple-900/30"
+                    color="text-slate-700 dark:text-slate-200"
+                    bgColor="bg-slate-100 dark:bg-slate-700"
                     collapsed={!isSidebarOpen}
                     role={role}
                   />
@@ -502,8 +498,8 @@ export default function App() {
                     label="Tạo đề thi AI" 
                     active={activeTab === 'test-ai'} 
                     onClick={() => setActiveTab('test-ai')}
-                    color="text-indigo-600 dark:text-indigo-400"
-                    bgColor="bg-indigo-50 dark:bg-indigo-900/30"
+                    color="text-slate-700 dark:text-slate-200"
+                    bgColor="bg-slate-100 dark:bg-slate-700"
                     collapsed={!isSidebarOpen}
                     role={role}
                   />
@@ -512,8 +508,8 @@ export default function App() {
                     label="Trò chơi Tương tác" 
                     active={activeTab === 'games'} 
                     onClick={() => setActiveTab('games')}
-                    color="text-orange-500 dark:text-orange-400"
-                    bgColor="bg-orange-50 dark:bg-orange-900/30"
+                    color="text-slate-700 dark:text-slate-200"
+                    bgColor="bg-slate-100 dark:bg-slate-700"
                     collapsed={!isSidebarOpen}
                     role={role}
                   />
@@ -524,8 +520,8 @@ export default function App() {
                 label={role === 'principal' ? "Thống kê Trường" : "Lớp học & Học sinh"} 
                 active={activeTab === 'classroom'} 
                 onClick={() => setActiveTab('classroom')}
-                color="text-emerald-600 dark:text-emerald-400"
-                bgColor="bg-emerald-50 dark:bg-emerald-900/30"
+                color="text-slate-700 dark:text-slate-200"
+                bgColor="bg-slate-100 dark:bg-slate-700"
                 collapsed={!isSidebarOpen}
                 role={role}
               />
@@ -540,8 +536,8 @@ export default function App() {
             label="Kho học liệu số" 
             active={activeTab === 'resource-library'} 
             onClick={() => setActiveTab('resource-library')}
-            color="text-indigo-600 dark:text-indigo-400"
-            bgColor="bg-indigo-50 dark:bg-indigo-900/30"
+            color="text-slate-700 dark:text-slate-200"
+            bgColor="bg-slate-100 dark:bg-slate-700"
             collapsed={!isSidebarOpen}
             role={role}
           />
@@ -840,7 +836,7 @@ function NavItem({ icon, label, active, onClick, color = "text-slate-600 dark:te
     <button 
       onClick={onClick} 
       className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 font-bold border border-transparent group relative overflow-hidden active:scale-[0.98]
-        ${active ? `${bgColor} ${color} shadow-lg shadow-slate-200 dark:shadow-none` : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-700/50'}
+        ${active ? `${bgColor} ${color} shadow-sm` : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-700/50'}
       `}
     >
       {active && (

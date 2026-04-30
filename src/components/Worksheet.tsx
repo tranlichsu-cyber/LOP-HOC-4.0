@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Cpu, FileText, Loader2, Bot, Download, FileCheck, Save } from 'lucide-react';
+import { Sparkles, Cpu, FileText, Loader2, Download } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';

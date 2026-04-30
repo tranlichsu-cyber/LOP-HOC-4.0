@@ -1,10 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { Sparkles, Cpu, Loader2, Download, Bot, GraduationCap, ChevronRight, AlertCircle, FileText, Share2 } from 'lucide-react';
+import { Sparkles, Cpu, Loader2, Download, Bot, GraduationCap, FileText, Share2 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { db, auth } from '../firebase';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
 import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel } from 'docx';
 import { saveAs } from 'file-saver';
 

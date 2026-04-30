@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, BookOpen, Gamepad2, ShieldCheck, Sparkles, LayoutPanelLeft, Loader2, BrainCircuit, Trophy, Zap, Camera, Image as ImageIcon } from 'lucide-react';
+import { Users, BookOpen, Gamepad2, ShieldCheck, Sparkles, Loader2, BrainCircuit, Trophy, Zap, Camera } from 'lucide-react';
 import { motion, Variants, AnimatePresence } from 'motion/react';
 import { 
   BarChart, 
@@ -139,7 +139,7 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
   const subjectData = getSubjectData();
   const weeklyData = getWeeklyData();
 
-  const PIE_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
+  const PIE_COLORS = ['#475569', '#64748b', '#94a3b8', '#cbd5e1'];
   const pieData = [
     { name: 'Giỏi', value: 35 },
     { name: 'Khá', value: 45 },
@@ -157,9 +157,9 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {role === 'teacher' || role === 'admin' ? (
           <>
-            <motion.div variants={item}><StatCard icon={<Users />} label="Học sinh" value={stats.students} color="bg-blue-500" /></motion.div>
-            <motion.div variants={item}><StatCard icon={<Gamepad2 />} label="Game đã tạo" value={stats.games} color="bg-orange-500" /></motion.div>
-            {role === 'admin' && <motion.div variants={item}><StatCard icon={<ShieldCheck />} label="Quyền hạn" value="Quản trị viên" color="bg-indigo-500" /></motion.div>}
+            <motion.div variants={item}><StatCard icon={<Users />} label="Học sinh" value={stats.students} color="bg-slate-700" /></motion.div>
+            <motion.div variants={item}><StatCard icon={<Gamepad2 />} label="Game đã tạo" value={stats.games} color="bg-slate-700" /></motion.div>
+            {role === 'admin' && <motion.div variants={item}><StatCard icon={<ShieldCheck />} label="Quyền hạn" value="Quản trị viên" color="bg-slate-700" /></motion.div>}
           </>
         ) : (
           <>
@@ -168,7 +168,7 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
                 icon={<BookOpen />} 
                 label="Bài tập của em" 
                 value={homeworkList.filter(h => !h.feedback?.[studentProfile?.id || '']).length} 
-                color="bg-rose-500" 
+                color="bg-slate-600" 
                 studentMode
               />
             </motion.div>
@@ -177,7 +177,7 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
                 icon={<Trophy />} 
                 label="Cúp đạt được" 
                 value={studentProfile?.badges?.length || 0} 
-                color="bg-yellow-500" 
+                color="bg-slate-500" 
                 studentMode
               />
             </motion.div>
@@ -186,7 +186,7 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
                 icon={<Zap />} 
                 label="Điểm XP" 
                 value={studentProfile?.xp || 0} 
-                color="bg-indigo-500" 
+                color="bg-slate-400" 
                 studentMode
               />
             </motion.div>
@@ -230,7 +230,7 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
                     />
                     <Bar 
                       dataKey="rate" 
-                      fill="#3b82f6" 
+                      fill="#64748b" 
                       radius={[8, 8, 0, 0]} 
                       barSize={40}
                     />
@@ -239,9 +239,9 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
               </div>
             </motion.div>
 
-            <motion.div variants={item} className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl shadow-slate-200/20 dark:shadow-none">
+            <motion.div variants={item} className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
               <h3 className="font-black text-xl text-slate-800 dark:text-white mb-6 flex items-center gap-3">
-                <div className="w-2 h-6 bg-purple-500 rounded-full" />
+                <div className="w-2 h-6 bg-slate-400 rounded-full" />
                 Tiến độ hoàn thành theo tuần (%)
               </h3>
               <div className="h-72 w-full">
@@ -272,7 +272,7 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
                     />
                     <Bar 
                       dataKey="progress" 
-                      fill="#8b5cf6" 
+                      fill="#94a3b8" 
                       radius={[8, 8, 0, 0]} 
                       barSize={40}
                     />
@@ -310,13 +310,12 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
             </div>
           </motion.div>
 
-          <motion.div variants={item} className="bg-gradient-to-br from-indigo-500 to-purple-600 p-8 rounded-3xl text-white shadow-xl relative overflow-hidden">
-             <div className="absolute top-0 right-0 opacity-10"><BrainCircuit className="w-40 h-40" /></div>
+          <motion.div variants={item} className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
              <div className="relative z-10 flex flex-col items-center text-center">
-                <h3 className="text-2xl font-black mb-4 flex items-center gap-2">
-                   <Sparkles className="w-8 h-8 text-yellow-300" /> Trợ Lý AI: Tư Vấn Lớp Học
+                <h3 className="text-2xl font-black mb-4 flex items-center gap-2 text-slate-800 dark:text-white">
+                   <Sparkles className="w-8 h-8 text-blue-500" /> Trợ Lý AI: Tư Vấn Lớp Học
                 </h3>
-                <p className="text-indigo-100 mb-8 font-medium max-w-md">
+                <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium max-w-md">
                    Sử dụng trí tuệ nhân tạo để phân tích dữ liệu và nhận các lời khuyên chuyên sâu cho lớp học của bạn.
                 </p>
                 
@@ -325,9 +324,9 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
                      <motion.div 
                        initial={{ opacity: 0, y: 10 }}
                        animate={{ opacity: 1, y: 0 }}
-                       className="bg-white/10 backdrop-blur-md rounded-2xl p-6 text-left w-full border border-white/20 mb-6"
+                       className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-6 text-left w-full border border-slate-200 dark:border-slate-700 mb-6"
                      >
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap">{aiAdvice}</p>
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">{aiAdvice}</p>
                      </motion.div>
                    ) : null}
                 </AnimatePresence>
@@ -335,7 +334,7 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
                 <button 
                   onClick={generateAIAdvice}
                   disabled={isGeneratingAdvice}
-                  className="px-10 py-4 bg-white text-indigo-600 rounded-2xl font-black hover:scale-105 transition disabled:opacity-50 flex items-center gap-2 shadow-2xl"
+                  className="px-10 py-4 bg-slate-800 dark:bg-slate-700 text-white rounded-2xl font-black hover:scale-105 transition disabled:opacity-50 flex items-center gap-2 shadow-lg"
                 >
                   {isGeneratingAdvice ? <Loader2 className="w-5 h-5 animate-spin" /> : <BrainCircuit className="w-5 h-5" />}
                   {aiAdvice ? 'Cập nhật tư vấn' : 'Phân tích dữ liệu'}
@@ -347,10 +346,10 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
 
       <motion.div 
         variants={item} 
-        className={`relative p-10 rounded-[2.5rem] border overflow-hidden group shadow-2xl ${role === 'student' ? 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 border-white/20' : 'bg-gradient-to-br from-slate-900 to-slate-800 dark:from-indigo-950 dark:to-slate-900 border-white/10'}`}
+        className={`relative p-10 rounded-[2.5rem] border overflow-hidden group shadow-sm ${role === 'student' ? 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 border-white/20 shadow-xl' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}
       >
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-110 transition-transform duration-700" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -ml-20 -mb-20 group-hover:scale-110 transition-transform duration-700" />
+        {role === 'student' && <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-110 transition-transform duration-700" />}
+        {role === 'student' && <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -ml-20 -mb-20 group-hover:scale-110 transition-transform duration-700" />}
         
         <div className="relative z-10 flex flex-col items-center text-center">
           {role === 'student' && (
@@ -378,17 +377,16 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
               />
             </div>
           )}
-          {!studentProfile?.avatar && (
+          {!studentProfile?.avatar && role === 'student' && (
             <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-[1.5rem] flex items-center justify-center mb-6 border border-white/30 shadow-inner group-hover:rotate-12 transition-transform">
               <Sparkles className="text-yellow-300 w-10 h-10 drop-shadow-lg" />
             </div>
           )}
-          <h3 className="text-4xl font-black text-white tracking-tight mb-4">
+          <h3 className={`text-4xl font-black tracking-tight mb-4 ${role === 'student' ? 'text-white' : 'text-slate-800 dark:text-white'}`}>
             {role === 'student' ? `Chào ${studentProfile?.name || 'em'} yêu! 👋` : 
-             role === 'teacher' ? 'Chào thầy cô! 🍎' :
-             'Chào mừng trở lại!'}
+             'Bảng điều khiển'}
           </h3>
-          <p className="text-white/80 max-w-lg leading-relaxed font-bold text-lg">
+          <p className={`max-w-lg leading-relaxed font-bold text-lg ${role === 'student' ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'}`}>
             {role === 'admin' ? 'Hệ thống đang hoạt động ổn định. Bạn có toàn quyền quản trị và điều hành các hoạt động của trường.' : 
              role === 'teacher' ? 'Dữ liệu của bạn được đồng bộ tự động. Hãy bắt đầu tạo những bài giảng thú vị cho học sinh ngay hôm nay.' : 
              'Hôm nay em muốn nhận bao nhiêu Cúp nào? Hãy cùng nhau vượt qua các thử thách và trở thành Nhà Thông Thái nhé! 🏆'}
