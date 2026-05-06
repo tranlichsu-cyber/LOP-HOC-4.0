@@ -11,7 +11,8 @@ import { getVietnam34ProvincesContext } from '../data/vietnam34Provinces';
 import { getTextbookContext } from '../data/textbookTNXH2';
 import { getKetNoiTriThucContext } from '../data/ketNoiTriThucContext';
 import { getNLSContext } from '../data/nlsContext';
-import { getGrade5Updates } from '../data/grade5Updates';
+import { getTextbookUpdates } from '../data/textbookUpdates';
+import { findLessons, LessonEntry } from '../data/textbookLessons';
 
 export default function LessonAI() {
   const [subject, setSubject] = useState('Tiếng Việt');
@@ -29,17 +30,34 @@ export default function LessonAI() {
   const [fileText, setFileText] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<LessonEntry[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Removed fetchClasses as per request to simplify UI and remove class selection
+  // Dynamic lesson suggestions from textbook database
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setTitle(value);
+    if (errors.title) setErrors({...errors, title: ''});
+    
+    if (value.trim()) {
+      const g = grade === "Không chọn" ? undefined : grade;
+      const s = subject === "Không chọn" ? undefined : subject;
+      const found = findLessons(value, g, s);
+      setSuggestions(found);
+      setShowSuggestions(found.length > 0);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
 
-  const lessonSuggestions: Record<string, string[]> = {
-    "Toán": ["Ôn tập các số đến 100", "Phép cộng trong phạm vi 10", "Hình học cơ bản", "Giải toán có lời văn"],
-    "Tiếng Việt": ["Tập đọc: Chuyện của hoa", "Chính tả: Nghe viết", "Luyện từ và câu", "Tập làm văn: Kể chuyện"],
-    "Ngoại ngữ 1 (Tiếng Anh)": ["Unit 1: Hello", "Unit 2: My family", "Unit 3: Colors", "Unit 4: Numbers"],
-    "Tin học": ["Làm quen với máy tính", "Sử dụng chuột", "Gõ phím cơ bản", "An toàn trên mạng"],
-    "Tự nhiên và Xã hội": ["Gia đình em", "Trường học của em", "Cây cối quanh ta", "Động vật quanh ta"]
+  const selectLesson = (lesson: LessonEntry) => {
+    setTitle(lesson.title);
+    setGrade(lesson.grade);
+    setSubject(lesson.subject);
+    setShowSuggestions(false);
+    setSuggestions([]);
   };
 
   const validate = () => {
@@ -288,7 +306,8 @@ export default function LessonAI() {
       
       const provinceContext = isGeographyOrProvinces ? `\n\nKIẾN THỨC NỀN TẢNG QUAN TRỌNG (Cập nhật mới nhất):\n${getVietnam34ProvincesContext()}\nHãy sử dụng thông tin trên nếu bài học liên quan đến các tỉnh thành Việt Nam.` : '';
       const textbookContext = isTNXH2 ? `\n\nTHAM KHẢO NỘI DUNG SÁCH GIÁO KHOA (Kết nối tri thức):\n${getTextbookContext()}\nHãy bám sát khung chương trình này khi soạn bài.` : '';
-      const grade5UpdatesContext = isGrade5 ? `\n\nTHÔNG TIN CẬP NHẬT TRỌNG TÂM LỚP 5 (Kết nối tri thức):\n${getGrade5Updates(subject)}\nBẮT BUỘC: Phải sử dụng đúng các thông tin cập nhật này khi soạn giáo án.` : '';
+      const textbookUpdatesContent = getTextbookUpdates(grade, subject);
+      const textbookUpdatesContext = textbookUpdatesContent ? `\n\nTHÔNG TIN ĐÍNH CHÍNH VÀ CẬP NHẬT SÁCH GIÁO KHOA (Bộ Kết nối tri thức):\n${textbookUpdatesContent}\nBẮT BUỘC: Bạn PHẢI TUÂN THỦ các đính chính này. Nếu nội dung trong bản cũ hoặc kiến thức cũ mâu thuẫn với đính chính này, bạn phải sử dụng thông tin đính chính.` : '';
       const ketNoiTriThucContext = `\n\nKIẾN THỨC BỘ SÁCH KẾT NỐI TRI THỨC VỚI CUỘC SỐNG:\n${getKetNoiTriThucContext()}\nĐây là kim chỉ nam cho phương pháp và nội dung dạy học.`;
       const nlsDetailedContext = `\n\nDANH MỤC MÃ CHỈ BÁO NĂNG LỰC SỐ (CV 3456):\n${getNLSContext()}\nQUY TẮC: Khi lồng ghép NLS, phải ghi đúng định dạng "Mã : Nội dung" (Ví dụ: 1.1.CB1a : Xác định được nhu cầu thông tin...).`;
 
@@ -298,7 +317,7 @@ export default function LessonAI() {
 3. Thông tư 02/2025/TT-BGDĐT & Công văn 3456/BGDĐT-GDPT: Khung năng lực số (NLS) cho người học.
 4. Quyết định 3439/QĐ-BGDĐT: Khung nội dung thí điểm giáo dục Trí tuệ nhân tạo (AI).
 
-Nhiệm vụ: ${fileText || fileBase64 ? 'CẬP NHẬT VÀ LỒNG GHÉP NỘI DUNG VÀO GIÁO ÁN CÓ SẴN.' : `Hãy soạn kế hoạch bài dạy (Giáo án) theo CTGDPT 2018 cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. ${duration ? `Số tiết: ${duration}.` : ''}`} ${provinceContext}${textbookContext}${grade5UpdatesContext}${ketNoiTriThucContext}${nlsDetailedContext}
+Nhiệm vụ: ${fileText || fileBase64 ? 'CẬP NHẬT VÀ LỒNG GHÉP NỘI DUNG VÀO GIÁO ÁN CÓ SẴN.' : `Hãy soạn kế hoạch bài dạy (Giáo án) theo CTGDPT 2018 cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. ${duration ? `Số tiết: ${duration}.` : ''}`} ${provinceContext}${textbookContext}${textbookUpdatesContext}${ketNoiTriThucContext}${nlsDetailedContext}
 
 ${fileText || fileBase64 ? `QUAN TRỌNG: Bạn đang được cung cấp một bản giáo án cũ. 
 YÊU CẦU BẮT BUỘC: 
@@ -455,34 +474,39 @@ LƯU Ý ĐỊNH DẠNG:
               <input 
                 type="text" 
                 value={title} 
-                onFocus={() => setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                  if (errors.title) setErrors({...errors, title: ''});
+                onFocus={() => {
+                  if (title.trim()) {
+                    const g = grade === "Không chọn" ? undefined : grade;
+                    const s = subject === "Không chọn" ? undefined : subject;
+                    const found = findLessons(title, g, s);
+                    setSuggestions(found);
+                    setShowSuggestions(found.length > 0);
+                  }
                 }}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                onChange={handleTitleChange}
                 className={`w-full p-2.5 bg-slate-50 dark:bg-slate-900 border rounded-lg outline-none transition-colors dark:text-white ${errors.title ? 'border-red-500 focus:border-red-500' : 'border-slate-200 dark:border-slate-600 focus:border-purple-400'}`}
                 placeholder="Nhập tên bài dạy (ví dụ: Ôn tập các số đến 10)..."
               />
               {errors.title && <p className="text-red-500 text-[10px] mt-1">{errors.title}</p>}
               
-              {showSuggestions && lessonSuggestions[subject] && (
-                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden max-h-48 overflow-y-auto">
-                  {lessonSuggestions[subject]
-                    .filter(s => s.toLowerCase().includes(title.toLowerCase()))
-                    .map((suggestion, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => {
-                          setTitle(suggestion);
-                          setShowSuggestions(false);
-                        }}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors"
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden max-h-60 overflow-y-auto">
+                  <div className="p-2 bg-slate-50 dark:bg-slate-900 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-100 dark:border-slate-700">Mục lục sách Kết nối tri thức</div>
+                  {suggestions.map((lesson) => (
+                    <button
+                      key={lesson.id}
+                      type="button"
+                      onClick={() => selectLesson(lesson)}
+                      className="w-full text-left px-4 py-3 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors border-b border-slate-50 dark:border-slate-700 last:border-0 group"
+                    >
+                      <div className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 transition-colors">{lesson.title}</div>
+                      <div className="text-[10px] text-slate-500 flex gap-2 mt-0.5">
+                        <span className="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{lesson.grade}</span>
+                        <span className="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{lesson.subject}</span>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
@@ -578,7 +602,7 @@ LƯU Ý ĐỊNH DẠNG:
           <button 
             onClick={generateLesson} 
             disabled={isGenerating || isProcessingFile}
-            className="w-full mt-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-md disabled:opacity-50"
+            className="w-full mt-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black py-4 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 disabled:opacity-50 active:scale-95"
           >
             {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
             Tạo giáo án bằng AI
@@ -595,7 +619,7 @@ LƯU Ý ĐỊNH DẠNG:
             <button 
               onClick={downloadDocx}
               disabled={!result || isDownloading}
-              className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 font-medium transition disabled:opacity-50"
+              className="px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-lg flex items-center gap-2 font-black transition-all disabled:opacity-50 active:scale-95"
             >
               {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
               Tải .docx

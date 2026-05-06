@@ -139,7 +139,7 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
   const subjectData = getSubjectData();
   const weeklyData = getWeeklyData();
 
-  const PIE_COLORS = ['#475569', '#64748b', '#94a3b8', '#cbd5e1'];
+  const PIE_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'];
   const pieData = [
     { name: 'Giỏi', value: 35 },
     { name: 'Khá', value: 45 },
@@ -157,9 +157,9 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {role === 'teacher' || role === 'admin' ? (
           <>
-            <motion.div variants={item}><StatCard icon={<Users />} label="Học sinh" value={stats.students} color="bg-slate-700" /></motion.div>
-            <motion.div variants={item}><StatCard icon={<Gamepad2 />} label="Game đã tạo" value={stats.games} color="bg-slate-700" /></motion.div>
-            {role === 'admin' && <motion.div variants={item}><StatCard icon={<ShieldCheck />} label="Quyền hạn" value="Quản trị viên" color="bg-slate-700" /></motion.div>}
+            <motion.div variants={item}><StatCard icon={<Users />} label="Học sinh" value={stats.students} color="bg-blue-600" /></motion.div>
+            <motion.div variants={item}><StatCard icon={<Gamepad2 />} label="Game đã tạo" value={stats.games} color="bg-purple-600" /></motion.div>
+            {role === 'admin' && <motion.div variants={item}><StatCard icon={<ShieldCheck />} label="Quyền hạn" value="Quản trị viên" color="bg-emerald-600" /></motion.div>}
           </>
         ) : (
           <>
@@ -168,7 +168,7 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
                 icon={<BookOpen />} 
                 label="Bài tập của em" 
                 value={homeworkList.filter(h => !h.feedback?.[studentProfile?.id || '']).length} 
-                color="bg-slate-600" 
+                color="bg-indigo-600" 
                 studentMode
               />
             </motion.div>
@@ -177,7 +177,7 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
                 icon={<Trophy />} 
                 label="Cúp đạt được" 
                 value={studentProfile?.badges?.length || 0} 
-                color="bg-slate-500" 
+                color="bg-amber-500" 
                 studentMode
               />
             </motion.div>
@@ -186,7 +186,7 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
                 icon={<Zap />} 
                 label="Điểm XP" 
                 value={studentProfile?.xp || 0} 
-                color="bg-slate-400" 
+                color="bg-rose-500" 
                 studentMode
               />
             </motion.div>
@@ -334,7 +334,7 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
                 <button 
                   onClick={generateAIAdvice}
                   disabled={isGeneratingAdvice}
-                  className="px-10 py-4 bg-slate-800 dark:bg-slate-700 text-white rounded-2xl font-black hover:scale-105 transition disabled:opacity-50 flex items-center gap-2 shadow-lg"
+                  className="px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-black hover:scale-105 transition disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-blue-500/20"
                 >
                   {isGeneratingAdvice ? <Loader2 className="w-5 h-5 animate-spin" /> : <BrainCircuit className="w-5 h-5" />}
                   {aiAdvice ? 'Cập nhật tư vấn' : 'Phân tích dữ liệu'}

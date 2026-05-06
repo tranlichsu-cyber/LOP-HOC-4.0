@@ -258,7 +258,7 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
                     <button 
                       disabled={isLoading} 
                       onClick={handleTeacherLogin} 
-                      className="w-full bg-slate-900 dark:bg-white dark:text-slate-900 text-white font-black py-4 rounded-2xl transition-all shadow-2xl shadow-slate-900/10 hover:translate-y-[-2px] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
+                      className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white font-black py-4 rounded-2xl transition-all shadow-xl shadow-blue-500/20 hover:translate-y-[-2px] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
                     >
                       {isRegistering ? 'Xác nhận tạo tài khoản' : 'Đăng nhập giáo viên'}
                       <ArrowRight className="w-5 h-5" />
@@ -341,7 +341,7 @@ export default function Login({ onStudentLogin }: { onStudentLogin: (studentId: 
                   <button 
                     disabled={isLoading}
                     onClick={handleStudentLogin}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-5 rounded-[2rem] transition-all shadow-xl shadow-emerald-600/20 hover:translate-y-[-4px] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 text-lg"
+                    className="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white font-black py-5 rounded-[2rem] transition-all shadow-xl shadow-emerald-600/20 hover:translate-y-[-4px] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 text-lg"
                   >
                     Bắt đầu học ngay!
                     <ArrowRight className="w-6 h-6" />

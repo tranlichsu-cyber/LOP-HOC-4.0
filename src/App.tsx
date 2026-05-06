@@ -410,7 +410,14 @@ export default function App() {
   };
 
   return (
-    <div className={`h-screen flex overflow-hidden transition-colors duration-500 ${role === 'student' ? 'bg-indigo-50 font-sans' : 'bg-slate-50 dark:bg-slate-900'} ${role === 'teacher' ? 'role-teacher' : 'role-student'}`}>
+    <div className={`h-screen flex overflow-hidden transition-colors duration-500 relative ${role === 'student' ? 'bg-amber-50/30' : 'bg-slate-50 dark:bg-slate-950'}`}>
+      {/* Decorative Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20 dark:opacity-10">
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-purple-400 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-1/2 -right-24 w-80 h-80 bg-blue-400 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute -bottom-24 left-1/3 w-64 h-64 bg-emerald-400 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
+
       {/* Sidebar Overlay for Mobile */}
       <AnimatePresence>
         {isSidebarOpen && (
@@ -427,10 +434,10 @@ export default function App() {
       {/* Sidebar */}
       <aside className={`
         ${isSidebarOpen ? 'w-72 translate-x-0' : 'w-20 -translate-x-full md:translate-x-0'} 
-        fixed md:relative h-full ${role === 'student' ? 'bg-white border-r-4 border-indigo-100 shadow-2xl' : 'bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-r border-slate-200/50 dark:border-slate-700/50 shadow-xl'} flex-col transition-all duration-500 z-50 flex
+        fixed md:relative h-full ${role === 'student' ? 'bg-white/90 border-r-4 border-indigo-100 shadow-2xl backdrop-blur-md' : 'bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border-r border-slate-200/50 dark:border-slate-700/50 shadow-xl'} flex-col transition-all duration-500 z-50 flex
       `}>
         <div className={`p-8 flex items-center gap-3 ${role === 'student' ? 'border-b-4 border-indigo-50' : 'border-b border-slate-100/50 dark:border-slate-700/50'}`}>
-          <div className={`w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-lg transform hover:rotate-6 transition-transform shrink-0 overflow-hidden border border-slate-100`}>
+          <div className={`w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-lg transform hover:rotate-6 transition-transform shrink-0 overflow-hidden border-2 border-indigo-100`}>
             <img 
               src="school-logo.png" 
               alt="Logo Trường Tiểu học Lý Tự Trọng" 
@@ -615,11 +622,11 @@ export default function App() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        <header className={`h-24 px-4 sm:px-8 flex items-center justify-between z-30 shrink-0 transition-all ${role === 'student' ? 'bg-white border-b-4 border-indigo-50' : 'bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50'}`}>
+        <header className={`h-24 px-4 sm:px-8 flex items-center justify-between z-30 shrink-0 transition-all ${role === 'student' ? 'bg-white/80 backdrop-blur-md border-b-4 border-indigo-50' : 'bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm'}`}>
           <div className="flex items-center gap-3 sm:gap-6">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-              className={`p-3 rounded-2xl transition-all active:scale-95 md:flex hidden ${role === 'student' ? 'bg-indigo-50 text-indigo-500 hover:bg-indigo-100' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500'}`}
+              className={`p-3 rounded-2xl transition-all active:scale-95 md:flex hidden ${role === 'student' ? 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'}`}
             >
               <Menu className="w-6 h-6" />
             </button>
@@ -628,7 +635,7 @@ export default function App() {
             <div className="md:hidden">
               <button 
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className={`p-3 rounded-2xl ${role === 'student' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}
+                className={`p-3 rounded-2xl shadow-lg ${role === 'student' ? 'bg-indigo-600 text-white' : 'bg-blue-600 text-white'}`}
               >
                 <Menu className="w-6 h-6" />
               </button>
