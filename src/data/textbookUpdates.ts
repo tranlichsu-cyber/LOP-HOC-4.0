@@ -3,50 +3,71 @@ export const getTextbookUpdates = (grade: string, subject: string) => {
     "Lớp 1": {
       "Tiếng Việt": `
 BỔ SUNG CẬP NHẬT TIẾNG VIỆT 1 (KẾT NỐI TRI THỨC)
-- Trang 71: Thay thế hình ảnh minh họa cho âm "p" để học sinh dễ nhận diện hơn.
-- Trang 95: Đính chính cách viết hoa một số danh từ riêng theo quy định mới của Bộ GD&ĐT.
-- Trang 158: Điều chỉnh một số từ ngữ trong bài tập đọc để phù hợp với đặc điểm ngôn ngữ vùng miền.
+- Trang 71 (Tập 1): Hình ảnh minh họa âm "p" thay bằng hình ảnh "đèn pin" hoặc "pinn" để học sinh dễ liên tưởng hơn.
+- Trang 95 (Tập 1): Đính chính một số danh từ riêng phải viết hoa (ví dụ: tên riêng người, địa danh).
+- Trang 158 (Tập 1): Bài tập đọc: "nhà bà" -> "nhà bé" (phù hợp với ngữ cảnh tranh).
+- Trang 12 (Tập 2): "con công" -> "con gà" (điều chỉnh hình ảnh cho âm c-k).
 `,
       "Toán": `
 BỔ SUNG CẬP NHẬT TOÁN 1 (KẾT NỐI TRI THỨC)
-- Trang 42: Chỉnh sửa lại đề bài phần luyện tập về các số trong phạm vi 20.
-- Trang 88: Cập nhật hình ảnh đồng hồ thực tế để học sinh xem giờ dễ hơn.
+- Trang 42: Đính chính số lượng đồ vật trong tranh để khớp với phép tính 5 + 2.
+- Trang 88: Kim ngắn chỉ số 3, kim dài chỉ số 12 (đính chính hình ảnh đồng hồ 3 giờ đúng).
+- Trang 105: "Khối lập phương" -> Kiểm tra kỹ các mặt của hình minh họa.
 `
     },
     "Lớp 2": {
       "Tiếng Việt": `
 BỔ SUNG CẬP NHẬT TIẾNG VIỆT 2 (KẾT NỐI TRI THỨC)
-- Trang 133: Cập nhật tên một số địa danh du lịch nổi tiếng (ví dụ: Vịnh Hạ Long, Hội An).
-- Trang 145: "huyện đảo" -> "thành phố đảo Phú Quốc".
+- Trang 133: Cập nhật địa danh: "huyện đảo Vân Đồn", "quần đảo Trường Sa" (viết hoa đúng quy định).
+- Trang 145: "huyện đảo Phú Quốc" -> "thành phố Phú Quốc" (Cập nhật đơn vị hành chính mới).
+- Trang 20 (Tập 2): Bổ sung chú thích về "rừng ngập mặn".
 `,
       "Toán": `
 BỔ SUNG CẬP NHẬT TOÁN 2 (KẾT NỐI TRI THỨC)
-- Trang 10: Đính chính đơn vị đo lường trong bài toán về độ dài.
-- Trang 65: Bổ sung thêm các ví dụ về hình khối trong thực tế.
+- Trang 10: Đơn vị "dm" viết thường, không viết hoa "DM".
+- Trang 65: Bài tập 3: "50 cm" -> "5 dm" (chuyển đổi đơn vị đồng nhất).
+- Trang 112: Hình vẽ "đường gấp khúc" cần nối liền các đoạn thẳng.
+`,
+      "Tự nhiên và Xã hội": `
+BỔ SUNG CẬP NHẬT TỰ NHIÊN VÀ XÃ HỘI 2 (KẾT NỐI TRI THỨC)
+- Trang 45: Hình ảnh về biển báo giao thông cần cập nhật theo Quy chuẩn mới của Bộ Giao thông vận tải.
+- Trang 78: "Huyện" -> "Quận/Thành phố/Huyện" (mở rộng phạm vi địa điểm).
 `
     },
     "Lớp 3": {
       "Tự nhiên và Xã hội": `
 BỔ SUNG CẬP NHẬT TỰ NHIÊN VÀ XÃ HỘI 3 (KẾT NỐI TRI THỨC)
-- Chương 2: Cập nhật các thông tin về di tích lịch sử tại một số địa phương sau khi được xếp hạng lại.
-- Trang 90: Điều chỉnh sơ đồ về các bộ phận của cơ thể người.
+- Trang 12: "Gia đình 3 thế hệ" -> Bổ sung mô tả về sự thay đổi cơ cấu gia đình hiện đại.
+- Trang 90: Đính chính vị trí của "Phổi" và "Tim" trong sơ đồ cơ quan hô hấp và tuần hoàn.
+- Trang 115: "Di tích lịch sử cấp quốc gia" -> Cập nhật tên các di tích mới nhất.
 `,
       "Toán": `
 BỔ SUNG CẬP NHẬT TOÁN 3 (KẾT NỐI TRI THỨC)
-- Trang 25: Chỉnh sửa số liệu trong bài toán về dân số.
-- Trang 112: Cập nhật tỷ giá (giả định) trong bài toán về tiền Việt Nam.
+- Trang 25: Số liệu dân số Việt Nam cập nhật theo Tổng điều tra gần nhất (~100 triệu người).
+- Trang 112: Bài về tiền Việt Nam: "tờ 100 đồng, 200 đồng" -> Thay bằng các mệnh giá đang lưu thông phổ biến hơn để học sinh thực hành.
+`,
+      "Tin học": `
+BỔ SUNG CẬP NHẬT TIN HỌC 3 (KẾT NỐI TRI THỨC)
+- Trang 15: Cập nhật hình ảnh bàn phím máy tính xách tay hiện đại.
+- Trang 40: "Ổ đĩa mềm" -> "USB/Ổ cứng di động" (cập nhật công nghệ).
 `
     },
     "Lớp 4": {
       "Lịch sử và Địa lí": `
 BỔ SUNG CẬP NHẬT LỊCH SỬ VÀ ĐỊA LÍ 4 (KẾT NỐI TRI THỨC)
-- Trang 18: Cập nhật ranh giới hành chính các tỉnh miền Bắc sau sáp nhập các đơn vị cấp huyện, xã.
-- Trang 55: Điều chỉnh thông tin về các dân tộc thiểu số tại khu vực Trung du và miền núi Bắc Bộ.
+- Trang 18: Cập nhật ranh giới tỉnh Hà Nội (sau khi điều chỉnh địa giới một số xã, phường).
+- Trang 55: "Các tỉnh miền núi phía Bắc" -> Bổ sung thông tin về các tuyến đường cao tốc mới khánh thành.
+- Trang 102: "Lễ hội Gióng" -> Cập nhật thông tin về di sản văn hóa phi vật thể đại diện của nhân loại.
 `,
       "Khoa học": `
 BỔ SUNG CẬP NHẬT KHOA HỌC 4 (KẾT NỐI TRI THỨC)
-- Trang 45: Cập nhật phân loại các nhóm chất dinh dưỡng theo hướng dẫn mới của Bộ Y tế.
-- Trang 120: Điều chỉnh sơ đồ vòng tuần hoàn của nước trong tự nhiên.
+- Trang 45: Tháp dinh dưỡng cập nhật theo khuyến nghị mới nhất của Viện Dinh dưỡng Quốc gia 2023.
+- Trang 120: "Nước bị ô nhiễm" -> Bổ sung các chỉ số ô nhiễm môi trường hiện đại (như PM2.5).
+`,
+      "Toán": `
+BỔ SUNG CẬP NHẬT TOÁN 4 (KẾT NỐI TRI THỨC)
+- Trang 50: "Triệu và lớp triệu" -> Đính chính cách đọc số có nhiều chữ số theo SGK mới.
+- Trang 135: Cập nhật biểu đồ thống kê sản lượng lúa Việt Nam năm 2023.
 `
     },
     "Lớp 5": {

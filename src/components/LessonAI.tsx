@@ -329,7 +329,7 @@ YÊU CẦU QUAN TRỌNG:
 - BÁM SÁT CTGDPT 2018: Phải đảm bảo các yêu cầu cần đạt (YCCĐ) theo đúng khung chương trình mới.
 - BÁM SÁT VÀ KHAI THÁC SÂU SGK: Nội dung bài dạy phải đi sâu vào các chi tiết, tình huống và kiến thức trong SGK đã cung cấp.
 - TRÌNH BÀY KHOA HỌC: Các bước thực hiện rõ ràng, mạch lạc.
-- TƯƠNG TÁC HÀI HÒA & CÓ CÂU DẪN: Hoạt động của giáo viên phải bao gồm các câu hỏi gợi mở, lời giảng chi tiết (câu dẫn cụ thể). Hoạt động của học sinh phải có câu trả lời dự kiến cụ thể.
+- TƯƠNG TÁC HÀI HÒA & CÓ CÂU DẪN: Hoạt động của giáo viên phải bao gồm các câu hỏi gợi mở, lời giảng chi tiết (câu dẫn cụ thể). Hoạt động của học sinh phải có câu trả lời dự kiến cụ thể. Đảm bảo các hoạt động giữa Giáo viên và Học sinh diễn ra cân đối, hài hòa về khối lượng công việc.
 - Đảm bảo đủ 4 bước Tổ chức thực hiện trong mỗi hoạt động: Chuyển giao nhiệm vụ -> Thực hiện nhiệm vụ -> Báo cáo, thảo luận -> Kết luận, nhận định.
 
 Yêu cầu về cấu trúc đầu ra (Chuẩn CV 2345):
@@ -344,7 +344,7 @@ II. ĐỒ DÙNG DẠY HỌC
 - Học sinh: SGK, vở, vật liệu thực hành.
 
 III. CÁC HOẠT ĐỘNG DẠY HỌC CHỦ YẾU
-(Sử dụng bảng Markdown 2 cột cho phần tổ chức thực hiện: | Hoạt động của giáo viên | Hoạt động của học sinh |)
+(BẮT BUỘC: Sử dụng bảng Markdown 2 cột cho phần tổ chức thực hiện. Các cột phải có khối lượng nội dung tương đương nhau để đảm bảo tính cân đối: | Hoạt động của giáo viên | Hoạt động của học sinh |)
 
 Yêu cầu lồng ghép (Tích hợp tự nhiên):
 - An ninh quốc phòng (TT 08/2024).
