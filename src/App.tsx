@@ -75,6 +75,8 @@ export default function App() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [passwordStatus, setPasswordStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
+  const avatarInputRef = React.useRef<HTMLInputElement>(null);
 
   // Data State
   const [students, setStudents] = useState<Student[]>([]);
@@ -278,7 +280,7 @@ export default function App() {
         const studentSnap = await getDocFromServer(studentRef);
         
         if (studentSnap.exists()) {
-          const studentData = studentSnap.data();
+          const studentData = studentSnap.data() as any;
           
           if (studentData.passHash === password) {
             // 1. Sign in anonymously FIRST to have a Firebase user session for security rules
@@ -384,6 +386,33 @@ export default function App() {
       }
     } catch (e) {
       console.error("Error updating student profile:", e);
+    }
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setIsUpdatingAvatar(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64 = event.target?.result as string;
+        
+        if (role === 'student' && studentProfile) {
+          updateStudentProfile({ avatar: base64 });
+        } else if (userProfile) {
+          const updatedProfile = { ...userProfile, avatar: base64 };
+          setUserProfile(updatedProfile);
+          await setDoc(doc(db, 'users', user?.uid), { avatar: base64 }, { merge: true });
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Error updating avatar:", error);
+      alert("Lỗi khi cập nhật ảnh đại diện!");
+    } finally {
+      setIsUpdatingAvatar(false);
     }
   };
 
@@ -594,9 +623,24 @@ export default function App() {
 
         <div className={`p-4 ${role === 'student' ? 'border-t-4 border-indigo-50 bg-indigo-50/30' : 'border-t border-slate-200/50 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/50'} flex items-center justify-between`}>
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden border-2 ${role === 'student' ? 'border-indigo-200 bg-indigo-100' : 'border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700'} shrink-0 shadow-inner`}>
-              <img src={studentProfile?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email || 'Student'}`} alt="Avatar" className="w-full h-full object-cover" />
-            </div>
+            <button 
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={isUpdatingAvatar}
+              className={`group relative w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden border-2 ${role === 'student' ? 'border-indigo-200 bg-indigo-100' : 'border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700'} shrink-0 shadow-inner hover:scale-105 active:scale-95 transition-all`}
+              title="Thay đổi ảnh đại diện"
+            >
+              <img src={studentProfile?.avatar || userProfile?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email || 'Student'}`} alt="Avatar" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                {isUpdatingAvatar ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="w-4 h-4 border-2 border-white border-t-transparent rounded-full" /> : <ShieldCheck className="w-4 h-4 text-white" />}
+              </div>
+              <input 
+                type="file" 
+                ref={avatarInputRef} 
+                onChange={handleAvatarChange} 
+                className="hidden" 
+                accept="image/*" 
+              />
+            </button>
             {isSidebarOpen && (
               <motion.div 
                 initial={{ opacity: 0 }}
@@ -604,7 +648,7 @@ export default function App() {
                 className="overflow-hidden"
               >
                 <p className={`text-sm font-black truncate max-w-[120px] ${role === 'student' ? 'text-indigo-900' : 'text-slate-800 dark:text-white'}`}>
-                  {studentProfile?.name || user.displayName || (user.email ? user.email.split('@')[0] : 'Người dùng')}
+                  {studentProfile?.name || userProfile?.displayName || user.displayName || (user.email ? user.email.split('@')[0] : 'Người dùng')}
                 </p>
                 <p className={`text-[10px] truncate max-w-[120px] font-bold ${role === 'student' ? 'text-indigo-400' : 'text-slate-500 dark:text-slate-400'}`}>
                   {role === 'student' ? `Cấp độ ${studentProfile?.level || 1}` : user.email}

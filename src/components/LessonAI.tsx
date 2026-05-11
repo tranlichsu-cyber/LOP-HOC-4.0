@@ -97,8 +97,19 @@ export default function LessonAI() {
           reader.onload = async (event) => {
             try {
               const arrayBuffer = event.target?.result as ArrayBuffer;
-              const result = await mammoth.extractRawText({ arrayBuffer });
-              setFileText(result.value);
+              // Use convertToHtml to keep links and some structure
+              const result = await mammoth.convertToHtml({ arrayBuffer });
+              
+              // Clean HTML but keep links and image markers
+              let html = result.value;
+              // Replace <img> with [IMAGE] placeholder
+              html = html.replace(/<img[^>]*>/g, '[TRANH_ANH_GOC]');
+              // Convert <a> links to Markdown style for AI 
+              html = html.replace(/<a href="([^"]*)">([^<]*)<\/a>/g, '[$2]($1)');
+              // Strip other tags
+              const cleanText = html.replace(/<[^>]*>/g, '\n').replace(/\n\s*\n/g, '\n\n');
+              
+              setFileText(cleanText);
               setFileBase64(null);
             } catch (err) {
               console.error("Mammoth error:", err);
@@ -311,22 +322,19 @@ export default function LessonAI() {
       const ketNoiTriThucContext = `\n\nKIẾN THỨC BỘ SÁCH KẾT NỐI TRI THỨC VỚI CUỘC SỐNG:\n${getKetNoiTriThucContext()}\nĐây là kim chỉ nam cho phương pháp và nội dung dạy học.`;
       const nlsDetailedContext = `\n\nDANH MỤC MÃ CHỈ BÁO NĂNG LỰC SỐ (CV 3456):\n${getNLSContext()}\nQUY TẮC: Khi lồng ghép NLS, phải ghi đúng định dạng "Mã : Nội dung" (Ví dụ: 1.1.CB1a : Xác định được nhu cầu thông tin...).`;
 
-      const promptTemplate = `Bạn là một chuyên gia sư phạm cấp tiểu học xuất sắc tại Việt Nam, am hiểu sâu sắc Chương trình Giáo dục Phổ thông 2018 (CTGDPT 2018) và bộ sách "Kết nối tri thức với cuộc sống". Bạn cũng nắm vững các văn bản quy phạm pháp luật sau:
-1. Công văn 2345/BGDĐT-GDTH: Hướng dẫn xây dựng kế hoạch giáo dục nhà trường và Kế hoạch bài dạy (giáo án).
-2. Thông tư 08/2024/TT-BGDĐT: Hướng dẫn lồng ghép nội dung giáo dục quốc phòng và an ninh.
-3. Thông tư 02/2025/TT-BGDĐT & Công văn 3456/BGDĐT-GDPT: Khung năng lực số (NLS) cho người học.
-4. Quyết định 3439/QĐ-BGDĐT: Khung nội dung thí điểm giáo dục Trí tuệ nhân tạo (AI).
-
+      const promptTemplate = `Bạn là một chuyên gia sư phạm cấp tiểu học xuất sắc tại Việt Nam, am hiểu sâu sắc Chương trình Giáo dục Phổ thông 2018 (CTGDPT 2018) và bộ sách "Kết nối tri thức với cuộc sống". 
 Nhiệm vụ: ${fileText || fileBase64 ? 'CẬP NHẬT VÀ LỒNG GHÉP NỘI DUNG VÀO GIÁO ÁN CÓ SẴN.' : `Hãy soạn kế hoạch bài dạy (Giáo án) theo CTGDPT 2018 cho bài học: ${title} - Môn: ${subject} - Lớp: ${grade}. ${duration ? `Số tiết: ${duration}.` : ''}`} ${provinceContext}${textbookContext}${textbookUpdatesContext}${ketNoiTriThucContext}${nlsDetailedContext}
 
 ${fileText || fileBase64 ? `QUAN TRỌNG: Bạn đang được cung cấp một bản giáo án cũ. 
-YÊU CẦU BẮT BUỘC: 
+YÊU CẦU BẮT BUỘC ĐỂ GIỮ NGUYÊN GIÁ TRỊ TÀI LIỆU CŨ: 
 - GIỮ NGUYÊN HOÀN TOÀN TỪNG CÂU CHỮ, NỘI DUNG VÀ BỐ CỤC (layout) của giáo án cũ. KHÔNG được tóm tắt, không được thay đổi từ ngữ vốn có.
-- CHỈ ĐƯỢC PHÉP CHÈN THÊM (lồng ghép) các nội dung mới (Năng lực số, AI, An ninh quốc phòng) vào các vị trí phù hợp.
+- BẮT BUỘC GIỮ LẠI TẤT CẢ CÁC ĐƯỜNG LINK (URLs) VÀ THÔNG TIN QUY CHIẾU ẢNH: Nếu trong bản gốc có các đường link (http/https) hoặc chỉ dẫn về tranh ảnh, bạn PHẢI giữ nguyên chúng ở đúng vị trí cũ.
+- CHỈ ĐƯỢC PHÉP CHÈN THÊM (lồng ghép) các nội dung mới (Năng lực số, AI, An ninh quốc phòng) vào các vị trí phù hợp mà không làm mất đi các yếu tố cơ bản của bài cũ.
 - Nội dung lồng ghép phải được trình bày tự nhiên, không làm gãy mạch logic của giáo án cũ.` : ''}
 
 YÊU CẦU QUAN TRỌNG:
 - BÁM SÁT CTGDPT 2018: Phải đảm bảo các yêu cầu cần đạt (YCCĐ) theo đúng khung chương trình mới.
+- GIỮ LẠI TOÀN BỘ CÁC LIÊN KẾT (LINKS/URLS): Tuyệt đối không được lược bỏ bất kỳ đường dẫn web nào có trong giáo án cũ.
 - BÁM SÁT VÀ KHAI THÁC SÂU SGK: Nội dung bài dạy phải đi sâu vào các chi tiết, tình huống và kiến thức trong SGK đã cung cấp.
 - TRÌNH BÀY KHOA HỌC: Các bước thực hiện rõ ràng, mạch lạc.
 - TƯƠNG TÁC HÀI HÒA & CÓ CÂU DẪN: Hoạt động của giáo viên phải bao gồm các câu hỏi gợi mở, lời giảng chi tiết (câu dẫn cụ thể). Hoạt động của học sinh phải có câu trả lời dự kiến cụ thể. Đảm bảo các hoạt động giữa Giáo viên và Học sinh diễn ra cân đối, hài hòa về khối lượng công việc.

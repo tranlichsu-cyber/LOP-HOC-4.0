@@ -4,6 +4,7 @@ export interface UserProfile {
   uid: string;
   email: string;
   displayName?: string;
+  avatar?: string;
   role: UserRole;
   schoolId?: string;
   classId?: string;
