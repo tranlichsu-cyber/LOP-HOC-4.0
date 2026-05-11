@@ -1,87 +1,43 @@
 {
   "entities": {
-    "User": {
-      "title": "User",
-      "description": "User profile with role",
+    "UserProfile": {
+      "title": "Người dùng",
+      "description": "Thông tin hồ sơ giáo viên hoặc quản trị viên",
       "type": "object",
       "properties": {
         "uid": { "type": "string" },
         "email": { "type": "string" },
         "displayName": { "type": "string" },
-        "role": { "type": "string", "enum": ["admin", "teacher", "student"] },
-        "schoolId": { "type": "string" },
-        "classId": { "type": "string" }
+        "role": { "type": "string", "enum": ["teacher", "school_admin", "principal", "parent", "student"] },
+        "schoolId": { "type": "string" }
       },
       "required": ["uid", "email", "role"]
     },
-    "School": {
-      "title": "School",
-      "description": "School information",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "address": { "type": "string" },
-        "adminUid": { "type": "string" }
-      },
-      "required": ["id", "name"]
-    },
-    "Class": {
-      "title": "Class",
-      "description": "Class information",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "grade": { "type": "string" },
-        "teacherUid": { "type": "string" }
-      },
-      "required": ["id", "name", "grade"]
-    },
     "Student": {
-      "title": "Student",
-      "description": "Information about a student",
+      "title": "Học sinh",
+      "description": "Thông tin học sinh để đăng nhập mã định danh",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "name": { "type": "string" },
-        "user": { "type": "string" },
-        "passHash": { "type": "string" }
+        "studentName": { "type": "string" },
+        "passHash": { "type": "string" },
+        "schoolId": { "type": "string" },
+        "classId": { "type": "string" },
+        "teacherUid": { "type": "string" },
+        "xp": { "type": "number" },
+        "level": { "type": "number" }
       },
-      "required": ["id", "name", "user", "passHash"]
-    },
-    "Department": {
-      "title": "Department",
-      "description": "Department information within a school",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "memberIds": { "type": "array", "items": { "type": "string" } }
-      },
-      "required": ["id", "name"]
+      "required": ["id", "studentName", "passHash"]
     }
   },
   "firestore": {
     "/users/{userId}": {
-      "schema": "User",
-      "description": "User profiles and roles"
+      "schema": "UserProfile",
+      "description": "Hồ sơ người dùng"
     },
-    "/schools/{schoolId}": {
-      "schema": "School",
-      "description": "School details"
-    },
-    "/schools/{schoolId}/classes/{classId}": {
-      "schema": "Class",
-      "description": "Classes within a school"
-    },
-    "/schools/{schoolId}/classes/{classId}/students/{studentId}": {
+    "/edupro_students/{studentId}": {
       "schema": "Student",
-      "description": "Students within a class"
-    },
-    "/schools/{schoolId}/departments/{departmentId}": {
-      "schema": "Department",
-      "description": "Departments within a school"
+      "description": "Danh mục học sinh tra cứu toàn cục"
     }
   }
 }
