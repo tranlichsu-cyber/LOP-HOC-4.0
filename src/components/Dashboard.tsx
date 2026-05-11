@@ -1,6 +1,6 @@
 import React from 'react';
-import { Users, BookOpen, Gamepad2, ShieldCheck, Sparkles, Loader2, BrainCircuit, Trophy, Zap, Camera } from 'lucide-react';
-import { motion, Variants, AnimatePresence } from 'motion/react';
+import { Users, BookOpen, Gamepad2, ShieldCheck, Sparkles, Loader2, Trophy, Zap, Camera } from 'lucide-react';
+import { motion, Variants } from 'motion/react';
 import { 
   BarChart, 
   Bar, 
@@ -18,8 +18,6 @@ import {
 } from 'recharts';
 import { Student, Homework } from '../types';
 
-import { GoogleGenAI } from "@google/genai";
-
 export default function Dashboard({ role, stats, studentsList = [], homeworkList = [], studentProfile, onUpdateStudentProfile }: { 
   role: string, 
   stats: { students: number, games: number },
@@ -28,8 +26,6 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
   studentProfile?: Student | null,
   onUpdateStudentProfile?: (updatedData: Partial<Student>) => void
 }) {
-  const [aiAdvice, setAiAdvice] = React.useState<string>('');
-  const [isGeneratingAdvice, setIsGeneratingAdvice] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,35 +40,6 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
       }
     };
     reader.readAsDataURL(file);
-  };
-
-  const generateAIAdvice = async () => {
-    setIsGeneratingAdvice(true);
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      
-      const classContext = `
-        Báo cáo tình hình lớp học:
-        - Số lượng học sinh: ${studentsList.length}
-        - Số lượng bài tập đã giao: ${homeworkList.length}
-        - Tỷ lệ hoàn thành trung bình: ${subjectData.reduce((acc, curr) => acc + curr.rate, 0) / (subjectData.length || 1)}%
-        - Môn có tỷ lệ thấp nhất: ${[...subjectData].sort((a,b) => a.rate - b.rate)[0]?.name || 'N/A'}
-      `;
-
-      const prompt = `Bạn là một chuyên gia tư vấn giáo dục. Hãy phân tích dữ liệu lớp học sau và đưa ra 3 lời khuyên ngắn gọn, thiết thực cho giáo viên để cải thiện kết quả học tập. Phản hồi bằng tiếng Việt, giọng điệu chuyên nghiệp nhưng gần gũi. 
-      Dữ liệu: ${classContext}`;
-
-      const result = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt
-      });
-      setAiAdvice(result.text || "Hệ thống không đưa ra được lời khuyên lúc này.");
-    } catch (error) {
-      console.error("AI Advice error:", error);
-      setAiAdvice("Hệ thống AI đang bận, vui lòng thử lại sau!");
-    } finally {
-      setIsGeneratingAdvice(false);
-    }
   };
   const container: Variants = {
     hidden: { opacity: 0 },
@@ -310,49 +277,18 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
             </div>
           </motion.div>
 
-          <motion.div variants={item} className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
-             <div className="relative z-10 flex flex-col items-center text-center">
-                <h3 className="text-2xl font-black mb-4 flex items-center gap-2 text-slate-800 dark:text-white">
-                   <Sparkles className="w-8 h-8 text-blue-500" /> Trợ Lý AI: Tư Vấn Lớp Học
-                </h3>
-                <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium max-w-md">
-                   Sử dụng trí tuệ nhân tạo để phân tích dữ liệu và nhận các lời khuyên chuyên sâu cho lớp học của bạn.
-                </p>
-                
-                <AnimatePresence mode="wait">
-                   {aiAdvice ? (
-                     <motion.div 
-                       initial={{ opacity: 0, y: 10 }}
-                       animate={{ opacity: 1, y: 0 }}
-                       className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-6 text-left w-full border border-slate-200 dark:border-slate-700 mb-6"
-                     >
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">{aiAdvice}</p>
-                     </motion.div>
-                   ) : null}
-                </AnimatePresence>
-
-                <button 
-                  onClick={generateAIAdvice}
-                  disabled={isGeneratingAdvice}
-                  className="px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-black hover:scale-105 transition disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-blue-500/20"
-                >
-                  {isGeneratingAdvice ? <Loader2 className="w-5 h-5 animate-spin" /> : <BrainCircuit className="w-5 h-5" />}
-                  {aiAdvice ? 'Cập nhật tư vấn' : 'Phân tích dữ liệu'}
-                </button>
-             </div>
-          </motion.div>
         </div>
       )}
 
-      <motion.div 
-        variants={item} 
-        className={`relative p-10 rounded-[2.5rem] border overflow-hidden group shadow-sm ${role === 'student' ? 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 border-white/20 shadow-xl' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}
-      >
-        {role === 'student' && <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-110 transition-transform duration-700" />}
-        {role === 'student' && <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -ml-20 -mb-20 group-hover:scale-110 transition-transform duration-700" />}
-        
-        <div className="relative z-10 flex flex-col items-center text-center">
-          {role === 'student' && (
+      {role === 'student' && (
+        <motion.div 
+          variants={item} 
+          className="relative p-10 rounded-[2.5rem] border overflow-hidden group shadow-sm bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 border-white/20 shadow-xl"
+        >
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-110 transition-transform duration-700" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -ml-20 -mb-20 group-hover:scale-110 transition-transform duration-700" />
+          
+          <div className="relative z-10 flex flex-col items-center text-center">
             <div className="relative mb-6 group">
               <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-[2rem] overflow-hidden border-4 border-white/50 shadow-2xl bg-white/20 backdrop-blur-xl group-hover:scale-105 transition-transform duration-500">
                 <img 
@@ -376,22 +312,17 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
                 className="hidden" 
               />
             </div>
-          )}
-          {!studentProfile?.avatar && role === 'student' && (
-            <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-[1.5rem] flex items-center justify-center mb-6 border border-white/30 shadow-inner group-hover:rotate-12 transition-transform">
-              <Sparkles className="text-yellow-300 w-10 h-10 drop-shadow-lg" />
-            </div>
-          )}
-          <h3 className={`text-4xl font-black tracking-tight mb-4 ${role === 'student' ? 'text-white' : 'text-slate-800 dark:text-white'}`}>
-            {role === 'student' ? `Chào ${studentProfile?.name || 'em'} yêu! 👋` : 
-             'Bảng điều khiển'}
-          </h3>
-          <p className={`max-w-lg leading-relaxed font-bold text-lg ${role === 'student' ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'}`}>
-            {role === 'admin' ? 'Hệ thống đang hoạt động ổn định. Bạn có toàn quyền quản trị và điều hành các hoạt động của trường.' : 
-             role === 'teacher' ? 'Dữ liệu của bạn được đồng bộ tự động. Hãy bắt đầu tạo những bài giảng thú vị cho học sinh ngay hôm nay.' : 
-             'Hôm nay em muốn nhận bao nhiêu Cúp nào? Hãy cùng nhau vượt qua các thử thách và trở thành Nhà Thông Thái nhé! 🏆'}
-          </p>
-          {role === 'student' && (
+            {!studentProfile?.avatar && (
+              <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-[1.5rem] flex items-center justify-center mb-6 border border-white/30 shadow-inner group-hover:rotate-12 transition-transform">
+                <Sparkles className="text-yellow-300 w-10 h-10 drop-shadow-lg" />
+              </div>
+            )}
+            <h3 className="text-4xl font-black tracking-tight mb-4 text-white">
+              Chào {studentProfile?.name || 'em'} yêu! 👋
+            </h3>
+            <p className="max-w-lg leading-relaxed font-bold text-lg text-white/80">
+              Hôm nay em muốn nhận bao nhiêu Cúp nào? Hãy cùng nhau vượt qua các thử thách và trở thành Nhà Thông Thái nhé! 🏆
+            </p>
             <div className="mt-8 flex gap-4">
                <div className="bg-white/20 backdrop-blur-md px-6 py-2 rounded-2xl border border-white/30 text-white font-black text-sm">
                   🚀 Level {studentProfile?.level || 1}
@@ -400,9 +331,9 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
                   🔥 {studentProfile?.streak || 0} Ngày
                </div>
             </div>
-          )}
-        </div>
-      </motion.div>
+          </div>
+        </motion.div>
+      )}
     </motion.div>
   );
 }

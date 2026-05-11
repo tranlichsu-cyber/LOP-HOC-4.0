@@ -287,23 +287,23 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex gap-4 mb-6 border-b border-slate-200 dark:border-slate-700 pb-px shrink-0">
+      <div className="flex bg-slate-100 dark:bg-slate-900/50 p-1.5 rounded-[1.5rem] w-fit mb-8 shrink-0 border border-slate-200 dark:border-slate-800">
         <button 
           onClick={() => setActiveTab('live')} 
-          className={`px-6 py-3 font-bold text-sm border-b-4 transition-colors font-kids uppercase tracking-wider flex items-center gap-2 ${activeTab === 'live' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500'}`}
+          className={`px-8 py-3 rounded-2xl font-black text-xs transition-all font-kids uppercase tracking-widest flex items-center gap-2 ${activeTab === 'live' ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-lg shadow-indigo-100 dark:shadow-none ring-1 ring-slate-200 dark:ring-slate-700' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-500'}`}
         >
           Lớp đang chơi
-          <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">LIVE</span>
+          <span className="bg-red-500 text-white text-[9px] px-2 py-0.5 rounded-full animate-pulse shadow-sm shadow-red-500/30">LIVE</span>
         </button>
         <button 
           onClick={() => setActiveTab('offline')} 
-          className={`px-6 py-3 font-bold text-sm border-b-4 transition-colors font-kids uppercase tracking-wider ${activeTab === 'offline' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500'}`}
+          className={`px-8 py-3 rounded-2xl font-black text-xs transition-all font-kids uppercase tracking-widest ${activeTab === 'offline' ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-lg shadow-indigo-100 dark:shadow-none ring-1 ring-slate-200 dark:ring-slate-700' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-500'}`}
         >
           Kho trò chơi
         </button>
         <button 
           onClick={() => setIsWheelOpen(true)} 
-          className={`px-6 py-3 font-bold text-sm border-b-4 transition-colors font-kids uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-700`}
+          className="px-8 py-3 rounded-2xl font-black text-xs transition-all font-kids uppercase tracking-widest text-slate-400 hover:text-slate-600 dark:hover:text-slate-500"
         >
           Vòng quay may mắn
         </button>
