@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
-import { auth } from '../firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
+import { 
+  auth, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  sendPasswordResetEmail 
+} from '../firebase';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, GraduationCap, UserCircle, KeyRound, ArrowRight, Chrome, BookOpen, BrainCircuit, Gamepad2, LineChart, ShieldCheck } from 'lucide-react';
 

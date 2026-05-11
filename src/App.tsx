@@ -23,9 +23,21 @@ import {
   EyeOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { auth, db, getDocFromServer } from './firebase';
-import { onAuthStateChanged, signOut, signInAnonymously, updatePassword } from 'firebase/auth';
-import { doc, getDoc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
+import { 
+  auth, 
+  db, 
+  getDocFromServer,
+  onAuthStateChanged, 
+  signOut, 
+  signInAnonymously, 
+  updatePassword,
+  doc, 
+  getDoc, 
+  setDoc, 
+  collection, 
+  getDocs, 
+  deleteDoc
+} from './firebase';
 import { UserRole, UserProfile, School, Class, Game, Student, Homework, Lesson, Worksheet as WorksheetType } from './types';
 import { calculateLevel, checkAwards } from './lib/gamification';
 
