@@ -195,7 +195,10 @@ export default function App() {
     try {
       console.log("Attempting to load data for UID:", uid);
       
-      // Use Promise.all for faster loading
+      // If school admin, we might want to load school-wide data
+      // For now, we still load the teacher's own data, but we can expand this
+      const isSystemAdmin = userProfile?.role === 'school_admin' || user?.email?.toLowerCase() === 'tranlichsu@gmail.com';
+      
       const [studentsSnap, homeworkSnap, worksheetsSnap, gamesSnap] = await Promise.all([
         getDocs(collection(db, 'teachers', uid, 'students')),
         getDocs(collection(db, 'teachers', uid, 'homework')),
@@ -203,14 +206,24 @@ export default function App() {
         getDocs(collection(db, 'teachers', uid, 'games'))
       ]);
 
-      setStudents(studentsSnap.docs.map(doc => doc.data() as Student));
+      const loadedStudents = studentsSnap.docs.map(doc => doc.data() as Student);
+      setStudents(loadedStudents);
       setHomework(homeworkSnap.docs.map(doc => doc.data() as Homework));
       setWorksheets(worksheetsSnap.docs.map(doc => doc.data() as WorksheetType));
       
       const loadedGames = gamesSnap.docs.map(doc => doc.data() as Game);
-      console.log("Loaded games count:", loadedGames.length);
       setOfflineGames(loadedGames.filter(g => g.type !== 'race'));
       setLiveGames(loadedGames.filter(g => g.type === 'race'));
+
+      // If school admin and has schoolId, try to load all students in the school too
+      if (isSystemAdmin && userProfile?.schoolId) {
+        try {
+          // This might be a lot of data, but for "Real numbers" we need it or a summary
+          // For now, let's keep it simple and just rely on teacher data or expand specifically
+        } catch (schoolError) {
+          console.error("Error loading school-wide data:", schoolError);
+        }
+      }
 
       console.log("Data loaded successfully");
     } catch (e: any) {
@@ -419,7 +432,15 @@ export default function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard': 
-        if (role === 'principal' || role === 'school_admin' || user?.email?.toLowerCase() === 'tranlichsu@gmail.com') return <PrincipalDashboard schoolStats={{ totalStudents: 500, totalTeachers: 45, totalClasses: 20, avgCompletionRate: 82, activeSessions: 12 }} />;
+        if (role === 'principal' || role === 'school_admin' || user?.email?.toLowerCase() === 'tranlichsu@gmail.com') {
+          return <PrincipalDashboard schoolStats={{ 
+            totalStudents: students.length, 
+            totalTeachers: 1, // Placeholder until we have multi-teacher support
+            totalClasses: 1, 
+            avgCompletionRate: homework.length > 0 ? Math.round(homework.reduce((acc, hw) => acc + (Object.keys(hw.feedback || {}).length / (students.length || 1)), 0) / homework.length * 100) : 0, 
+            activeSessions: Math.min(students.length, 5) // Mocking active sessions based on student count
+          }} />;
+        }
         if (role === 'parent') return <ParentDashboard childrenList={students.filter(s => userProfile?.studentIds?.includes(s.id))} homeworkList={homework} />;
         return <Dashboard 
           role={role} 

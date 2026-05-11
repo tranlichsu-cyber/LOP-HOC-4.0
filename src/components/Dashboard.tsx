@@ -68,22 +68,23 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
   const getSubjectData = () => {
     if (homeworkList.length === 0) {
       return [
-        { name: 'Toán', rate: 85 },
-        { name: 'Tiếng Việt', rate: 72 },
-        { name: 'Tiếng Anh', rate: 90 },
-        { name: 'Tự nhiên & XH', rate: 65 },
+        { name: 'Toán', rate: 0 },
+        { name: 'Tiếng Việt', rate: 0 },
+        { name: 'Tiếng Anh', rate: 0 },
+        { name: 'Tự nhiên & XH', rate: 0 },
       ];
     }
 
     const subjectsMap: Record<string, { total: number, submitted: number }> = {};
-    const studentCount = studentsList.length || 1;
+    const totalStudentsInClass = studentsList.length || 1;
 
     homeworkList.forEach(hw => {
       const subj = hw.subject || 'Khác';
       if (!subjectsMap[subj]) subjectsMap[subj] = { total: 0, submitted: 0 };
       
-      subjectsMap[subj].total += studentCount;
-      // We assume feedback presence means submission for this simple dashboard
+      // For each homework, the total potential submissions is student count
+      subjectsMap[subj].total += totalStudentsInClass;
+      // feedback object keys represent student IDs who have been graded/submitted
       subjectsMap[subj].submitted += Object.keys(hw.feedback || {}).length;
     });
 
@@ -94,25 +95,63 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
   };
 
   const getWeeklyData = () => {
-    // Mocking weekly data as we don't have historical progression yet
-    return [
-      { week: 'Tuần 1', progress: 65 },
-      { week: 'Tuần 2', progress: 78 },
-      { week: 'Tuần 3', progress: 82 },
-      { week: 'Tuần 4', progress: 95 },
-    ];
+    // Group homework by week or date
+    const weeklyProgress: Record<string, { total: number, submitted: number }> = {};
+    const totalStudents = studentsList.length || 1;
+
+    homeworkList.forEach(hw => {
+      // In a real app, we'd use hw.createdAt. Here we just group all existing ones as "Hiện tại"
+      // or try to find a week indicator. For now let's just show completion of existing homeworks.
+      const label = "Tổng kết";
+      if (!weeklyProgress[label]) weeklyProgress[label] = { total: 0, submitted: 0 };
+      
+      weeklyProgress[label].total += totalStudents;
+      weeklyProgress[label].submitted += Object.keys(hw.feedback || {}).length;
+    });
+
+    if (Object.keys(weeklyProgress).length === 0) {
+      return [{ week: 'Tuần này', progress: 0 }];
+    }
+
+    return Object.entries(weeklyProgress).map(([week, data]) => ({
+      week,
+      progress: Math.round((data.submitted / data.total) * 100) || 0
+    }));
+  };
+
+  const getPieData = () => {
+    if (studentsList.length === 0) {
+      return [
+        { name: 'Trống', value: 100 }
+      ];
+    }
+
+    const distribution = {
+      'Giỏi (90-100)': 0,
+      'Khá (70-89)': 0,
+      'TB (50-69)': 0,
+      'Yếu (<50)': 0
+    };
+
+    studentsList.forEach(student => {
+      const avgXP = (student.xp || 0) / (student.level || 1);
+      // This is a heuristic since we don't have grades yet
+      if (avgXP > 80) distribution['Giỏi (90-100)']++;
+      else if (avgXP > 40) distribution['Khá (70-89)']++;
+      else if (avgXP > 10) distribution['TB (50-69)']++;
+      else distribution['Yếu (<50)']++;
+    });
+
+    return Object.entries(distribution)
+      .filter(([_, value]) => value > 0)
+      .map(([name, value]) => ({ name, value }));
   };
 
   const subjectData = getSubjectData();
   const weeklyData = getWeeklyData();
+  const pieData = getPieData();
 
   const PIE_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'];
-  const pieData = [
-    { name: 'Giỏi', value: 35 },
-    { name: 'Khá', value: 45 },
-    { name: 'Trung bình', value: 15 },
-    { name: 'Yếu', value: 5 },
-  ];
 
   return (
     <motion.div 
