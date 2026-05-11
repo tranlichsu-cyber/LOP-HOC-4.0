@@ -20,7 +20,12 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<UserProfile | null>(null);
   const [isClassModalOpen, setIsClassModalOpen] = useState(false);
+  const [editingClass, setEditingClass] = useState<Class | null>(null);
   const [isDepartmentModalOpen, setIsDepartmentModalOpen] = useState(false);
+  const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
+
+  // Error Messages
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   // New Data
   const [newStaff, setNewStaff] = useState({ email: '', displayName: '', role: 'teacher' as any });
@@ -56,22 +61,39 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
   };
 
   const handleAddDepartment = async () => {
-    if (!newDepartment.name || !userProfile.schoolId) return;
-    const deptId = 'dept_' + Date.now();
-    const deptData: Department = {
-      id: deptId,
-      name: newDepartment.name,
-      schoolId: userProfile.schoolId,
-      memberIds: []
-    };
+    setErrors({});
+    if (!newDepartment.name.trim()) {
+      setErrors({ deptName: "Vui lòng nhập tên tổ chuyên môn" });
+      return;
+    }
+    if (!userProfile.schoolId) return;
 
     try {
+      if (editingDepartment) {
+        const updatedDept = { ...editingDepartment, name: newDepartment.name.trim() };
+        await setDoc(doc(db, 'schools', userProfile.schoolId, 'departments', editingDepartment.id), updatedDept, { merge: true });
+        setDepartments(departments.map(d => d.id === editingDepartment.id ? updatedDept : d));
+        setIsDepartmentModalOpen(false);
+        setEditingDepartment(null);
+        setNewDepartment({ name: '' });
+        return;
+      }
+
+      const deptId = 'dept_' + Date.now();
+      const deptData: Department = {
+        id: deptId,
+        name: newDepartment.name.trim(),
+        schoolId: userProfile.schoolId,
+        memberIds: []
+      };
+
       await setDoc(doc(db, 'schools', userProfile.schoolId, 'departments', deptId), deptData);
       setDepartments([...departments, deptData]);
       setIsDepartmentModalOpen(false);
       setNewDepartment({ name: '' });
     } catch (error) {
-      console.error("Error adding department:", error);
+      console.error("Error saving department:", error);
+      alert("Lỗi khi lưu tổ chuyên môn!");
     }
   };
 
@@ -98,7 +120,25 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
   };
 
   const handleAddStaff = async () => {
-    if (!newStaff.email || !userProfile.schoolId) return;
+    setErrors({});
+    const newErrors: { [key: string]: string } = {};
+    
+    if (!newStaff.displayName.trim()) {
+      newErrors.staffName = "Vui lòng nhập họ và tên";
+    }
+    
+    if (!newStaff.email.trim()) {
+      if (!editingStaff) newErrors.staffEmail = "Vui lòng nhập email";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newStaff.email)) {
+      if (!editingStaff) newErrors.staffEmail = "Định dạng email không hợp lệ";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    if (!userProfile.schoolId) return;
     
     if (editingStaff) {
       // Logic for updating existing staff
@@ -145,23 +185,55 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
   };
 
   const handleAddClass = async () => {
-    if (!newClass.name || !userProfile.schoolId) return;
-    const classId = Date.now().toString();
-    const classData: Class = {
-      id: classId,
-      name: newClass.name,
-      grade: newClass.grade,
-      teacherUid: newClass.teacherUid,
-      schoolId: userProfile.schoolId
-    };
-    
+    setErrors({});
+    const newErrors: { [key: string]: string } = {};
+
+    if (!newClass.name.trim()) {
+      newErrors.className = "Vui lòng nhập tên lớp (VD: 1A)";
+    }
+    if (!newClass.teacherUid) {
+      newErrors.classTeacher = "Vui lòng chọn giáo viên chủ nhiệm";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    if (!userProfile.schoolId) return;
+
     try {
+      if (editingClass) {
+        const updatedClass = { 
+          ...editingClass, 
+          name: newClass.name.trim(),
+          grade: newClass.grade,
+          teacherUid: newClass.teacherUid
+        };
+        await setDoc(doc(db, 'schools', userProfile.schoolId, 'classes', editingClass.id), updatedClass, { merge: true });
+        setClasses(classes.map(c => c.id === editingClass.id ? updatedClass : c));
+        setIsClassModalOpen(false);
+        setEditingClass(null);
+        setNewClass({ name: '', grade: 'Lớp 1', teacherUid: '' });
+        return;
+      }
+
+      const classId = Date.now().toString();
+      const classData: Class = {
+        id: classId,
+        name: newClass.name.trim(),
+        grade: newClass.grade,
+        teacherUid: newClass.teacherUid,
+        schoolId: userProfile.schoolId
+      };
+      
       await setDoc(doc(db, 'schools', userProfile.schoolId, 'classes', classId), classData);
       setClasses([...classes, classData]);
       setIsClassModalOpen(false);
       setNewClass({ name: '', grade: 'Lớp 1', teacherUid: '' });
     } catch (error) {
-      console.error("Error adding class:", error);
+      console.error("Error saving class:", error);
+      alert("Lỗi khi lưu lớp học!");
     }
   };
 
@@ -538,12 +610,28 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
                       <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl text-indigo-600">
                         <BookOpen className="w-6 h-6" />
                       </div>
-                      <button 
-                        onClick={() => handleDeleteClass(cls.id)}
-                        className="text-slate-400 hover:text-red-500 transition"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex gap-1">
+                        <button 
+                          onClick={() => {
+                            setEditingClass(cls);
+                            setNewClass({
+                              name: cls.name,
+                              grade: cls.grade,
+                              teacherUid: cls.teacherUid
+                            });
+                            setIsClassModalOpen(true);
+                          }}
+                          className="p-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg text-slate-400 hover:text-indigo-600 transition"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteClass(cls.id)}
+                          className="p-2 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg text-slate-400 hover:text-red-500 transition"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                     <h3 className="font-bold text-lg dark:text-white mb-1">{cls.name}</h3>
                     <p className="text-sm text-slate-500 mb-4">{cls.grade}</p>
@@ -578,12 +666,24 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
                       <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl text-indigo-600">
                         <Users className="w-6 h-6" />
                       </div>
-                      <button 
-                        onClick={() => handleDeleteDepartment(dept.id)}
-                        className="text-slate-400 hover:text-red-500 transition"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex gap-1">
+                        <button 
+                          onClick={() => {
+                            setEditingDepartment(dept);
+                            setNewDepartment({ name: dept.name });
+                            setIsDepartmentModalOpen(true);
+                          }}
+                          className="p-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg text-slate-400 hover:text-indigo-600 transition"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteDepartment(dept.id)}
+                          className="p-2 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg text-slate-400 hover:text-red-500 transition"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                     <h3 className="font-bold text-lg dark:text-white mb-1">{dept.name}</h3>
                     <p className="text-sm text-slate-500 mb-4">{dept.memberIds.length} thành viên</p>
@@ -670,23 +770,47 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
               <div>
                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Họ và tên</label>
                 <input 
-                  type="text" 
-                  value={newStaff.displayName}
-                  onChange={e => setNewStaff({...newStaff, displayName: e.target.value})}
-                  className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-white transition-all shadow-inner"
-                  placeholder="VD: Nguyễn Văn A"
+                   type="text" 
+                   value={newStaff.displayName}
+                   onChange={e => {
+                     setNewStaff({...newStaff, displayName: e.target.value});
+                     if (errors.staffName) setErrors({...errors, staffName: ''});
+                   }}
+                   className={`w-full p-4 bg-slate-50 dark:bg-slate-900 border ${errors.staffName ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-200 dark:border-slate-700'} rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-white transition-all shadow-inner`}
+                   placeholder="VD: Nguyễn Văn A"
                 />
+                {errors.staffName && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs text-red-500 mt-1 font-medium"
+                  >
+                    {errors.staffName}
+                  </motion.p>
+                )}
               </div>
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Email (Không thể đổi)</label>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Email {editingStaff ? '(Không thể đổi)' : ''}</label>
                 <input 
                   type="email" 
                   value={newStaff.email}
                   disabled={!!editingStaff}
-                  onChange={e => setNewStaff({...newStaff, email: e.target.value})}
-                  className={`w-full p-4 border rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-inner ${editingStaff ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 border-slate-200 cursor-not-allowed' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 dark:text-white'}`}
-                  placeholder="VD: gv_a@truong.edu.vn"
+                  onChange={e => {
+                    setNewStaff({...newStaff, email: e.target.value});
+                    if (errors.staffEmail) setErrors({...errors, staffEmail: ''});
+                  }}
+                  className={`w-full p-4 border rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-inner ${editingStaff ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 border-slate-200 cursor-not-allowed' : (errors.staffEmail ? 'bg-slate-50 dark:bg-slate-900 border-red-500 ring-2 ring-red-500/10' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 dark:text-white')}`}
+                  placeholder="VD: gv_nguyenvana@truong.edu.vn"
                 />
+                {errors.staffEmail && !editingStaff && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs text-red-500 mt-1 font-medium"
+                  >
+                    {errors.staffEmail}
+                  </motion.p>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Vai trò</label>
@@ -728,8 +852,20 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-2xl w-full max-w-md border border-slate-200 dark:border-slate-700">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-black text-slate-800 dark:text-white">Thêm Lớp học mới</h3>
-              <button onClick={() => setIsClassModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-full"><X className="w-6 h-6" /></button>
+              <h3 className="text-2xl font-black text-slate-800 dark:text-white">
+                {editingClass ? 'Sửa thông tin Lớp học' : 'Thêm Lớp học mới'}
+              </h3>
+              <button 
+                onClick={() => {
+                  setIsClassModalOpen(false);
+                  setEditingClass(null);
+                  setNewClass({ name: '', grade: 'Lớp 1', teacherUid: '' });
+                  setErrors({});
+                }} 
+                className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-full"
+              >
+                <X className="w-6 h-6" />
+              </button>
             </div>
             <div className="space-y-6">
               <div>
@@ -737,17 +873,29 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
                 <input 
                   type="text" 
                   value={newClass.name}
-                  onChange={e => setNewClass({...newClass, name: e.target.value})}
-                  className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-white transition-all shadow-inner"
-                  placeholder="VD: 1A, 2B..."
+                  onChange={e => {
+                    setNewClass({...newClass, name: e.target.value});
+                    if (errors.className) setErrors({...errors, className: ''});
+                  }}
+                  className={`w-full p-4 bg-slate-50 dark:bg-slate-900 border ${errors.className ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-200 dark:border-slate-700'} rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-white transition-all shadow-inner`}
+                  placeholder="VD: Lớp 1A, Diamond-01..."
                 />
+                {errors.className && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs text-red-500 mt-1 font-medium"
+                  >
+                    {errors.className}
+                  </motion.p>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Khối</label>
                 <select 
                   value={newClass.grade}
                   onChange={e => setNewClass({...newClass, grade: e.target.value})}
-                  className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none appearance-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-white transition-all shadow-inner"
+                  className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none appearance-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-white transition-all shadow-inner cursor-pointer"
                 >
                   <option>Lớp 1</option>
                   <option>Lớp 2</option>
@@ -760,18 +908,42 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Giáo viên Chủ nhiệm</label>
                 <select 
                   value={newClass.teacherUid}
-                  onChange={e => setNewClass({...newClass, teacherUid: e.target.value})}
-                  className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none appearance-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-white transition-all shadow-inner"
+                  onChange={e => {
+                    setNewClass({...newClass, teacherUid: e.target.value});
+                    if (errors.classTeacher) setErrors({...errors, classTeacher: ''});
+                  }}
+                  className={`w-full p-4 bg-slate-50 dark:bg-slate-900 border ${errors.classTeacher ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-200 dark:border-slate-700'} rounded-2xl outline-none appearance-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-white transition-all shadow-inner cursor-pointer`}
                 >
-                  <option value="">-- Chọn giáo viên --</option>
+                  <option value="">-- Chọn giáo viên phụ trách lớp --</option>
                   {staff.filter(s => s.role === 'homeroom_teacher' || s.role === 'teacher').map(t => (
                     <option key={t.uid} value={t.uid}>{t.displayName}</option>
                   ))}
                 </select>
+                {errors.classTeacher && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs text-red-500 mt-1 font-medium"
+                  >
+                    {errors.classTeacher}
+                  </motion.p>
+                )}
               </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={() => setIsClassModalOpen(false)} className="flex-1 py-4 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-white font-black rounded-2xl transition hover:bg-slate-200 active:scale-95">Hủy</button>
-                <button onClick={handleAddClass} className="flex-[2] py-4 bg-emerald-600 text-white font-black rounded-2xl transition hover:bg-emerald-700 shadow-lg shadow-emerald-500/30 active:scale-95">Tạo lớp ngay</button>
+                <button 
+                  onClick={() => {
+                    setIsClassModalOpen(false);
+                    setEditingClass(null);
+                    setErrors({});
+                    setNewClass({ name: '', grade: 'Lớp 1', teacherUid: '' });
+                  }} 
+                  className="flex-1 py-4 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-white font-black rounded-2xl transition hover:bg-slate-200 active:scale-95"
+                >
+                  Hủy
+                </button>
+                <button onClick={handleAddClass} className="flex-[2] py-4 bg-emerald-600 text-white font-black rounded-2xl transition hover:bg-emerald-700 shadow-lg shadow-emerald-500/30 active:scale-95">
+                  {editingClass ? 'Lưu thay đổi' : 'Tạo lớp ngay'}
+                </button>
               </div>
             </div>
           </div>
@@ -782,8 +954,20 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-2xl w-full max-w-md border border-slate-200 dark:border-slate-700">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-black text-slate-800 dark:text-white">Thêm Tổ chuyên môn</h3>
-              <button onClick={() => setIsDepartmentModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-full"><X className="w-6 h-6" /></button>
+              <h3 className="text-2xl font-black text-slate-800 dark:text-white">
+                {editingDepartment ? 'Sửa thông tin Tổ chuyên môn' : 'Thêm Tổ chuyên môn'}
+              </h3>
+              <button 
+                onClick={() => {
+                  setIsDepartmentModalOpen(false);
+                  setEditingDepartment(null);
+                  setErrors({});
+                  setNewDepartment({ name: '' });
+                }} 
+                className="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-full"
+              >
+                <X className="w-6 h-6" />
+              </button>
             </div>
             <div className="space-y-6">
               <div>
@@ -791,14 +975,38 @@ export default function SchoolAdmin({ userProfile }: { userProfile: UserProfile 
                 <input 
                   type="text" 
                   value={newDepartment.name}
-                  onChange={e => setNewDepartment({...newDepartment, name: e.target.value})}
-                  className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-white transition-all shadow-inner"
-                  placeholder="VD: Tổ Tự nhiên, Tổ Xã hội..."
+                  onChange={e => {
+                    setNewDepartment({...newDepartment, name: e.target.value});
+                    if (errors.deptName) setErrors({...errors, deptName: ''});
+                  }}
+                  className={`w-full p-4 bg-slate-50 dark:bg-slate-900 border ${errors.deptName ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-200 dark:border-slate-700'} rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-white transition-all shadow-inner`}
+                  placeholder="VD: Tổ Tự nhiên, Tổ Xã hội, Tổ Anh văn..."
                 />
+                {errors.deptName && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs text-red-500 mt-1 font-medium"
+                  >
+                    {errors.deptName}
+                  </motion.p>
+                )}
               </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={() => setIsDepartmentModalOpen(false)} className="flex-1 py-4 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-white font-black rounded-2xl transition hover:bg-slate-200 active:scale-95">Hủy</button>
-                <button onClick={handleAddDepartment} className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-2xl transition hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 active:scale-95">Xác nhận tạo</button>
+                <button 
+                  onClick={() => {
+                    setIsDepartmentModalOpen(false);
+                    setEditingDepartment(null);
+                    setErrors({});
+                    setNewDepartment({ name: '' });
+                  }} 
+                  className="flex-1 py-4 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-white font-black rounded-2xl transition hover:bg-slate-200 active:scale-95"
+                >
+                  Hủy
+                </button>
+                <button onClick={handleAddDepartment} className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-2xl transition hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 active:scale-95">
+                  {editingDepartment ? 'Lưu thay đổi' : 'Xác nhận tạo'}
+                </button>
               </div>
             </div>
           </div>

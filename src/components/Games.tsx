@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, Rocket, Swords, Play, X, Star, Brain, Sparkles, Loader2, Gamepad2, Accessibility, Puzzle, Dices, Zap } from 'lucide-react';
+import { Plus, Edit2, Trash2, Rocket, Swords, Play, X, Star, Brain, Sparkles, Loader2, Gamepad2, Accessibility, Puzzle, Dices, Zap, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Game } from '../types';
 import { GoogleGenAI } from '@google/genai';
@@ -853,40 +853,81 @@ export default function Games({ offlineGames, liveGames, setOfflineGames, setLiv
 }
 
 function GameCard({ game, onPlay, onDelete, onEdit }: any) {
+  const getSubjectColor = (subject: string) => {
+    switch (subject) {
+      case 'Toán': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';
+      case 'Tiếng Việt': return 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';
+      case 'Tiếng Anh': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300';
+      case 'Tự nhiên và Xã hội': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300';
+      default: return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+    }
+  };
+
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-3xl border-4 border-indigo-100 dark:border-slate-700 shadow-xl flex flex-col h-[260px] transform hover:-translate-y-2 transition cursor-pointer relative overflow-hidden group">
-      <div className="absolute top-2 right-2 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+    <motion.div 
+      whileHover={{ y: -8 }}
+      className="bg-white dark:bg-slate-800 rounded-[2.5rem] border-4 border-indigo-50 dark:border-slate-700 shadow-xl flex flex-col h-[320px] transition-all cursor-pointer relative overflow-hidden group"
+    >
+      {/* Actions */}
+      <div className="absolute top-4 right-4 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
         <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit();
-          }}
-          className="bg-white p-2 rounded-xl text-blue-600 shadow-sm border"
+          onClick={(e) => { e.stopPropagation(); onEdit(); }}
+          className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md p-2.5 rounded-2xl text-blue-600 shadow-lg border border-blue-100 dark:border-blue-900 hover:scale-110 active:scale-95 transition"
         >
           <Edit2 className="w-4 h-4" />
         </button>
         <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }} 
-          className="bg-white p-2 rounded-xl text-red-600 shadow-sm border"
+          onClick={(e) => { e.stopPropagation(); onDelete(); }} 
+          className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md p-2.5 rounded-2xl text-red-600 shadow-lg border border-red-100 dark:border-red-900 hover:scale-110 active:scale-95 transition"
         >
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
-      <div onClick={onPlay} className={`h-28 p-4 relative overflow-hidden ${game.type === 'race' ? 'bg-gradient-to-br from-orange-400 to-red-500' : 'bg-gradient-to-br from-indigo-400 to-purple-500'}`}>
-        {game.type === 'race' ? <Swords className="absolute -top-4 -right-4 w-24 h-24 text-white/30" /> : <Rocket className="absolute -top-4 -right-4 w-24 h-24 text-white/30" />}
+
+      {/* Header Image/Icon */}
+      <div onClick={onPlay} className={`h-32 p-6 relative overflow-hidden flex items-center justify-center ${
+        game.type === 'race' ? 'bg-gradient-to-br from-orange-400 via-orange-500 to-red-500' : 
+        game.type === 'millionaire' ? 'bg-gradient-to-br from-indigo-500 via-purple-600 to-indigo-700' :
+        'bg-gradient-to-br from-indigo-400 to-indigo-600'
+      }`}>
+        <div className="absolute inset-0 bg-black/5 mix-blend-overlay" />
+        {game.type === 'race' ? (
+          <Swords className="w-16 h-16 text-white opacity-80 z-10 drop-shadow-xl" />
+        ) : (
+          <Gamepad2 className="w-16 h-16 text-white opacity-80 z-10 drop-shadow-xl" />
+        )}
+        <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-tighter px-2 py-1 rounded-lg border border-white/30 z-10">
+          {game.type?.toUpperCase() || 'OFFLINE'}
+        </div>
       </div>
-      <div onClick={onPlay} className="p-5 flex-1 flex flex-col bg-indigo-50/50 dark:bg-slate-900/50">
-        <h3 className="font-black text-indigo-900 dark:text-white text-xl">{game.title}</h3>
-        <p className="text-xs text-indigo-600 dark:text-indigo-400 font-bold">{game.questionsList?.length || 0} câu hỏi</p>
-        <div className="mt-auto">
-          <button className="w-full bg-slate-800 text-white font-bold py-2 rounded-xl flex justify-center gap-2 items-center">
-            <Play className="w-4 h-4 fill-current" /> Chơi ngay
+
+      {/* Content */}
+      <div onClick={onPlay} className="p-6 flex-1 flex flex-col justify-between bg-indigo-50/10 dark:bg-slate-900/50">
+        <div>
+          <div className="flex flex-wrap gap-2 mb-3">
+            <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg ${getSubjectColor(game.subject)}`}>
+              {game.subject || 'Chưa phân loại'}
+            </span>
+            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 bg-indigo-50 text-indigo-500 dark:bg-indigo-900/30 dark:text-indigo-400 rounded-lg">
+              {game.grade || 'Mọi khối'}
+            </span>
+          </div>
+          <h3 className="font-black text-slate-800 dark:text-white text-lg line-clamp-2 leading-tight group-hover:text-indigo-600 transition-colors">
+            {game.title}
+          </h3>
+          <div className="flex items-center gap-1.5 mt-2 text-slate-400 dark:text-slate-500">
+            <BookOpen className="w-3.5 h-3.5" />
+            <span className="text-xs font-bold">{game.questionsList?.length || 0} câu hỏi</span>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <button className="w-full bg-slate-900 dark:bg-indigo-600 text-white font-black py-3 rounded-2xl flex justify-center gap-2 items-center transition-all group-hover:bg-indigo-600 group-hover:scale-[1.02] group-hover:shadow-xl group-hover:shadow-indigo-500/30 active:scale-95">
+            <Play className="w-4 h-4 fill-current" /> 
+            <span className="uppercase tracking-widest text-xs">Chơi ngay</span>
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

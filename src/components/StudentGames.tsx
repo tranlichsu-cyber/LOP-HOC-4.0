@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Gamepad2, Swords, Joystick, Play, Loader2, X, Trophy, Star, Zap, Flame, Award } from 'lucide-react';
+import { Gamepad2, Swords, Joystick, Play, Loader2, X, Trophy, Star, Zap, Flame, Award, BookOpen } from 'lucide-react';
 import { Game, GameSession } from '../types';
 import { getProgressToNextLevel } from '../lib/gamification';
 import MillionaireGame from './games/MillionaireGame';
@@ -262,23 +262,38 @@ export default function StudentGames({ offlineGames, studentProfile, onCompleteG
                 key={game.id} 
                 whileHover={{ y: -8 }}
                 onClick={() => setPlayingGame(game)}
-                className="bg-white rounded-[2.5rem] border-4 border-indigo-50 shadow-xl flex flex-col h-[220px] cursor-pointer relative overflow-hidden group transition-all"
+                className="bg-white rounded-[2.5rem] border-4 border-indigo-50 shadow-xl flex flex-col h-[300px] cursor-pointer relative overflow-hidden group transition-all"
               >
-                <div className="h-24 bg-gradient-to-br from-indigo-400 via-purple-500 to-indigo-500 p-5 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
-                  <Joystick className="absolute -top-4 -right-4 w-24 h-24 text-white/30 group-hover:rotate-12 transition-transform duration-500" />
-                  {game.subject && (
-                    <span className="absolute top-3 left-3 bg-white/20 backdrop-blur-md text-white text-[10px] sm:text-xs font-black px-3 py-1 rounded-xl border border-white/30 uppercase tracking-widest">
-                      {game.subject}
-                    </span>
-                  )}
+                <div className={`h-28 relative overflow-hidden flex items-center justify-center ${
+                  game.type === 'millionaire' ? 'bg-gradient-to-br from-indigo-500 via-purple-600 to-indigo-700' :
+                  'bg-gradient-to-br from-indigo-400 via-purple-500 to-indigo-500'
+                }`}>
+                  <div className="absolute inset-0 bg-black/5 mix-blend-overlay" />
+                  <Joystick className="w-14 h-14 text-white opacity-80 z-10 drop-shadow-xl group-hover:scale-110 transition-transform duration-500" />
+                  <div className="absolute top-3 left-3 bg-white/20 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-xl border border-white/30 z-10">
+                    {game.type?.toUpperCase() || 'OFFLINE'}
+                  </div>
                 </div>
-                <div className="p-6 flex-1 flex flex-col justify-between bg-indigo-50/30">
-                  <h3 className="font-black text-indigo-950 text-xl sm:text-2xl line-clamp-1">{game.title}</h3>
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-indigo-400 font-bold text-sm">Chơi cùng AI 🤖</span>
-                    <button className="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-6 py-2.5 rounded-2xl flex items-center gap-2 shadow-lg shadow-indigo-200 transition-all active:scale-95 text-sm uppercase tracking-widest">
-                      <Play className="w-4 h-4 fill-current" /> CHƠI
+                <div className="p-6 flex-1 flex flex-col justify-between bg-indigo-50/10">
+                  <div>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                       <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg">
+                          {game.subject || 'Luyện tập'}
+                       </span>
+                       <span className="text-[10px] font-black uppercase tracking-wider px-2 py-1 bg-white/50 text-slate-500 rounded-lg border border-slate-100">
+                          {game.grade || 'Mọi khối'}
+                       </span>
+                    </div>
+                    <h3 className="font-black text-indigo-950 text-xl line-clamp-1 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{game.title}</h3>
+                    <div className="flex items-center gap-1.5 mt-2 text-slate-400">
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-bold uppercase tracking-wider">{game.questionsList?.length || 0} câu hỏi rèn luyện</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <button className="w-full bg-slate-900 group-hover:bg-indigo-600 text-white font-black py-3 rounded-2xl flex justify-center gap-2 items-center transition-all group-hover:scale-[1.02] group-hover:shadow-xl group-hover:shadow-indigo-500/30 active:scale-95 text-xs uppercase tracking-widest">
+                      <Play className="w-4 h-4 fill-current" /> CHƠI NGAY
                     </button>
                   </div>
                 </div>

@@ -91,70 +91,72 @@ if (useMock) {
 }
 
 // Named exports for both real and mock environments
-export const signInWithEmailAndPassword = async (a: any, e: string, p: string) => {
-  if (useMock) return auth.signInWithEmailAndPassword(a, e, p);
+export const signInWithEmailAndPassword = async (...args: any[]) => {
+  if (useMock) return auth.signInWithEmailAndPassword(...args);
   const { signInWithEmailAndPassword: realSignIn } = await import("firebase/auth");
-  return realSignIn(a, e, p);
+  return (realSignIn as any)(...args);
 };
 
-export const createUserWithEmailAndPassword = async (a: any, e: string, p: string) => {
-  if (useMock) return auth.createUserWithEmailAndPassword(a, e, p);
+export const createUserWithEmailAndPassword = async (...args: any[]) => {
+  if (useMock) return auth.createUserWithEmailAndPassword(...args);
   const { createUserWithEmailAndPassword: realCreate } = await import("firebase/auth");
-  return realCreate(a, e, p);
+  return (realCreate as any)(...args);
 };
 
-export const signInAnonymously = async (a: any) => {
+export const signInAnonymously = async (...args: any[]) => {
   if (useMock) return { user: { uid: 'anon-' + Date.now(), isAnonymous: true } };
   const { signInAnonymously: realAnon } = await import("firebase/auth");
-  return realAnon(a);
+  return (realAnon as any)(...args);
 };
 
-export const signOut = async (a: any) => {
+export const signOut = async (...args: any[]) => {
   if (useMock) return auth.signOut();
   const { signOut: realSignOut } = await import("firebase/auth");
-  return realSignOut(a);
+  return (realSignOut as any)(...args);
 };
 
-export const onAuthStateChanged = (a: any, callback: any) => {
-  if (useMock) return auth.onAuthStateChanged(callback);
-  // Note: For real onAuthStateChanged, we'd need to handle imports carefully if we want it lazy
-  // For now, let's keep it simple.
+export const onAuthStateChanged = (...args: any[]) => {
+  if (useMock) return auth.onAuthStateChanged(args[1]);
   return () => {}; 
 };
 
 export const GoogleAuthProvider = class {
-  static setCustomParameters() {}
+  static setCustomParameters(...args: any[]) {}
+  setCustomParameters(...args: any[]) {}
 };
 
-export const signInWithPopup = async () => {
+export const signInWithPopup = async (...args: any[]) => {
   if (useMock) {
     alert("Google Login is simulated in this environment.");
     return { user: { uid: 'google-user', email: 'tranlichsu@gmail.com' } };
   }
 };
 
-export const sendPasswordResetEmail = async () => {
+export const sendPasswordResetEmail = async (...args: any[]) => {
   if (useMock) alert("Password reset link (simulated) sent!");
 };
 
-export const updatePassword = async () => {
+export const updatePassword = async (...args: any[]) => {
   if (useMock) alert("Password updated (simulated)!");
 };
 
 // Firestore named exports
-export const getDocs = async (coll: any) => {
+export const getDocs = async (...args: any[]) => {
   if (useMock) return { docs: [] };
 };
-export const getDoc = async (d: any) => {
+export const getDoc = async (...args: any[]) => {
   if (useMock) return { exists: () => false, data: () => ({}) };
 };
-export const setDoc = async (d: any, data: any) => {
+export const setDoc = async (...args: any[]) => {
   if (useMock) {
-    console.log("Mock Save:", d.path, data);
+    console.log("Mock Save:", args[0].path, args[1]);
     return;
   }
 };
-export const collection = (d: any, path: string) => ({ path });
-export const deleteDoc = async () => {};
+export const collection = (...args: any[]) => ({ path: args[args.length - 1] });
+export const deleteDoc = async (...args: any[]) => {};
+export const query = (...args: any[]) => ({});
+export const where = (...args: any[]) => ({});
+export const updateDoc = async (...args: any[]) => {};
 
 export { auth, db, storage, getDocFromServer, doc };
