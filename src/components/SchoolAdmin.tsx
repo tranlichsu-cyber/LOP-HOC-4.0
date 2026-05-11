@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, BookOpen, Settings, Plus, Trash2, Edit2, Save, X, School as SchoolIcon, UserCheck, ShieldCheck, FileSpreadsheet, Download, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { db, auth } from '../firebase';
-import { collection, getDocs, doc, setDoc, deleteDoc, query, where, writeBatch, getDoc } from 'firebase/firestore';
+import { db, auth, collection, getDocs, doc, setDoc, deleteDoc, query, where, writeBatch, getDoc } from '../firebase';
 import { School, UserProfile, Class, Department } from '../types';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';

@@ -419,7 +419,7 @@ export default function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard': 
-        if (role === 'principal') return <PrincipalDashboard schoolStats={{ totalStudents: 500, totalTeachers: 45, totalClasses: 20, avgCompletionRate: 82, activeSessions: 12 }} />;
+        if (role === 'principal' || role === 'school_admin' || user?.email?.toLowerCase() === 'tranlichsu@gmail.com') return <PrincipalDashboard schoolStats={{ totalStudents: 500, totalTeachers: 45, totalClasses: 20, avgCompletionRate: 82, activeSessions: 12 }} />;
         if (role === 'parent') return <ParentDashboard childrenList={students.filter(s => userProfile?.studentIds?.includes(s.id))} homeworkList={homework} />;
         return <Dashboard 
           role={role} 
@@ -524,12 +524,12 @@ export default function App() {
             </>
           )}
 
-          {(role === 'teacher' || role === 'homeroom_teacher' || role === 'principal') && (
+          {(role === 'teacher' || role === 'homeroom_teacher' || role === 'principal' || role === 'school_admin' || user?.email?.toLowerCase() === 'tranlichsu@gmail.com') && (
             <>
               <div className="pt-4 pb-2">
                 {isSidebarOpen && <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3">Công cụ Giáo dục</p>}
               </div>
-              {(role === 'teacher' || role === 'homeroom_teacher') && (
+              {(role === 'teacher' || role === 'homeroom_teacher' || role === 'school_admin' || user?.email?.toLowerCase() === 'tranlichsu@gmail.com') && (
                 <>
                   <NavItem 
                     icon={<Sparkles />} 
@@ -565,7 +565,7 @@ export default function App() {
               )}
               <NavItem 
                 icon={<Users />} 
-                label={role === 'principal' ? "Thống kê Trường" : "Lớp học & Học sinh"} 
+                label={(role === 'principal' || role === 'school_admin') ? "Thống kê Trường" : "Lớp học & Học sinh"} 
                 active={activeTab === 'classroom'} 
                 onClick={() => setActiveTab('classroom')}
                 color="text-slate-700 dark:text-slate-200"

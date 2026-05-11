@@ -122,11 +122,11 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
       className="space-y-8"
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {role === 'teacher' || role === 'admin' ? (
+        {role === 'teacher' || role === 'admin' || role === 'school_admin' ? (
           <>
             <motion.div variants={item}><StatCard icon={<Users />} label="Học sinh" value={stats.students} color="bg-blue-600" /></motion.div>
             <motion.div variants={item}><StatCard icon={<Gamepad2 />} label="Game đã tạo" value={stats.games} color="bg-purple-600" /></motion.div>
-            {role === 'admin' && <motion.div variants={item}><StatCard icon={<ShieldCheck />} label="Quyền hạn" value="Quản trị viên" color="bg-emerald-600" /></motion.div>}
+            {(role === 'admin' || role === 'school_admin') && <motion.div variants={item}><StatCard icon={<ShieldCheck />} label="Quyền hạn" value="Quản trị viên" color="bg-emerald-600" /></motion.div>}
           </>
         ) : (
           <>
@@ -161,7 +161,7 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
         )}
       </div>
 
-      {(role === 'teacher' || role === 'admin') && (
+      {(role === 'teacher' || role === 'admin' || role === 'school_admin') && (
         <div className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <motion.div variants={item} className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl shadow-slate-200/20 dark:shadow-none">

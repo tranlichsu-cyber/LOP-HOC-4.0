@@ -17,8 +17,7 @@ import WordLinkGame from './games/WordLinkGame';
 import CrosswordGame from './games/CrosswordGame';
 import DragDropGame from './games/DragDropGame';
 
-import { db, auth } from '../firebase';
-import { doc, deleteDoc, setDoc } from 'firebase/firestore';
+import { db, auth, doc, deleteDoc, setDoc } from '../firebase';
 
 export default function Games({ offlineGames, liveGames, setOfflineGames, setLiveGames, students }: any) {
   const [activeTab, setActiveTab] = useState<'live' | 'offline' | 'wheel'>('live');

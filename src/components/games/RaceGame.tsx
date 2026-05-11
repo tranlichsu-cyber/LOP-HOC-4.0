@@ -3,8 +3,7 @@ import { motion } from 'motion/react';
 import { X, Swords, Play, ChevronRight, RotateCcw, Trophy } from 'lucide-react';
 import { Game, GameSession } from '../../types';
 import { playSound, startBackgroundMusic, stopBackgroundMusic } from '../../lib/sounds';
-import { db, auth } from '../../firebase';
-import { collection, doc, setDoc, onSnapshot, updateDoc, deleteDoc } from 'firebase/firestore';
+import { db, auth, collection, doc, setDoc, onSnapshot, updateDoc, deleteDoc } from '../../firebase';
 
 const LIVE_TEAM_COLORS = [
     { bg: 'bg-red-500', bgSoft: 'bg-red-50', text: 'text-red-500', textDark: 'text-red-900', border: 'border-red-400', name: 'Đội Đỏ', emoji: '🔴' },

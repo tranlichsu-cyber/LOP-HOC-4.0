@@ -8,8 +8,7 @@ import WiseOneGame from './games/WiseOneGame';
 import MatchingGame from './games/MatchingGame';
 import MemoryGame from './games/MemoryGame';
 import WordSearchGame from './games/WordSearchGame';
-import { db, auth } from '../firebase';
-import { collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { db, auth, collection, query, where, getDocs, doc, updateDoc, onSnapshot } from '../firebase';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function StudentGames({ offlineGames, studentProfile, onCompleteGame }: { offlineGames: Game[], studentProfile: any, onCompleteGame: () => void }) {

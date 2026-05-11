@@ -20,8 +20,7 @@ import {
   X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { db, auth } from '../firebase';
-import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
+import { db, auth, collection, query, where, getDocs, addDoc, serverTimestamp, doc, updateDoc } from '../firebase';
 import { DigitalResource, ResourceType, UserProfile, Department } from '../types';
 
 interface ResourceLibraryProps {

@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { UserPlus, Download, Trash2, BookOpen, Calendar, Clock, Plus, X, Image as ImageIcon, Video, Loader2, FileSpreadsheet, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Student, Homework, Game, UserProfile } from '../types';
-import { storage, db, auth } from '../firebase';
+import { storage, db, auth, doc, setDoc, deleteDoc, collection, getDocs, getDoc, writeBatch } from '../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, setDoc, deleteDoc, collection, getDocs, getDoc, writeBatch } from 'firebase/firestore';
 import * as XLSX from 'xlsx';
 
 enum OperationType {
