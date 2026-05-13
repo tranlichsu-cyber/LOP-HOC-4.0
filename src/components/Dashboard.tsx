@@ -18,6 +18,17 @@ import {
 } from 'recharts';
 import { Student, Homework } from '../types';
 
+// @ts-ignore - Recharts internal prop
+const getChartColors = () => {
+  const isDark = document.documentElement.classList.contains('dark');
+  return {
+    text: isDark ? '#94a3b8' : '#64748b',
+    grid: isDark ? '#334155' : '#e2e8f0',
+    tooltipBg: isDark ? '#1e293b' : '#ffffff',
+    tooltipBorder: isDark ? '#334155' : '#e2e8f0',
+  };
+};
+
 export default function Dashboard({ role, stats, studentsList = [], homeworkList = [], studentProfile, onUpdateStudentProfile }: { 
   role: string, 
   stats: { students: number, games: number },
@@ -151,6 +162,8 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
   const weeklyData = getWeeklyData();
   const pieData = getPieData();
 
+  const chartColors = getChartColors();
+
   const PIE_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'];
 
   return (
@@ -211,25 +224,27 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
               <div className="h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={subjectData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartColors.grid} />
                     <XAxis 
                       dataKey="name" 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fill: '#64748b', fontWeight: 600, fontSize: 12 }}
+                      tick={{ fill: chartColors.text, fontWeight: 600, fontSize: 12 }}
                       dy={10}
                     />
                     <YAxis 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fill: '#64748b', fontWeight: 600, fontSize: 12 }} 
+                      tick={{ fill: chartColors.text, fontWeight: 600, fontSize: 12 }} 
                       dx={-10}
                     />
                     <RechartsTooltip 
-                      cursor={{ fill: '#f1f5f9' }}
+                      cursor={{ fill: chartColors.grid }}
                       contentStyle={{ 
                         borderRadius: '16px', 
                         border: 'none', 
+                        backgroundColor: chartColors.tooltipBg,
+                        color: chartColors.text,
                         boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
                         fontWeight: 'bold'
                       }}
@@ -253,25 +268,27 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
               <div className="h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={weeklyData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartColors.grid} />
                     <XAxis 
                       dataKey="week" 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fill: '#64748b', fontWeight: 600, fontSize: 12 }}
+                      tick={{ fill: chartColors.text, fontWeight: 600, fontSize: 12 }}
                       dy={10}
                     />
                     <YAxis 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fill: '#64748b', fontWeight: 600, fontSize: 12 }}
+                      tick={{ fill: chartColors.text, fontWeight: 600, fontSize: 12 }}
                       dx={-10}
                     />
                     <RechartsTooltip 
-                      cursor={{ fill: '#f1f5f9' }}
+                      cursor={{ fill: chartColors.grid }}
                       contentStyle={{ 
                         borderRadius: '16px', 
                         border: 'none', 
+                        backgroundColor: chartColors.tooltipBg,
+                        color: chartColors.text,
                         boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
                         fontWeight: 'bold'
                       }}
@@ -379,7 +396,7 @@ export default function Dashboard({ role, stats, studentsList = [], homeworkList
 
 function StatCard({ icon, label, value, color, studentMode = false }: any) {
   return (
-    <div className={`${studentMode ? 'bg-white border-4 border-indigo-100' : 'bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50'} p-6 rounded-[2rem] shadow-xl shadow-slate-200/20 dark:shadow-none flex items-center gap-5 transition-all hover:scale-[1.02] hover:-translate-y-1 group`}>
+    <div className={`${studentMode ? 'bg-white dark:bg-slate-800 border-4 border-indigo-100 dark:border-slate-700' : 'bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50'} p-6 rounded-[2rem] shadow-xl shadow-slate-200/20 dark:shadow-none flex items-center gap-5 transition-all hover:scale-[1.02] hover:-translate-y-1 group`}>
       <div className={`w-16 h-16 rounded-[1.25rem] flex items-center justify-center text-white shadow-lg ${color} group-hover:rotate-6 transition-transform duration-300`}>
         {React.cloneElement(icon, { className: "w-8 h-8" })}
       </div>

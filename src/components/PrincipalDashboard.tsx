@@ -81,9 +81,18 @@ export default function PrincipalDashboard({ schoolStats }: PrincipalDashboardPr
 }
 
 function StatCard({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string | number, color: string }) {
+  // Map light background colors to dark mode equivalents
+  const darkBgMap: Record<string, string> = {
+    'bg-blue-50': 'dark:bg-blue-900/20',
+    'bg-purple-50': 'dark:bg-purple-900/20',
+    'bg-emerald-50': 'dark:bg-emerald-900/20',
+    'bg-orange-50': 'dark:bg-orange-900/20',
+  };
+  const darkColor = darkBgMap[color] || 'dark:bg-slate-700/50';
+
   return (
     <motion.div whileHover={{ y: -5 }} className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg flex items-center gap-4">
-      <div className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center`}>{icon}</div>
+      <div className={`w-12 h-12 ${color} ${darkColor} rounded-xl flex items-center justify-center transition-colors`}>{icon}</div>
       <div>
         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{label}</p>
         <p className="text-2xl font-black text-slate-800 dark:text-white">{value}</p>

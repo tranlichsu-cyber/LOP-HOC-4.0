@@ -20,7 +20,8 @@ import {
   Flame,
   KeyRound,
   Eye,
-  EyeOff
+  EyeOff,
+  MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -54,6 +55,7 @@ import StudentGames from './components/StudentGames';
 import ResourceLibrary from './components/ResourceLibrary';
 import TestGeneratorAI from './components/TestGeneratorAI';
 import Worksheet from './components/Worksheet';
+import TeacherAIChat from './components/TeacherAIChat';
 import Login from './components/Login';
 
 import ErrorBoundary from './components/ErrorBoundary';
@@ -65,7 +67,22 @@ export default function App() {
   const [school, setSchool] = useState<School | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [teacherUid, setTeacherUid] = useState<string | null>(null);
@@ -268,10 +285,7 @@ export default function App() {
     }
   };
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
-  };
+  // Theme is handled by a useEffect now
 
   if (!isAuthReady) {
     return (
@@ -455,6 +469,7 @@ export default function App() {
       case 'lesson-ai': return <LessonAI />;
       case 'worksheet': return <Worksheet />;
       case 'test-ai': return <TestGeneratorAI />;
+      case 'ai-chat': return <TeacherAIChat />;
       case 'games': return <Games offlineGames={offlineGames} liveGames={liveGames} setOfflineGames={setOfflineGames} setLiveGames={setLiveGames} students={students} />;
       case 'classroom': return <Classroom userProfile={userProfile} students={students} setStudents={setStudents} homework={homework} setHomework={setHomework} offlineGames={offlineGames} />;
       case 'resource-library': return userProfile ? <ResourceLibrary userProfile={userProfile} /> : null;
@@ -472,7 +487,7 @@ export default function App() {
   };
 
   return (
-    <div className={`h-screen flex overflow-hidden transition-colors duration-500 relative ${role === 'student' ? 'bg-amber-50/30' : 'bg-slate-50 dark:bg-slate-950'}`}>
+    <div className={`h-screen flex overflow-hidden transition-colors duration-500 relative ${role === 'student' ? 'bg-amber-50/30 dark:bg-slate-950' : 'bg-slate-50 dark:bg-slate-950'}`}>
       {/* Decorative Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20 dark:opacity-10">
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-purple-400 rounded-full blur-3xl animate-pulse" />
@@ -567,6 +582,16 @@ export default function App() {
                     label="Tạo đề thi AI" 
                     active={activeTab === 'test-ai'} 
                     onClick={() => setActiveTab('test-ai')}
+                    color="text-slate-700 dark:text-slate-200"
+                    bgColor="bg-slate-100 dark:bg-slate-700"
+                    collapsed={!isSidebarOpen}
+                    role={role}
+                  />
+                  <NavItem 
+                    icon={<MessageSquare />} 
+                    label="Hỗ trợ AI" 
+                    active={activeTab === 'ai-chat'} 
+                    onClick={() => setActiveTab('ai-chat')}
                     color="text-slate-700 dark:text-slate-200"
                     bgColor="bg-slate-100 dark:bg-slate-700"
                     collapsed={!isSidebarOpen}
@@ -724,6 +749,7 @@ export default function App() {
                  activeTab === 'lesson-ai' ? 'Soạn giáo án AI' :
                  activeTab === 'worksheet' ? 'Phiếu học tập' :
                  activeTab === 'test-ai' ? 'Tạo đề thi AI' :
+                 activeTab === 'ai-chat' ? 'Hỗ trợ AI' :
                  activeTab === 'games' ? 'Trò chơi' :
                  activeTab === 'classroom' ? 'Lớp học' :
                  activeTab === 'student-homework' ? 'Bài tập của em' :
@@ -774,7 +800,7 @@ export default function App() {
           </div>
         </header>
         
-        <div className={`flex-1 overflow-auto p-4 sm:p-10 relative ${role === 'student' ? 'bg-indigo-50/50' : ''}`}>
+        <div className={`flex-1 overflow-auto p-4 sm:p-10 relative ${role === 'student' ? 'bg-indigo-50/50 dark:bg-slate-900/50' : ''}`}>
           {connectionError && (
             <div className="mb-8 p-5 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-2xl flex items-center gap-4 text-red-700 dark:text-red-400 font-bold shadow-sm animate-in fade-in slide-in-from-top-2">
               <X className="w-6 h-6 shrink-0" />
@@ -815,6 +841,7 @@ export default function App() {
           )}
           {role === 'teacher' || role === 'homeroom_teacher' || role === 'principal' || role === 'school_admin' ? (
             <>
+              <MobileNavItem icon={<MessageSquare />} active={activeTab === 'ai-chat'} onClick={() => setActiveTab('ai-chat')} />
               <MobileNavItem icon={<Sparkles />} active={activeTab === 'lesson-ai'} onClick={() => setActiveTab('lesson-ai')} />
               <MobileNavItem icon={<Gamepad2 />} active={activeTab === 'games'} onClick={() => setActiveTab('games')} />
             </>
