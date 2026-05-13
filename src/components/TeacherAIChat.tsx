@@ -99,6 +99,10 @@ export default function TeacherAIChat() {
     }
   };
 
+  const deleteMessage = (id: string) => {
+    setMessages(prev => prev.filter(m => m.id !== id));
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-all">
       {/* Header */}
@@ -157,7 +161,7 @@ export default function TeacherAIChat() {
               key={message.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} group/msg`}
             >
               <div className={`flex gap-3 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
                 <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center shadow-sm ${
@@ -167,11 +171,20 @@ export default function TeacherAIChat() {
                 }`}>
                   {message.role === 'user' ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
                 </div>
-                <div className={`p-5 rounded-[2rem] shadow-sm ${
+                <div className={`p-5 rounded-[2rem] shadow-sm relative group ${
                   message.role === 'user' 
                     ? 'bg-indigo-600 text-white rounded-tr-none' 
                     : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none border border-slate-100 dark:border-slate-700'
                 }`}>
+                  {/* Individual Delete Button */}
+                  <button
+                    onClick={() => deleteMessage(message.id)}
+                    className={`absolute top-2 ${message.role === 'user' ? 'left-2' : 'right-2'} p-2 rounded-full bg-slate-100/10 hover:bg-slate-100/20 opacity-0 group-hover/msg:opacity-100 transition-all text-current`}
+                    title="Xóa tin nhắn này"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+
                   <div className="prose prose-base dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-slate-900 prose-pre:text-white prose-headings:text-indigo-600 dark:prose-headings:text-indigo-400">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {message.content}
