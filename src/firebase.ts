@@ -61,33 +61,42 @@ const mockDb: any = {
 
 // --- REAL FIREBASE INITIALIZATION ---
 let app: any;
-let auth: any;
-let db: any;
-let storage: any;
+let auth: any = mockAuth;
+let db: any = mockDb;
+let storage: any = {};
+let useMock = true; 
 
-const useMock = true; // Still using mock for stability
+const initializeFirebase = async () => {
+  let firebaseConfig: any = null;
+  try {
+    const configPath = '../firebase-applet-config.json';
+    // @ts-ignore
+    const config = await import(/* @vite-ignore */ configPath);
+    firebaseConfig = config.default;
+  } catch (e) {
+    console.warn("Firebase config not found, using mocks.");
+  }
 
-if (useMock) {
-  auth = mockAuth;
-  db = mockDb;
-  storage = {};
-  console.log("Using Local Mock for Auth & Database (Infrastructure Setup Pending)");
-} else {
-  // Real implementation (placeholder)
-  const placeholderConfig = {
-    apiKey: "AIzaSy_MOCK_VAL",
-    authDomain: "edupro.firebaseapp.com",
-    projectId: "edupro",
-    storageBucket: "edupro.appspot.com",
-    messagingSenderId: "123",
-    appId: "1:123:web:abc"
-  };
-  if (!getApps().length) app = initializeApp(placeholderConfig);
-  else app = getApps()[0];
-  auth = getAuth(app);
-  db = getFirestore(app);
-  storage = getStorage(app);
-}
+  if (firebaseConfig) {
+    useMock = false;
+    if (!getApps().length) app = initializeApp(firebaseConfig);
+    else app = getApps()[0];
+    auth = getAuth(app);
+    db = getFirestore(app);
+    storage = getStorage(app);
+    console.log("Firebase initialized with real config");
+  } else {
+    useMock = true;
+    console.log("Using Local Mock for Auth & Database");
+  }
+};
+
+// Start initialization immediately
+initializeFirebase();
+
+// Proxy functions that wait for initialization if needed would be complex, 
+// so we'll just check useMock inside them as we already do.
+
 
 // Named exports for both real and mock environments
 export const signInWithEmailAndPassword = async (...args: any[]) => {
@@ -114,9 +123,30 @@ export const signOut = async (...args: any[]) => {
   return (realSignOut as any)(...args);
 };
 
-export const onAuthStateChanged = (...args: any[]) => {
-  if (useMock) return auth.onAuthStateChanged(args[1]);
-  return () => {}; 
+export const onAuthStateChanged = (authArg: any, next: any, error?: any, completed?: any) => {
+  if (useMock) return auth.onAuthStateChanged(next);
+  
+  // For real Firebase, we need to handle the async nature of our initialization
+  let unsubscribe: any = () => {};
+  let resolved = false;
+
+  const setupReal = async () => {
+    try {
+      const { onAuthStateChanged: realOnAuthStateChanged } = await import("firebase/auth");
+      // Wait for auth to be initialized if not yet
+      while (!auth && !useMock) {
+        await new Promise(r => setTimeout(r, 50));
+      }
+      if (auth && !useMock) {
+        unsubscribe = realOnAuthStateChanged(auth, next, error, completed);
+      }
+    } catch (e) {
+      console.error("Error setting up real onAuthStateChanged:", e);
+    }
+  };
+
+  setupReal();
+  return () => { if (unsubscribe) unsubscribe(); };
 };
 
 export const GoogleAuthProvider = class {
@@ -127,7 +157,22 @@ export const GoogleAuthProvider = class {
 
 export const signInWithPopup = async (...args: any[]) => {
   if (useMock) {
-    const user = { uid: 'google-user-' + Math.random().toString(36).substr(2, 5), email: 'tranlichsu@gmail.com', displayName: 'Người dùng Google' };
+    // Check if there's any saved mock identity
+    const saved = localStorage.getItem(MOCK_USER_KEY);
+    if (saved) {
+      return { user: JSON.parse(saved) };
+    }
+    
+    // Simulate accounts by asking for an email if possible, or just using a randomized one
+    // Since we can't easily show a UI here without the component, we'll randomize it once 
+    // to separate "others" (different devices) from each other.
+    const randomId = Math.random().toString(36).substr(2, 5);
+    const user = { 
+      uid: 'google-user-' + randomId, 
+      email: `tester_${randomId}@gmail.com`, 
+      displayName: `Người dùng Google (${randomId})` 
+    };
+    
     localStorage.setItem(MOCK_USER_KEY, JSON.stringify(user));
     window.dispatchEvent(new Event('storage'));
     return { user };
