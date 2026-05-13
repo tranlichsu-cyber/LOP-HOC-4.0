@@ -17,18 +17,20 @@ interface PrincipalDashboardProps {
 }
 
 export default function PrincipalDashboard({ schoolStats }: PrincipalDashboardProps) {
-  const data = [
-    { name: 'Khối 1', students: 120, completion: 85 },
-    { name: 'Khối 2', students: 115, completion: 78 },
-    { name: 'Khối 3', students: 130, completion: 92 },
-    { name: 'Khối 4', students: 105, completion: 65 },
-    { name: 'Khối 5', students: 110, completion: 88 },
+  // Use real completion rate for the pie data
+  const pieData = [
+    { name: 'Hoàn thành', value: schoolStats.avgCompletionRate, color: '#10b981' },
+    { name: 'Còn lại', value: Math.max(0, 100 - schoolStats.avgCompletionRate), color: '#f59e0b' },
   ];
 
-  const pieData = [
-    { name: 'Hoàn thành', value: 75, color: '#10b981' },
-    { name: 'Đang thực hiện', value: 20, color: '#f59e0b' },
-    { name: 'Chưa bắt đầu', value: 5, color: '#ef4444' },
+  // Try to represent data using the actual stats we have
+  const data = [
+    { name: 'Đang quản lý', students: schoolStats.totalStudents, completion: schoolStats.avgCompletionRate },
+    // Fill other blocks with 0 if no data
+    { name: 'Khối 2', students: 0, completion: 0 },
+    { name: 'Khối 3', students: 0, completion: 0 },
+    { name: 'Khối 4', students: 0, completion: 0 },
+    { name: 'Khối 5', students: 0, completion: 0 },
   ];
 
   return (

@@ -120,15 +120,20 @@ export const onAuthStateChanged = (...args: any[]) => {
 };
 
 export const GoogleAuthProvider = class {
-  static setCustomParameters(...args: any[]) {}
-  setCustomParameters(...args: any[]) {}
+  static GOOGLE_SIGN_IN_METHOD = 'google.com';
+  setCustomParameters(params: any) { (this as any)._params = params; }
+  static setCustomParameters(params: any) {}
 };
 
 export const signInWithPopup = async (...args: any[]) => {
   if (useMock) {
-    alert("Google Login is simulated in this environment.");
-    return { user: { uid: 'google-user', email: 'tranlichsu@gmail.com' } };
+    const user = { uid: 'google-user-' + Math.random().toString(36).substr(2, 5), email: 'tranlichsu@gmail.com', displayName: 'Người dùng Google' };
+    localStorage.setItem(MOCK_USER_KEY, JSON.stringify(user));
+    window.dispatchEvent(new Event('storage'));
+    return { user };
   }
+  const { signInWithPopup: realSignIn } = await import("firebase/auth");
+  return (realSignIn as any)(...args);
 };
 
 export const sendPasswordResetEmail = async (...args: any[]) => {
